@@ -1,0 +1,9 @@
+{
+  "x-requested-with": "fetch",
+  "content-type": "application/json",
+  "paypal-client-context": "EC-8HU80820P4055934N",
+  "x-app-name": "checkoutuinodeweb_weasley",
+  "paypal-client-metadata-id": "EC-8HU80820P4055934N",
+  "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+  "cookie": "tsrce=graphqlnodeweb"
+}

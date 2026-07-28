@@ -1,0 +1,101 @@
+{
+  "files": [
+    {
+      "file": "E:\\Code\\auto\\pp\\vendor_sources\\han\\han_standalone.py",
+      "type": ".py",
+      "size": 42524,
+      "lines": 1184,
+      "parse_ok": true
+    },
+    {
+      "file": "E:\\Code\\auto\\pp\\vendor_sources\\kakao\\kakao_extract.py",
+      "type": ".py",
+      "size": 56890,
+      "lines": 1477,
+      "parse_ok": true
+    },
+    {
+      "file": "E:\\Code\\auto\\pp\\vendor_sources\\momo\\check_momo_eligibility.py",
+      "type": ".py",
+      "size": 20847,
+      "lines": 582,
+      "parse_ok": true
+    },
+    {
+      "file": "E:\\Code\\auto\\pp\\vendor_sources\\paper_card\\zhika_simon.py",
+      "type": ".py",
+      "size": 46696,
+      "lines": 1208,
+      "parse_ok": true
+    },
+    {
+      "file": "E:\\Code\\auto\\pp\\vendor_sources\\philippines_ticdk\\philippines-ticdk-share-v2-20260727.zip",
+      "type": "zip",
+      "entries": [
+        "philippines-ticdk-share-20260727/.env.example",
+        "philippines-ticdk-share-20260727/_deployment/nginx-ticdk.conf.example",
+        "philippines-ticdk-share-20260727/_deployment/philippines-ticdk.service.example",
+        "philippines-ticdk-share-20260727/app.py",
+        "philippines-ticdk-share-20260727/public/index.html",
+        "philippines-ticdk-share-20260727/README.md",
+        "philippines-ticdk-share-20260727/requirements.txt"
+      ]
+    }
+  ],
+  "findings_count": 2,
+  "findings": [
+    {
+      "file": "E:\\Code\\auto\\pp\\vendor_sources\\han\\han_standalone.py",
+      "label": "hardcoded password",
+      "line": 187,
+      "snippet": "arts[0], parts[1], parts[2]             password = \":\".join(parts[3:])             value = f\"h"
+    },
+    {
+      "file": "E:\\Code\\auto\\pp\\vendor_sources\\momo\\check_momo_eligibility.py",
+      "label": "bearer token",
+      "line": 159,
+      "snippet": "th a brace. Never send such a blob as a Bearer token.         if parsed_access and not parsed"
+    }
+  ],
+  "method_hits": {
+    "E:\\Code\\auto\\pp\\vendor_sources\\han\\han_standalone.py": [
+      "checkout",
+      "billing",
+      "promo",
+      "PH",
+      "US",
+      "password",
+      "proxy"
+    ],
+    "E:\\Code\\auto\\pp\\vendor_sources\\kakao\\kakao_extract.py": [
+      "kakao",
+      "ideal",
+      "checkout",
+      "stripe",
+      "billing",
+      "promo",
+      "US",
+      "password",
+      "proxy"
+    ],
+    "E:\\Code\\auto\\pp\\vendor_sources\\momo\\check_momo_eligibility.py": [
+      "momo",
+      "upi",
+      "ideal",
+      "checkout",
+      "stripe",
+      "billing",
+      "US",
+      "proxy"
+    ],
+    "E:\\Code\\auto\\pp\\vendor_sources\\paper_card\\zhika_simon.py": [
+      "checkout",
+      "billing",
+      "promo",
+      "PH",
+      "US",
+      "password",
+      "proxy"
+    ]
+  }
+}

@@ -1,0 +1,5 @@
+﻿{
+  "checkout_approve_template": "us.cliproxy.io:3010:<USER>-region-<CC>:<PASS>",
+  "provider_template": "us.cliproxy.io:3010:<USER>-region-<CC>:<PASS>",
+  "notes": "Fill locally. Do not commit real passwords."
+}

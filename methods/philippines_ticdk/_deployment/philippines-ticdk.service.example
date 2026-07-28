@@ -1,0 +1,14 @@
+[Unit]
+Description=Philippines PHP Link Service
+After=network-online.target
+
+[Service]
+WorkingDirectory=/opt/philippines-ticdk/current
+EnvironmentFile=/opt/philippines-ticdk/.env
+ExecStart=/opt/philippines-ticdk/current/.venv/bin/python -m uvicorn app:app --host 127.0.0.1 --port 8791
+Restart=always
+User=APP_USER
+Group=APP_GROUP
+
+[Install]
+WantedBy=multi-user.target

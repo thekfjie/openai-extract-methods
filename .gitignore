@@ -1,0 +1,20 @@
+﻿# Secrets / local only
+.env
+.env.*
+*.pem
+*.key
+local_proxies.json
+**/proxy_seeds*.txt
+**/proxy_state.json
+**/token*.txt
+**/session*.json
+**/*password*
+__pycache__/
+*.pyc
+.venv/
+node_modules/
+*.exe
+*.zip
+.DS_Store
+.idea/
+.vscode/
