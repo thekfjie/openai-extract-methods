@@ -30,3 +30,11 @@ Read-only cohort snapshot:
 - jobs snapshot SHA-256: 2aa0968125748123c0810469c7a4ff2c13481f40f30a69c830c9acd01afab150
 - window: 2026-08-05T00:00:00Z through 2026-08-06T16:51:25Z
 - no live payment or checkout mutation was executed by this audit
+
+Same-account direct-card -> GB PayPal join:
+- jobs snapshot SHA-256: 2aa0968125748123c0810469c7a4ff2c13481f40f30a69c830c9acd01afab150
+- OAICS contexts were paired to successful card-link events within <=3 seconds, then joined to later GB PayPal rows by normalized account email.
+- OAICS prior cohort: 9/15 first attempts succeeded; median first-attempt terminal duration 89.1 seconds.
+- OAICS plus a later card failure before PP: 9/13 first attempts succeeded.
+- No preceding captured card link: 4/61 first attempts succeeded; median first-attempt terminal duration 206.3 seconds.
+- All successes in the OAICS-prior cohort used CS_LIVE on the PayPal side.

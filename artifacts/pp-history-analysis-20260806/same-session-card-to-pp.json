@@ -1,0 +1,115 @@
+{
+  "generatedAt": "2026-08-06T17:20:26.802981Z",
+  "join": {
+    "contextToCardLinkMaxSeconds": 3,
+    "pairedOAICSContexts": 52,
+    "pairedOAICSEmails": 18,
+    "unmatchedSuccessfulCardLinks": 12,
+    "unmatchedEmails": 5,
+    "joinKey": "normalized account_email; exact checkout session id is not present in card audit/job rows"
+  },
+  "cohorts": {
+    "oaics_prior_to_gb_pp": {
+      "accounts": 15,
+      "attempts": 44,
+      "firstAttemptSuccesses": 9,
+      "firstAttemptSuccessRatePct": 60.0,
+      "eventualSuccessAccounts": 9,
+      "firstAttemptMedianSec": 89.1,
+      "successfulFirstAttemptMedianSec": 89.1,
+      "attemptFamilies": {
+        "NONE": 9,
+        "CS_LIVE": 31,
+        "OAICS": 4
+      },
+      "successFamilies": {
+        "CS_LIVE": 9
+      }
+    },
+    "oaics_then_card_failure_to_gb_pp": {
+      "accounts": 13,
+      "attempts": 34,
+      "firstAttemptSuccesses": 9,
+      "firstAttemptSuccessRatePct": 69.2,
+      "eventualSuccessAccounts": 9,
+      "firstAttemptMedianSec": 89.1,
+      "successfulFirstAttemptMedianSec": 89.1,
+      "attemptFamilies": {
+        "NONE": 7,
+        "CS_LIVE": 27
+      },
+      "successFamilies": {
+        "CS_LIVE": 9
+      }
+    },
+    "unmatched_card_link_prior_to_gb_pp": {
+      "accounts": 1,
+      "attempts": 5,
+      "firstAttemptSuccesses": 0,
+      "firstAttemptSuccessRatePct": 0.0,
+      "eventualSuccessAccounts": 0,
+      "firstAttemptMedianSec": 3.8,
+      "successfulFirstAttemptMedianSec": null,
+      "attemptFamilies": {
+        "NONE": 5
+      },
+      "successFamilies": {}
+    },
+    "no_prior_card_link": {
+      "accounts": 61,
+      "attempts": 389,
+      "firstAttemptSuccesses": 4,
+      "firstAttemptSuccessRatePct": 6.6,
+      "eventualSuccessAccounts": 5,
+      "firstAttemptMedianSec": 206.3,
+      "successfulFirstAttemptMedianSec": 55.7,
+      "attemptFamilies": {
+        "CS_LIVE": 239,
+        "NONE": 127,
+        "OAICS": 23
+      },
+      "successFamilies": {
+        "CS_LIVE": 5
+      }
+    }
+  },
+  "withinAccountBeforeAfterOAICS": {
+    "accounts": 0,
+    "before": {
+      "accounts": 0,
+      "attempts": 0,
+      "firstAttemptSuccesses": 0,
+      "firstAttemptSuccessRatePct": null,
+      "eventualSuccessAccounts": 0,
+      "firstAttemptMedianSec": null,
+      "successfulFirstAttemptMedianSec": null,
+      "attemptFamilies": {},
+      "successFamilies": {}
+    },
+    "after": {
+      "accounts": 0,
+      "attempts": 0,
+      "firstAttemptSuccesses": 0,
+      "firstAttemptSuccessRatePct": null,
+      "eventualSuccessAccounts": 0,
+      "firstAttemptMedianSec": null,
+      "successfulFirstAttemptMedianSec": null,
+      "attemptFamilies": {},
+      "successFamilies": {}
+    }
+  },
+  "interpretation": [
+    "The same-account OAICS-context cohort has materially higher observed GB PayPal first-attempt success than accounts without a preceding captured card link, but the cohorts are observational and selected.",
+    "All 9 successes in the OAICS-prior cohort used CS_LIVE as the PayPal checkout id; OAICS was a preceding direct-card observation, not the PayPal input.",
+    "The within-account before/after sample is too small for a causal before/after estimate."
+  ],
+  "limitations": [
+    "Card audit does not persist checkout family per event; OAICS is inferred by pairing a context row to a successful card-link event within 3 seconds.",
+    "The join uses normalized email, not a persistent session id; exact session continuity cannot be proven from current history.",
+    "Shorter duration for failed attempts is not evidence of faster successful payment.",
+    "No live payment or checkout mutation was executed by this audit."
+  ],
+  "snapshot": {
+    "jobsSha256": "2aa0968125748123c0810469c7a4ff2c13481f40f30a69c830c9acd01afab150"
+  }
+}

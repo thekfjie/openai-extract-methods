@@ -22,3 +22,15 @@ The Go direct-checkout normalizer canonicalizes country/currency pairs (`JP + PH
 - `report.json` / `report.md`: full snapshot aggregate.
 - `recent-cohort.json` / `recent-cohort.md`: recent-window family/cohort/duration tables.
 - `verification.txt`: exact test commands, literal outputs, and exit statuses.
+
+## Same-account card → PP follow-up
+
+A second join uses the direct-card portal audit, pairs each OAICS checkout context to the nearest successful card-link event within three seconds, and then matches the normalized account email to later GB PayPal jobs.
+
+- OAICS prior → GB PP: 9/15 first attempts succeeded (60.0%), median terminal duration 89.1 seconds.
+- OAICS plus a later card failure → GB PP: 9/13 first attempts succeeded (69.2%).
+- No preceding captured card link: 4/61 first attempts succeeded (6.6%), median terminal duration 206.3 seconds.
+- All successful PayPal rows in the OAICS-prior cohort used `CS_LIVE`; OAICS was the preceding direct-card observation.
+- Exact session continuity is not provable from old rows because the card audit did not persist the checkout session id alongside the account email.
+
+Detailed files: `same-session-card-to-pp.json` and `same-session-card-to-pp.md`.
