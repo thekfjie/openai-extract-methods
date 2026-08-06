@@ -1,0 +1,369 @@
+{
+  "generatedAt": "2026-08-06T17:06:31.472514Z",
+  "inputs": {
+    "jobCount": 253,
+    "itemCount": 1418,
+    "identityCount": 125,
+    "auditEventCount": 750,
+    "checkoutContextCount": 52,
+    "range": {
+      "start": "2026-07-29T13:59:56Z",
+      "end": "2026-08-06T16:51:25Z"
+    }
+  },
+  "methods": {
+    "direct_card": {
+      "total": 1,
+      "settled": 1,
+      "pending": 0,
+      "succeeded": 0,
+      "successRatePct": 0.0,
+      "families": {
+        "CS_LIVE": {
+          "total": 1,
+          "settled": 1,
+          "pending": 0,
+          "succeeded": 0,
+          "successRatePct": 0.0
+        }
+      }
+    },
+    "ideal": {
+      "total": 219,
+      "settled": 219,
+      "pending": 0,
+      "succeeded": 5,
+      "successRatePct": 2.3,
+      "families": {
+        "CS_LIVE": {
+          "total": 125,
+          "settled": 125,
+          "pending": 0,
+          "succeeded": 5,
+          "successRatePct": 4.0
+        },
+        "NONE": {
+          "total": 65,
+          "settled": 65,
+          "pending": 0,
+          "succeeded": 0,
+          "successRatePct": 0.0
+        },
+        "OAICS": {
+          "total": 29,
+          "settled": 29,
+          "pending": 0,
+          "succeeded": 0,
+          "successRatePct": 0.0
+        }
+      }
+    },
+    "kakao": {
+      "total": 399,
+      "settled": 399,
+      "pending": 0,
+      "succeeded": 8,
+      "successRatePct": 2.0,
+      "families": {
+        "CS_LIVE": {
+          "total": 263,
+          "settled": 263,
+          "pending": 0,
+          "succeeded": 8,
+          "successRatePct": 3.0
+        },
+        "NONE": {
+          "total": 136,
+          "settled": 136,
+          "pending": 0,
+          "succeeded": 0,
+          "successRatePct": 0.0
+        }
+      }
+    },
+    "momo": {
+      "total": 4,
+      "settled": 4,
+      "pending": 0,
+      "succeeded": 0,
+      "successRatePct": 0.0,
+      "families": {
+        "CS_LIVE": {
+          "total": 4,
+          "settled": 4,
+          "pending": 0,
+          "succeeded": 0,
+          "successRatePct": 0.0
+        }
+      }
+    },
+    "paypal_ba": {
+      "total": 759,
+      "settled": 759,
+      "pending": 0,
+      "succeeded": 23,
+      "successRatePct": 3.0,
+      "families": {
+        "CS_LIVE": {
+          "total": 478,
+          "settled": 478,
+          "pending": 0,
+          "succeeded": 23,
+          "successRatePct": 4.8
+        },
+        "NONE": {
+          "total": 233,
+          "settled": 233,
+          "pending": 0,
+          "succeeded": 0,
+          "successRatePct": 0.0
+        },
+        "OAICS": {
+          "total": 48,
+          "settled": 48,
+          "pending": 0,
+          "succeeded": 0,
+          "successRatePct": 0.0
+        }
+      }
+    },
+    "ph_link": {
+      "total": 26,
+      "settled": 26,
+      "pending": 0,
+      "succeeded": 7,
+      "successRatePct": 26.9,
+      "families": {
+        "CS_LIVE": {
+          "total": 4,
+          "settled": 4,
+          "pending": 0,
+          "succeeded": 1,
+          "successRatePct": 25.0
+        },
+        "NONE": {
+          "total": 5,
+          "settled": 5,
+          "pending": 0,
+          "succeeded": 0,
+          "successRatePct": 0.0
+        },
+        "OAICS": {
+          "total": 17,
+          "settled": 17,
+          "pending": 0,
+          "succeeded": 6,
+          "successRatePct": 35.3
+        }
+      }
+    },
+    "upi": {
+      "total": 10,
+      "settled": 10,
+      "pending": 0,
+      "succeeded": 0,
+      "successRatePct": 0.0,
+      "families": {
+        "CS_LIVE": {
+          "total": 9,
+          "settled": 9,
+          "pending": 0,
+          "succeeded": 0,
+          "successRatePct": 0.0
+        },
+        "NONE": {
+          "total": 1,
+          "settled": 1,
+          "pending": 0,
+          "succeeded": 0,
+          "successRatePct": 0.0
+        }
+      }
+    }
+  },
+  "paypal": {
+    "all": {
+      "total": 759,
+      "settled": 759,
+      "pending": 0,
+      "succeeded": 23,
+      "successRatePct": 3.0
+    },
+    "gb": {
+      "total": 483,
+      "settled": 483,
+      "pending": 0,
+      "succeeded": 14,
+      "successRatePct": 2.9
+    },
+    "allFamilies": {
+      "CS_LIVE": {
+        "total": 478,
+        "settled": 478,
+        "pending": 0,
+        "succeeded": 23,
+        "successRatePct": 4.8
+      },
+      "NONE": {
+        "total": 233,
+        "settled": 233,
+        "pending": 0,
+        "succeeded": 0,
+        "successRatePct": 0.0
+      },
+      "OAICS": {
+        "total": 48,
+        "settled": 48,
+        "pending": 0,
+        "succeeded": 0,
+        "successRatePct": 0.0
+      }
+    },
+    "gbFamilies": {
+      "CS_LIVE": {
+        "total": 287,
+        "settled": 287,
+        "pending": 0,
+        "succeeded": 14,
+        "successRatePct": 4.9
+      },
+      "NONE": {
+        "total": 166,
+        "settled": 166,
+        "pending": 0,
+        "succeeded": 0,
+        "successRatePct": 0.0
+      },
+      "OAICS": {
+        "total": 30,
+        "settled": 30,
+        "pending": 0,
+        "succeeded": 0,
+        "successRatePct": 0.0
+      }
+    },
+    "extractionStatuses": {
+      "ba_ready": 23,
+      "cancelled": 22,
+      "failed": 688,
+      "interrupted": 26
+    },
+    "failureCategories": {
+      "amount_gate": 97,
+      "blocked": 172,
+      "cancelled": 44,
+      "credential_lost_after_restart": 26,
+      "empty": 22,
+      "invalid_promotion": 2,
+      "network_or_tls": 73,
+      "other": 38,
+      "paypal_unavailable": 50,
+      "provider_redirect_timeout": 4,
+      "stripe_init": 40,
+      "token_or_eligibility": 168
+    }
+  },
+  "priorHistoryHypotheses": {
+    "directCardOAICSToGBPayPal": {
+      "total": 0,
+      "settled": 0,
+      "pending": 0,
+      "succeeded": 0,
+      "successRatePct": null,
+      "distinctIdentities": 0
+    },
+    "cardMethodsOAICSToGBPayPal": {
+      "total": 53,
+      "settled": 53,
+      "pending": 0,
+      "succeeded": 0,
+      "successRatePct": 0.0,
+      "distinctIdentities": 5
+    },
+    "anyNonPayPalOAICSToGBPayPal": {
+      "total": 70,
+      "settled": 70,
+      "pending": 0,
+      "succeeded": 0,
+      "successRatePct": 0.0,
+      "distinctIdentities": 7
+    },
+    "directCardCSLiveToGBPayPal": {
+      "total": 9,
+      "settled": 9,
+      "pending": 0,
+      "succeeded": 0,
+      "successRatePct": 0.0,
+      "distinctIdentities": 1
+    },
+    "cardMethodsCSLiveToGBPayPal": {
+      "total": 14,
+      "settled": 14,
+      "pending": 0,
+      "succeeded": 0,
+      "successRatePct": 0.0,
+      "distinctIdentities": 2
+    },
+    "anyNonPayPalCSLiveToGBPayPal": {
+      "total": 198,
+      "settled": 198,
+      "pending": 0,
+      "succeeded": 0,
+      "successRatePct": 0.0,
+      "distinctIdentities": 35
+    }
+  },
+  "protocolPaymentAudit": {
+    "eventCount": 236,
+    "distinctTasks": 140,
+    "latestTaskOutcomes": {
+      "failed": 132,
+      "succeeded": 1,
+      "verification_required": 7
+    },
+    "latestFailureCategories": {
+      "blocked": 77,
+      "network_or_tls": 36,
+      "other": 19
+    }
+  },
+  "cardLinkAudit": {
+    "successfulLinkEvents": 64,
+    "linkFamilyFieldPresent": false,
+    "note": "card_audit does not carry a checkout family per event, so exact card-link → PP joins are not asserted."
+  },
+  "linkVocabulary": {
+    "exactOAILIVEOccurrences": 0,
+    "note": "OAILIVE is kept separate from Stripe cs_live_; no alias is assumed.",
+    "checkoutContextFamilies": {
+      "OAICS": 52
+    }
+  },
+  "interpretation": [
+    "顺序队列要求相同的 token hash 或规范化邮箱，并且前一条记录时间更早。",
+    "队列为 0 表示当前历史没有该模式样本。",
+    "这些是描述性比例，不构成因果结论。",
+    "verification_required 与已完成支付成功分开统计。"
+  ],
+  "inputFiles": {
+    "jobs": {
+      "path": "data/extract-api/jobs.json",
+      "bytes": 62174049,
+      "sha256": "2aa0968125748123c0810469c7a4ff2c13481f40f30a69c830c9acd01afab150"
+    },
+    "audit": {
+      "path": "data/card-payment-portal/card_audit.jsonl",
+      "bytes": 207629,
+      "sha256": "3923975cdf5d1acdfbcd27e40b79afb21ec98d5e4d857898e91f2df81e32434d"
+    },
+    "contexts": {
+      "path": "data/card-payment-portal/checkout_contexts.jsonl",
+      "bytes": 32289,
+      "sha256": "298618d2c6236fc64847085f17e86a04b0012d1768a3625736ff94e68747b1c0"
+    }
+  },
+  "snapshot": {
+    "jobsSha256": "2aa0968125748123c0810469c7a4ff2c13481f40f30a69c830c9acd01afab150",
+    "note": "read-only snapshot copied at report generation"
+  }
+}

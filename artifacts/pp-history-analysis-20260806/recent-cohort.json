@@ -1,0 +1,258 @@
+{
+  "generatedAt": "2026-08-06T17:06:32.746048Z",
+  "window": {
+    "start": "2026-08-05T00:00:00Z",
+    "end": "2026-08-06T16:51:25Z"
+  },
+  "snapshot": {
+    "jobsSha256": "2aa0968125748123c0810469c7a4ff2c13481f40f30a69c830c9acd01afab150",
+    "note": "read-only snapshot copied at report generation"
+  },
+  "rows": {
+    "all": 668,
+    "paypal": 533,
+    "paypalGB": 405,
+    "paypalUS": 42
+  },
+  "recentFamilies": {
+    "all": {
+      "OAICS": {
+        "total": 29,
+        "settled": 29,
+        "succeeded": 0,
+        "successRatePct": 0.0,
+        "statusCounts": {
+          "cancelled": 2,
+          "failed": 27
+        }
+      },
+      "CS_LIVE": {
+        "total": 323,
+        "settled": 323,
+        "succeeded": 20,
+        "successRatePct": 6.2,
+        "statusCounts": {
+          "cancelled": 12,
+          "failed": 291,
+          "succeeded": 20
+        }
+      },
+      "NONE": {
+        "total": 181,
+        "settled": 181,
+        "succeeded": 0,
+        "successRatePct": 0.0,
+        "statusCounts": {
+          "cancelled": 29,
+          "failed": 152
+        }
+      }
+    },
+    "GB": {
+      "OAICS": {
+        "total": 21,
+        "settled": 21,
+        "succeeded": 0,
+        "successRatePct": 0.0,
+        "statusCounts": {
+          "cancelled": 2,
+          "failed": 19
+        }
+      },
+      "CS_LIVE": {
+        "total": 251,
+        "settled": 251,
+        "succeeded": 14,
+        "successRatePct": 5.6,
+        "statusCounts": {
+          "cancelled": 12,
+          "failed": 225,
+          "succeeded": 14
+        }
+      },
+      "NONE": {
+        "total": 133,
+        "settled": 133,
+        "succeeded": 0,
+        "successRatePct": 0.0,
+        "statusCounts": {
+          "cancelled": 29,
+          "failed": 104
+        }
+      }
+    },
+    "US": {
+      "OAICS": {
+        "total": 0,
+        "settled": 0,
+        "succeeded": 0,
+        "successRatePct": null,
+        "statusCounts": {}
+      },
+      "CS_LIVE": {
+        "total": 31,
+        "settled": 31,
+        "succeeded": 0,
+        "successRatePct": 0.0,
+        "statusCounts": {
+          "failed": 31
+        }
+      },
+      "NONE": {
+        "total": 11,
+        "settled": 11,
+        "succeeded": 0,
+        "successRatePct": 0.0,
+        "statusCounts": {
+          "failed": 11
+        }
+      }
+    }
+  },
+  "durationByFamily": {
+    "all": {
+      "n": 519,
+      "medianSec": 95.9,
+      "p90Sec": 332.6,
+      "successN": 20,
+      "successMedianSec": 80.7
+    },
+    "GB": {
+      "n": 391,
+      "medianSec": 116.1,
+      "p90Sec": 351.1,
+      "successN": 14,
+      "successMedianSec": 80.7
+    },
+    "US": {
+      "n": 42,
+      "medianSec": 46.8,
+      "p90Sec": 283.7,
+      "successN": 0,
+      "successMedianSec": null
+    },
+    "GB:OAICS": {
+      "n": 21,
+      "medianSec": 85.4,
+      "p90Sec": 123.2,
+      "successN": 0,
+      "successMedianSec": null
+    },
+    "GB:CS_LIVE": {
+      "n": 251,
+      "medianSec": 257.4,
+      "p90Sec": 372.8,
+      "successN": 14,
+      "successMedianSec": 80.7
+    },
+    "GB:NONE": {
+      "n": 119,
+      "medianSec": 2.8,
+      "p90Sec": 7.1,
+      "successN": 0,
+      "successMedianSec": null
+    }
+  },
+  "priorHistoryGBPayPalCohorts": {
+    "OAICS:direct_card": {
+      "total": 0,
+      "settled": 0,
+      "succeeded": 0,
+      "successRatePct": null,
+      "statusCounts": {},
+      "distinctIdentities": 0
+    },
+    "OAICS:card_methods": {
+      "total": 40,
+      "settled": 40,
+      "succeeded": 0,
+      "successRatePct": 0.0,
+      "statusCounts": {
+        "cancelled": 5,
+        "failed": 35
+      },
+      "distinctIdentities": 4
+    },
+    "OAICS:any_non_paypal": {
+      "total": 57,
+      "settled": 57,
+      "succeeded": 0,
+      "successRatePct": 0.0,
+      "statusCounts": {
+        "cancelled": 8,
+        "failed": 49
+      },
+      "distinctIdentities": 6
+    },
+    "CS_LIVE:direct_card": {
+      "total": 9,
+      "settled": 9,
+      "succeeded": 0,
+      "successRatePct": 0.0,
+      "statusCounts": {
+        "cancelled": 2,
+        "failed": 7
+      },
+      "distinctIdentities": 1
+    },
+    "CS_LIVE:card_methods": {
+      "total": 9,
+      "settled": 9,
+      "succeeded": 0,
+      "successRatePct": 0.0,
+      "statusCounts": {
+        "cancelled": 2,
+        "failed": 7
+      },
+      "distinctIdentities": 1
+    },
+    "CS_LIVE:any_non_paypal": {
+      "total": 180,
+      "settled": 180,
+      "succeeded": 0,
+      "successRatePct": 0.0,
+      "statusCounts": {
+        "cancelled": 23,
+        "failed": 157
+      },
+      "distinctIdentities": 27
+    },
+    "NONE:direct_card": {
+      "total": 0,
+      "settled": 0,
+      "succeeded": 0,
+      "successRatePct": null,
+      "statusCounts": {},
+      "distinctIdentities": 0
+    },
+    "NONE:card_methods": {
+      "total": 19,
+      "settled": 19,
+      "succeeded": 0,
+      "successRatePct": 0.0,
+      "statusCounts": {
+        "cancelled": 1,
+        "failed": 18
+      },
+      "distinctIdentities": 2
+    },
+    "NONE:any_non_paypal": {
+      "total": 164,
+      "settled": 164,
+      "succeeded": 0,
+      "successRatePct": 0.0,
+      "statusCounts": {
+        "cancelled": 18,
+        "failed": 146
+      },
+      "distinctIdentities": 25
+    }
+  },
+  "oailiveExactOccurrences": 0,
+  "limitations": [
+    "Checkout family is classified from observed IDs only; OAILIVE is not aliased to cs_live_.",
+    "Prior cohorts require the same token hash or normalized email and an earlier timestamp.",
+    "The join is descriptive and does not establish causation; direct-card audit events lack a family field.",
+    "Duration is time-to-terminal-result; a shorter failed attempt is not evidence of a faster successful flow."
+  ]
+}

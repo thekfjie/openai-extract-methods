@@ -1,0 +1,32 @@
+$ sudo -n docker run --rm -v /opt/automyai:/src:ro -w /src golang:1.26-bookworm go test ./internal/extractmethods ./internal/extractapi
+go: downloading github.com/bogdanfinn/fhttp v0.6.8
+go: downloading github.com/bogdanfinn/tls-client v1.15.1
+go: downloading github.com/bdandy/go-socks4 v1.2.3
+go: downloading github.com/bogdanfinn/quic-go-utls v1.0.9-utls
+go: downloading github.com/bogdanfinn/utls v1.7.7-barnius
+go: downloading github.com/bogdanfinn/websocket v1.5.5-barnius
+go: downloading github.com/tam7t/hpkp v0.0.0-20160821193359-2b70b4024ed5
+go: downloading golang.org/x/net v0.48.0
+go: downloading github.com/andybalholm/brotli v1.2.0
+go: downloading github.com/klauspost/compress v1.18.2
+go: downloading github.com/bdandy/go-errors v1.2.2
+go: downloading golang.org/x/crypto v0.46.0
+go: downloading golang.org/x/sys v0.39.0
+go: downloading golang.org/x/text v0.32.0
+go: downloading github.com/quic-go/qpack v0.6.0
+ok  	automyai/internal/extractmethods	0.877s
+ok  	automyai/internal/extractapi	0.057s
+exit=0
+$ python3 -m unittest tests/test_analyze_pp_history.py
+..
+----------------------------------------------------------------------
+Ran 2 tests in 0.000s
+
+OK
+exit=0
+verification_pipeline_exit=0
+
+Read-only cohort snapshot:
+- jobs snapshot SHA-256: 2aa0968125748123c0810469c7a4ff2c13481f40f30a69c830c9acd01afab150
+- window: 2026-08-05T00:00:00Z through 2026-08-06T16:51:25Z
+- no live payment or checkout mutation was executed by this audit
