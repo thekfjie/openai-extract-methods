@@ -1,0 +1,313 @@
+--- /opt/automyai/artifacts/checkout-compatibility-notes-20260806/original/internal/extractmethods/engine.go	2026-08-06 12:34:30.585683764 +0000
++++ internal/extractmethods/engine.go	2026-08-06 13:18:31.605262049 +0000
+@@ -312,6 +312,10 @@
+ 		}
+ 	case MethodDirect:
+ 		options.Country = normalizeCountry(firstNonEmpty(options.Country, "PH"), "PH")
++		// Direct Checkout billing must remain internally consistent.  Do not
++		// carry a stale/foreign currency supplied by an older caller (for
++		// example JP with PHP); the upstream API validates this pair.
++		options.Currency = currencyForCountry(options.Country)
+ 	case MethodPH:
+ 		options.Country = "PH"
+ 	case MethodMoMo:
+@@ -588,10 +592,11 @@
+ 	stripeID := findStripeCheckoutID(raw)
+ 	openAIID := findOpenAICheckoutID(raw)
+ 	id := firstNonEmpty(stripeID, openAIID)
+-	if f.method == MethodPH {
++	if f.method == MethodPH || f.method == MethodDirect {
+ 		// PH short links are the OpenAI custom-checkout handoff. A nested Stripe
+ 		// payment-page id may coexist in the same response, but it is not the
+-		// final chatgpt.com/checkout identifier.
++		// final chatgpt.com/checkout identifier. Direct card uses the same
++		// observed OAICS-first contract when the newer response contains both.
+ 		id = firstNonEmpty(openAIID, stripeID)
+ 	}
+ 	if id == "" {
+@@ -735,6 +740,18 @@
+ 	return init, nil
+ }
+ 
++// stripeInitCheckout returns a copy whose ID is the observed Stripe payment
++// page session. A checkout/update response may also contain an oaics_* custom
++// Checkout session; that identifier remains the final OpenAI handoff and must
++// not be sent to Stripe's payment_pages endpoint.
++func stripeInitCheckout(checkout checkoutData) checkoutData {
++	if strings.TrimSpace(checkout.StripeID) == "" {
++		return checkout
++	}
++	checkout.ID = checkout.StripeID
++	return checkout
++}
++
+ func (f *flow) activateStripeCheckout(client *BrowserClient, checkout checkoutData) (checkoutData, error) {
+ 	stage := "stripe.activate"
+ 	started := time.Now()
+@@ -862,32 +879,60 @@
+ 	if err != nil {
+ 		return Result{Country: country, Currency: currency}, err
+ 	}
++	metadata := checkoutCompatibilityMetadata(checkout, checkoutObservationMetadata(checkout, nil), country, currency, checkoutRouteFor(checkout))
+ 	update, err := f.updatePromotion(f.promotion, checkout)
+ 	if err != nil {
+-		return Result{Country: country, Currency: currency, CheckoutID: checkout.ID, ProcessorEntity: checkout.ProcessorEntity}, err
++		return Result{Country: country, Currency: currency, CheckoutID: checkout.ID, CheckoutType: checkoutIDType(checkout.ID), ProcessorEntity: checkout.ProcessorEntity, Metadata: metadata}, err
++	}
++	// Newer custom Checkout responses can expose an OAICS handoff alongside a
++	// nested Stripe payment-page id.  Preserve both identities and use OAICS for
++	// the final ChatGPT link when it is actually observed; Stripe remains the
++	// read-only amount/init identity when required.
++	if observed := findOpenAICheckoutID(update); observed != "" {
++		checkout.OpenAIID = observed
++		checkout.ID = observed
+ 	}
++	if observed := findStripeCheckoutID(update); observed != "" {
++		checkout.StripeID = observed
++	}
++	metadata = checkoutCompatibilityMetadata(checkout, checkoutObservationMetadata(checkout, nil), country, currency, checkoutRouteFor(checkout))
+ 	amount := expectedAmount(update)
+ 	if amount == "" {
+-		init, initErr := f.stripeInit(f.provider, checkout, true)
++		// OAICS is the final OpenAI custom-checkout identity, while Stripe's
++		// payment_pages API only accepts the nested cs_live_/cs_test_ id. Keep
++		// the two identities separate when both were observed in the same
++		// checkout/update response.
++		stripeCheckout := stripeInitCheckout(checkout)
++		init, initErr := f.stripeInit(f.provider, stripeCheckout, true)
+ 		if initErr != nil {
+-			return Result{Country: country, Currency: currency, CheckoutID: checkout.ID, ProcessorEntity: checkout.ProcessorEntity}, initErr
++			return Result{Country: country, Currency: currency, CheckoutID: checkout.ID, CheckoutType: checkoutIDType(checkout.ID), ProcessorEntity: checkout.ProcessorEntity, Metadata: metadata}, initErr
+ 		}
+ 		amount = init.Amount
+ 	}
+ 	gate := f.options.amountGateConfig()
+ 	status := amountGateStatus(amount, currency, gate)
+ 	if err := requireAmountGate("直卡 checkout", amount, currency, gate); err != nil {
+-		return Result{Country: country, Currency: currency, CheckoutID: checkout.ID, ProcessorEntity: checkout.ProcessorEntity, Amount: amount, AmountStatus: status}, err
++		return Result{Country: country, Currency: currency, CheckoutID: checkout.ID, CheckoutType: checkoutIDType(checkout.ID), ProcessorEntity: checkout.ProcessorEntity, Amount: amount, AmountStatus: status, Metadata: metadata}, err
+ 	}
+ 	link := fmt.Sprintf("%s/checkout/%s/%s", f.engine.Endpoints.ChatGPT, checkout.ProcessorEntity, checkout.ID)
+ 	f.addStep("direct.link", "success", link, 0)
+ 	return Result{
+ 		Country: country, Currency: currency, CheckoutID: checkout.ID, ProcessorEntity: checkout.ProcessorEntity,
+ 		LongURL: link, Amount: amount, AmountDisplay: displayAmount(amount, currency), AmountStatus: status,
+-		ExtractionStatus: "link_ready", PaymentStatus: "awaiting_card_payment",
++		ExtractionStatus: "link_ready", PaymentStatus: "awaiting_card_payment", Metadata: metadata,
+ 	}, nil
+ }
+ 
++func checkoutRouteFor(checkout checkoutData) string {
++	if strings.TrimSpace(checkout.OpenAIID) != "" {
++		return "oaics"
++	}
++	if strings.TrimSpace(checkout.StripeID) != "" {
++		return "stripe"
++	}
++	return "observed"
++}
++
+ // runPhilippinesLink only returns a PH/PHP link after its configured amount
+ // gate is satisfied. It never confirms a payment method or attempts a charge.
+ func (f *flow) runPhilippinesLink() (Result, error) {
+--- /opt/automyai/artifacts/checkout-compatibility-notes-20260806/original/internal/extractmethods/jobs.go	2026-08-06 13:13:34.933182713 +0000
++++ internal/extractmethods/jobs.go	2026-08-06 13:03:35.906571740 +0000
+@@ -373,7 +373,7 @@
+ 	if changed {
+ 		m.recountLocked(job)
+ 	}
+-	result := cloneJob(job)
++	result := cloneJobPublic(job)
+ 	m.mu.Unlock()
+ 	if changed {
+ 		_ = m.persist()
+@@ -746,7 +746,7 @@
+ 		return nil, ErrJobNotFound
+ 	}
+ 	if job.Status == JobCompleted || job.Status == JobFailed || job.Status == JobCancelled || job.Status == JobInterrupted {
+-		result := cloneJob(job)
++		result := cloneJobPublic(job)
+ 		m.mu.Unlock()
+ 		return result, nil
+ 	}
+@@ -762,7 +762,7 @@
+ 		}
+ 	}
+ 	m.recountLocked(job)
+-	result := cloneJob(job)
++	result := cloneJobPublic(job)
+ 	m.mu.Unlock()
+ 	_ = m.persist()
+ 	return result, nil
+@@ -798,7 +798,7 @@
+ 			RequestedAt: time.Now().UTC().Format(time.RFC3339),
+ 		}
+ 	}
+-	result := cloneJob(job)
++	result := cloneJobPublic(job)
+ 	m.mu.Unlock()
+ 	if err := m.persist(); err != nil {
+ 		return nil, err
+@@ -821,7 +821,7 @@
+ 	job.Continuation.Status = "submitted"
+ 	job.Continuation.SubmittedAt = time.Now().UTC().Format(time.RFC3339)
+ 	job.Continuation.SubmittedJobID = submittedJobID
+-	result := cloneJob(job)
++	result := cloneJobPublic(job)
+ 	m.mu.Unlock()
+ 	if err := m.persist(); err != nil {
+ 		return nil, err
+@@ -1542,6 +1542,23 @@
+ 	return &result
+ }
+ 
++// cloneJobPublic is used for API responses. Compatibility diagnostics remain
++// in the manager's private job state and persisted history, but are omitted
++// from the frontend-facing response so the UI has no routing/debug surface for
++// OAICS/Stripe selection details.
++func cloneJobPublic(job *Job) *Job {
++	result := cloneJob(job)
++	if result == nil {
++		return nil
++	}
++	for index := range result.Items {
++		if result.Items[index].Result != nil && result.Items[index].Result.Metadata != nil {
++			stripPrivateCheckoutMetadata(result.Items[index].Result.Metadata)
++		}
++	}
++	return result
++}
++
+ func durationSince(raw string, finished time.Time) int64 {
+ 	started, err := time.Parse(time.RFC3339, raw)
+ 	if err != nil {
+--- /opt/automyai/artifacts/checkout-compatibility-notes-20260806/original/internal/extractmethods/extractmethods_test.go	2026-08-06 13:14:23.274235284 +0000
++++ internal/extractmethods/extractmethods_test.go	2026-08-06 13:08:49.896154685 +0000
+@@ -101,6 +101,13 @@
+ 	}
+ }
+ 
++func TestDirectCountryCurrencyIsCanonicalized(t *testing.T) {
++	options := normalizeOptions(MethodDirect, Options{Country: "JP", Currency: "PHP"})
++	if options.Country != "JP" || options.Currency != "JPY" {
++		t.Fatalf("direct billing pair = %s/%s, want JP/JPY", options.Country, options.Currency)
++	}
++}
++
+ func TestFindCheckoutIDPrefersStripeSessionOverOuterOAICSID(t *testing.T) {
+ 	value := map[string]any{
+ 		"id":      "oaics_outer123",
+@@ -1354,3 +1361,50 @@
+ 	}
+ }
+ 
++func TestStripeInitCheckoutUsesNestedStripeID(t *testing.T) {
++	checkout := checkoutData{ID: "oaics_outer123", OpenAIID: "oaics_outer123", StripeID: "cs_live_inner456", ProcessorEntity: "openai_llc"}
++	stripe := stripeInitCheckout(checkout)
++	if stripe.ID != "cs_live_inner456" {
++		t.Fatalf("stripe init checkout id = %q, want nested Stripe id", stripe.ID)
++	}
++	if checkout.ID != "oaics_outer123" {
++		t.Fatalf("stripe init helper mutated original checkout id to %q", checkout.ID)
++	}
++}
++
++func TestCheckoutCompatibilityMetadataNormalizesObservedRoute(t *testing.T) {
++	metadata := checkoutCompatibilityMetadata(checkoutData{
++		ID: "oaics_outer123", OpenAIID: "oaics_outer123", StripeID: "cs_live_inner456",
++		Country: "JP", Currency: "JPY",
++	}, nil, "jp", "php", "oaics")
++	if metadata["checkoutRoute"] != "oaics_preferred" {
++		t.Fatalf("route = %#v", metadata["checkoutRoute"])
++	}
++	if metadata["requestedCountry"] != "JP" || metadata["requestedCurrency"] != "PHP" {
++		t.Fatalf("requested billing metadata = %#v", metadata)
++	}
++	if metadata["effectiveCountry"] != "JP" || metadata["effectiveCurrency"] != "JPY" {
++		t.Fatalf("effective billing metadata = %#v", metadata)
++	}
++	if metadata["billingConsistency"] != "country_currency_enforced" {
++		t.Fatalf("billing consistency = %#v", metadata["billingConsistency"])
++	}
++}
++
++func TestCloneJobPublicHidesPrivateCheckoutDiagnostics(t *testing.T) {
++	job := &Job{Items: []JobItem{{Result: &Result{Metadata: map[string]any{
++		"checkoutRoute": "oaics_preferred", "oaicsCheckoutId": "oaics_private",
++		"observedCheckoutTypes": "oaics+stripe", "publicField": "keep",
++	}}}}}
++	private := cloneJob(job)
++	public := cloneJobPublic(job)
++	if private.Items[0].Result.Metadata["oaicsCheckoutId"] != "oaics_private" {
++		t.Fatal("private clone lost backend checkout diagnostic")
++	}
++	if _, ok := public.Items[0].Result.Metadata["oaicsCheckoutId"]; ok {
++		t.Fatal("public clone exposed OAICS checkout identity")
++	}
++	if public.Items[0].Result.Metadata["publicField"] != "keep" {
++		t.Fatal("public clone removed unrelated metadata")
++	}
++}
+--- /dev/null	2026-06-10 12:29:37.813000000 +0000
++++ internal/extractmethods/checkout_compat.go	2026-08-06 13:04:33.453677313 +0000
+@@ -0,0 +1,60 @@
++package extractmethods
++
++import "strings"
++
++var privateCheckoutMetadataKeys = []string{
++	"checkoutRoute", "requestedCountry", "requestedCurrency", "effectiveCountry",
++	"effectiveCurrency", "billingConsistency", "oaicsObserved", "stripeObserved",
++	"oaicsCheckoutId", "stripeCheckoutId", "observedCheckoutTypes",
++}
++
++// checkoutCompatibilityMetadata records observed Checkout families in the
++// backend job history. It does not manufacture identifiers or expose a new UI
++// switch; routing remains an observed/validated server-side decision.
++func checkoutCompatibilityMetadata(checkout checkoutData, metadata map[string]any, requestedCountry, requestedCurrency, route string) map[string]any {
++	if metadata == nil {
++		metadata = map[string]any{}
++	}
++	requestedCountry = strings.ToUpper(strings.TrimSpace(requestedCountry))
++	requestedCurrency = strings.ToUpper(strings.TrimSpace(requestedCurrency))
++	effectiveCurrency := strings.ToUpper(strings.TrimSpace(checkout.Currency))
++	if requestedCurrency == "" {
++		requestedCurrency = effectiveCurrency
++	}
++	metadata["checkoutRoute"] = normalizeCheckoutRoute(route)
++	metadata["requestedCountry"] = requestedCountry
++	metadata["requestedCurrency"] = requestedCurrency
++	metadata["effectiveCountry"] = strings.ToUpper(strings.TrimSpace(checkout.Country))
++	metadata["effectiveCurrency"] = effectiveCurrency
++	metadata["billingConsistency"] = "country_currency_enforced"
++	metadata["oaicsObserved"] = strings.TrimSpace(checkout.OpenAIID) != ""
++	metadata["stripeObserved"] = strings.TrimSpace(checkout.StripeID) != ""
++	if strings.TrimSpace(checkout.OpenAIID) != "" {
++		metadata["oaicsCheckoutId"] = strings.TrimSpace(checkout.OpenAIID)
++	}
++	if strings.TrimSpace(checkout.StripeID) != "" {
++		metadata["stripeCheckoutId"] = strings.TrimSpace(checkout.StripeID)
++	}
++	return metadata
++}
++
++func normalizeCheckoutRoute(value string) string {
++	switch strings.ToLower(strings.TrimSpace(value)) {
++	case "oaics", "oaics_preferred", "oaics-preferred":
++		return "oaics_preferred"
++	case "stripe", "cs", "cs_preferred", "cs-preferred":
++		return "stripe_preferred"
++	default:
++		return "observed"
++	}
++}
++
++// stripPrivateCheckoutMetadata removes compatibility diagnostics from API
++// clones while leaving the manager's in-memory/persisted job state intact.
++// This keeps routing observations available to backend history and audits
++// without adding a frontend disclosure surface.
++func stripPrivateCheckoutMetadata(metadata map[string]any) {
++	for _, key := range privateCheckoutMetadataKeys {
++		delete(metadata, key)
++	}
++}

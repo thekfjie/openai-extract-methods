@@ -312,6 +312,10 @@ func normalizeOptions(method string, options Options) Options {
 		}
 	case MethodDirect:
 		options.Country = normalizeCountry(firstNonEmpty(options.Country, "PH"), "PH")
+		// Direct Checkout billing must remain internally consistent.  Do not
+		// carry a stale/foreign currency supplied by an older caller (for
+		// example JP with PHP); the upstream API validates this pair.
+		options.Currency = currencyForCountry(options.Country)
 	case MethodPH:
 		options.Country = "PH"
 	case MethodMoMo:
@@ -588,10 +592,11 @@ func (f *flow) createCheckoutVariant(client *BrowserClient, country, currency, u
 	stripeID := findStripeCheckoutID(raw)
 	openAIID := findOpenAICheckoutID(raw)
 	id := firstNonEmpty(stripeID, openAIID)
-	if f.method == MethodPH {
+	if f.method == MethodPH || f.method == MethodDirect {
 		// PH short links are the OpenAI custom-checkout handoff. A nested Stripe
 		// payment-page id may coexist in the same response, but it is not the
-		// final chatgpt.com/checkout identifier.
+		// final chatgpt.com/checkout identifier. Direct card uses the same
+		// observed OAICS-first contract when the newer response contains both.
 		id = firstNonEmpty(openAIID, stripeID)
 	}
 	if id == "" {
@@ -735,6 +740,18 @@ func (f *flow) stripeInit(client *BrowserClient, checkout checkoutData, elements
 	return init, nil
 }
 
+// stripeInitCheckout returns a copy whose ID is the observed Stripe payment
+// page session. A checkout/update response may also contain an oaics_* custom
+// Checkout session; that identifier remains the final OpenAI handoff and must
+// not be sent to Stripe's payment_pages endpoint.
+func stripeInitCheckout(checkout checkoutData) checkoutData {
+	if strings.TrimSpace(checkout.StripeID) == "" {
+		return checkout
+	}
+	checkout.ID = checkout.StripeID
+	return checkout
+}
+
 func (f *flow) activateStripeCheckout(client *BrowserClient, checkout checkoutData) (checkoutData, error) {
 	stage := "stripe.activate"
 	started := time.Now()
@@ -862,30 +879,58 @@ func (f *flow) runDirect(forcePH bool) (Result, error) {
 	if err != nil {
 		return Result{Country: country, Currency: currency}, err
 	}
+	metadata := checkoutCompatibilityMetadata(checkout, checkoutObservationMetadata(checkout, nil), country, currency, checkoutRouteFor(checkout))
 	update, err := f.updatePromotion(f.promotion, checkout)
 	if err != nil {
-		return Result{Country: country, Currency: currency, CheckoutID: checkout.ID, ProcessorEntity: checkout.ProcessorEntity}, err
+		return Result{Country: country, Currency: currency, CheckoutID: checkout.ID, CheckoutType: checkoutIDType(checkout.ID), ProcessorEntity: checkout.ProcessorEntity, Metadata: metadata}, err
 	}
+	// Newer custom Checkout responses can expose an OAICS handoff alongside a
+	// nested Stripe payment-page id.  Preserve both identities and use OAICS for
+	// the final ChatGPT link when it is actually observed; Stripe remains the
+	// read-only amount/init identity when required.
+	if observed := findOpenAICheckoutID(update); observed != "" {
+		checkout.OpenAIID = observed
+		checkout.ID = observed
+	}
+	if observed := findStripeCheckoutID(update); observed != "" {
+		checkout.StripeID = observed
+	}
+	metadata = checkoutCompatibilityMetadata(checkout, checkoutObservationMetadata(checkout, nil), country, currency, checkoutRouteFor(checkout))
 	amount := expectedAmount(update)
 	if amount == "" {
-		init, initErr := f.stripeInit(f.provider, checkout, true)
+		// OAICS is the final OpenAI custom-checkout identity, while Stripe's
+		// payment_pages API only accepts the nested cs_live_/cs_test_ id. Keep
+		// the two identities separate when both were observed in the same
+		// checkout/update response.
+		stripeCheckout := stripeInitCheckout(checkout)
+		init, initErr := f.stripeInit(f.provider, stripeCheckout, true)
 		if initErr != nil {
-			return Result{Country: country, Currency: currency, CheckoutID: checkout.ID, ProcessorEntity: checkout.ProcessorEntity}, initErr
+			return Result{Country: country, Currency: currency, CheckoutID: checkout.ID, CheckoutType: checkoutIDType(checkout.ID), ProcessorEntity: checkout.ProcessorEntity, Metadata: metadata}, initErr
 		}
 		amount = init.Amount
 	}
 	gate := f.options.amountGateConfig()
 	status := amountGateStatus(amount, currency, gate)
 	if err := requireAmountGate("直卡 checkout", amount, currency, gate); err != nil {
-		return Result{Country: country, Currency: currency, CheckoutID: checkout.ID, ProcessorEntity: checkout.ProcessorEntity, Amount: amount, AmountStatus: status}, err
+		return Result{Country: country, Currency: currency, CheckoutID: checkout.ID, CheckoutType: checkoutIDType(checkout.ID), ProcessorEntity: checkout.ProcessorEntity, Amount: amount, AmountStatus: status, Metadata: metadata}, err
 	}
 	link := fmt.Sprintf("%s/checkout/%s/%s", f.engine.Endpoints.ChatGPT, checkout.ProcessorEntity, checkout.ID)
 	f.addStep("direct.link", "success", link, 0)
 	return Result{
 		Country: country, Currency: currency, CheckoutID: checkout.ID, ProcessorEntity: checkout.ProcessorEntity,
 		LongURL: link, Amount: amount, AmountDisplay: displayAmount(amount, currency), AmountStatus: status,
-		ExtractionStatus: "link_ready", PaymentStatus: "awaiting_card_payment",
+		ExtractionStatus: "link_ready", PaymentStatus: "awaiting_card_payment", Metadata: metadata,
 	}, nil
+}
+
+func checkoutRouteFor(checkout checkoutData) string {
+	if strings.TrimSpace(checkout.OpenAIID) != "" {
+		return "oaics"
+	}
+	if strings.TrimSpace(checkout.StripeID) != "" {
+		return "stripe"
+	}
+	return "observed"
 }
 
 // runPhilippinesLink only returns a PH/PHP link after its configured amount

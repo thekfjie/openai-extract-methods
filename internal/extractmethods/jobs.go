@@ -373,7 +373,7 @@ func (m *JobManager) Get(jobID string) (*Job, error) {
 	if changed {
 		m.recountLocked(job)
 	}
-	result := cloneJob(job)
+	result := cloneJobPublic(job)
 	m.mu.Unlock()
 	if changed {
 		_ = m.persist()
@@ -746,7 +746,7 @@ func (m *JobManager) Cancel(jobID string) (*Job, error) {
 		return nil, ErrJobNotFound
 	}
 	if job.Status == JobCompleted || job.Status == JobFailed || job.Status == JobCancelled || job.Status == JobInterrupted {
-		result := cloneJob(job)
+		result := cloneJobPublic(job)
 		m.mu.Unlock()
 		return result, nil
 	}
@@ -762,7 +762,7 @@ func (m *JobManager) Cancel(jobID string) (*Job, error) {
 		}
 	}
 	m.recountLocked(job)
-	result := cloneJob(job)
+	result := cloneJobPublic(job)
 	m.mu.Unlock()
 	_ = m.persist()
 	return result, nil
@@ -798,7 +798,7 @@ func (m *JobManager) RequestKakaoProviderContinuation(jobID string, maxAttempts 
 			RequestedAt: time.Now().UTC().Format(time.RFC3339),
 		}
 	}
-	result := cloneJob(job)
+	result := cloneJobPublic(job)
 	m.mu.Unlock()
 	if err := m.persist(); err != nil {
 		return nil, err
@@ -821,7 +821,7 @@ func (m *JobManager) MarkKakaoProviderContinuationSubmitted(jobID, submittedJobI
 	job.Continuation.Status = "submitted"
 	job.Continuation.SubmittedAt = time.Now().UTC().Format(time.RFC3339)
 	job.Continuation.SubmittedJobID = submittedJobID
-	result := cloneJob(job)
+	result := cloneJobPublic(job)
 	m.mu.Unlock()
 	if err := m.persist(); err != nil {
 		return nil, err
@@ -1540,6 +1540,23 @@ func cloneJob(job *Job) *Job {
 	var result Job
 	_ = json.Unmarshal(encoded, &result)
 	return &result
+}
+
+// cloneJobPublic is used for API responses. Compatibility diagnostics remain
+// in the manager's private job state and persisted history, but are omitted
+// from the frontend-facing response so the UI has no routing/debug surface for
+// OAICS/Stripe selection details.
+func cloneJobPublic(job *Job) *Job {
+	result := cloneJob(job)
+	if result == nil {
+		return nil
+	}
+	for index := range result.Items {
+		if result.Items[index].Result != nil && result.Items[index].Result.Metadata != nil {
+			stripPrivateCheckoutMetadata(result.Items[index].Result.Metadata)
+		}
+	}
+	return result
 }
 
 func durationSince(raw string, finished time.Time) int64 {

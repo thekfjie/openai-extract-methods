@@ -1,0 +1,30 @@
+Checkout compatibility verification (2026-08-06)
+
+Baseline:
+- Original engine/types hashes are in baseline.sha256.
+- Existing card UI and PP services were not modified or restarted.
+
+Commands:
+- docker run --rm -v /opt/automyai:/src -w /src golang:1.26-bookworm sh -lc '/usr/local/go/bin/gofmt -w internal/extractmethods/engine.go internal/extractmethods/checkout_compat.go internal/extractmethods/extractmethods_test.go internal/extractmethods/jobs.go && /usr/local/go/bin/go test ./internal/extractmethods ./internal/extractapi ./cmd/extract-api'
+- ./scripts/check.sh
+- ./scripts/automyai-compose.sh deploy extract-api
+- curl -fsS http://127.0.0.1:18794/api/health
+
+Expected:
+- Go package tests exit 0.
+- Full check passes except any unrelated pre-existing test failures; record literal output below.
+- extract API health returns HTTP 200 and implementation=go.
+
+Behavior covered:
+- Direct country/currency is canonicalized (JP -> JPY; stale PHP is not sent).
+- OAICS and nested Stripe IDs are kept separately.
+- Stripe init uses cs_live_/cs_test_; final ChatGPT link uses observed oaics_.
+- Backend job history retains compatibility observations; public API clones omit private routing IDs/flags.
+
+Public API smoke (2026-08-06T13:21Z):
+GET /api/health -> HTTP 200, implementation=go
+GET /api/extract/jobs/<existing> -> HTTP 200, compatibility metadata keys absent from public clone
+
+Full check result:
+- Go/frontend/fingerprint portions passed.
+- Overall exit 1 because pre-existing tests/test_openai3_sub2api.py::test_imports_directly_and_binds_auto_group raises ValueError("认证结果缺少可导入 Sub2API 的 access_token"). This failure is unrelated to extract-api checkout compatibility.

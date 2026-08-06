@@ -101,6 +101,13 @@ func TestPayPalCountryCurrencyMap(t *testing.T) {
 	}
 }
 
+func TestDirectCountryCurrencyIsCanonicalized(t *testing.T) {
+	options := normalizeOptions(MethodDirect, Options{Country: "JP", Currency: "PHP"})
+	if options.Country != "JP" || options.Currency != "JPY" {
+		t.Fatalf("direct billing pair = %s/%s, want JP/JPY", options.Country, options.Currency)
+	}
+}
+
 func TestFindCheckoutIDPrefersStripeSessionOverOuterOAICSID(t *testing.T) {
 	value := map[string]any{
 		"id":      "oaics_outer123",
@@ -1354,3 +1361,50 @@ func TestIsAlreadyPaidError(t *testing.T) {
 	}
 }
 
+func TestStripeInitCheckoutUsesNestedStripeID(t *testing.T) {
+	checkout := checkoutData{ID: "oaics_outer123", OpenAIID: "oaics_outer123", StripeID: "cs_live_inner456", ProcessorEntity: "openai_llc"}
+	stripe := stripeInitCheckout(checkout)
+	if stripe.ID != "cs_live_inner456" {
+		t.Fatalf("stripe init checkout id = %q, want nested Stripe id", stripe.ID)
+	}
+	if checkout.ID != "oaics_outer123" {
+		t.Fatalf("stripe init helper mutated original checkout id to %q", checkout.ID)
+	}
+}
+
+func TestCheckoutCompatibilityMetadataNormalizesObservedRoute(t *testing.T) {
+	metadata := checkoutCompatibilityMetadata(checkoutData{
+		ID: "oaics_outer123", OpenAIID: "oaics_outer123", StripeID: "cs_live_inner456",
+		Country: "JP", Currency: "JPY",
+	}, nil, "jp", "php", "oaics")
+	if metadata["checkoutRoute"] != "oaics_preferred" {
+		t.Fatalf("route = %#v", metadata["checkoutRoute"])
+	}
+	if metadata["requestedCountry"] != "JP" || metadata["requestedCurrency"] != "PHP" {
+		t.Fatalf("requested billing metadata = %#v", metadata)
+	}
+	if metadata["effectiveCountry"] != "JP" || metadata["effectiveCurrency"] != "JPY" {
+		t.Fatalf("effective billing metadata = %#v", metadata)
+	}
+	if metadata["billingConsistency"] != "country_currency_enforced" {
+		t.Fatalf("billing consistency = %#v", metadata["billingConsistency"])
+	}
+}
+
+func TestCloneJobPublicHidesPrivateCheckoutDiagnostics(t *testing.T) {
+	job := &Job{Items: []JobItem{{Result: &Result{Metadata: map[string]any{
+		"checkoutRoute": "oaics_preferred", "oaicsCheckoutId": "oaics_private",
+		"observedCheckoutTypes": "oaics+stripe", "publicField": "keep",
+	}}}}}
+	private := cloneJob(job)
+	public := cloneJobPublic(job)
+	if private.Items[0].Result.Metadata["oaicsCheckoutId"] != "oaics_private" {
+		t.Fatal("private clone lost backend checkout diagnostic")
+	}
+	if _, ok := public.Items[0].Result.Metadata["oaicsCheckoutId"]; ok {
+		t.Fatal("public clone exposed OAICS checkout identity")
+	}
+	if public.Items[0].Result.Metadata["publicField"] != "keep" {
+		t.Fatal("public clone removed unrelated metadata")
+	}
+}
