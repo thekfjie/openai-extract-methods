@@ -1,0 +1,614 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>OpenAI 注册 · automyai</title>
+  <link rel="stylesheet" href="../css/nature.css" />
+  <style>
+    .cfg-grid { display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:12px; }
+    .cfg-grid label.span-2 { grid-column:1 / -1; }
+    .log-box { max-height: 360px; overflow:auto; white-space: pre-wrap; }
+    .row-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+    @media (max-width: 900px) {
+      .cfg-grid { grid-template-columns: 1fr; }
+      .cfg-grid label.span-2 { grid-column: auto; }
+    }
+  </style>
+</head>
+<body data-page="openai">
+  <div class="app">
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-mark"></div>
+    <div>
+      <h1>automyai</h1>
+      <p>控制台</p>
+    </div>
+  </div>
+  <nav class="nav">
+    <a href="/ui/" data-page="overview"><span class="dot"></span>总览</a>
+    <a href="/ui/pages/openai.html" data-page="openai"><span class="dot"></span>OpenAI 注册</a>
+    <a href="/ui/pages/openai2.html" data-page="openai2"><span class="dot"></span>OpenAI 2</a>
+    <a href="/ui/pages/openai3.html" data-page="openai3"><span class="dot"></span>OpenAI 3</a>
+    <a href="/ui/pages/apple_mail.html" data-page="apple-mail"><span class="dot"></span>Apple Mail</a>
+    <a href="/ui/pages/grok.html" data-page="grok"><span class="dot"></span>Grok 注册</a>
+    <a href="/grok2/accounts" target="_blank"><span class="dot"></span>Grok 2</a>
+    <a href="/ui/pages/convert.html" data-page="convert"><span class="dot"></span>转换器</a>
+    <a href="/ui/pages/mail.html" data-page="mail"><span class="dot"></span>邮箱</a>
+    <a href="/ui/pages/settings.html" data-page="settings"><span class="dot"></span>设置</a>
+    <a href="/ui/pages/tools.html" data-page="tools"><span class="dot"></span>工具 / 日志</a>
+  </nav>
+</aside>
+    <main class="main">
+      <div class="topbar">
+        <div>
+          <h2>OpenAI 注册</h2>
+          <div class="hint">UC 有头 Chromium 生产线 · 无默认代理，需自行填写注册代理 · 引擎 uc_signup</div>
+        </div>
+        <div class="row">
+          <span class="badge" id="topBadge">空闲</span>
+          <button class="btn ghost" id="refreshBtn">刷新</button>
+          <button class="btn ghost" id="saveCfgBtn">保存配置</button>
+          <a class="btn ghost" id="novncLink" href="/novnc/vnc.html?autoconnect=1&resize=scale&path=novnc/websockify" target="_blank" rel="noopener">打开 noVNC</a>
+        </div>
+      </div>
+
+      <div class="grid cols-2">
+        <section class="card">
+          <h3>任务控制</h3>
+          <div class="cfg-grid" id="runForm">
+            <label>并发
+              <input id="concurrency" type="number" value="1" disabled title="有头单桌面固定为 1" />
+            </label>
+            <label>总数
+              <input id="total" type="number" min="1" max="50" value="1" />
+            </label>
+            <label>账号来源分组
+              <select id="mail_source_group"><option value="默认分组">默认分组</option></select>
+            </label>
+            <label>账号分配
+              <select id="accountSelect"><option value="">自动分配（推荐）</option></select>
+            </label>
+            <label class="span-2">自定义注册代理完整链接（明文保存并回显，不会隐藏；点“保存配置”后保留）
+              <input id="custom_proxy_url" placeholder="user:pass@host:port 或 host:port:user:pass" autocomplete="off" spellcheck="false" />
+            </label>
+            <label>指纹模块
+              <select id="fingerprint_enabled">
+                <option value="true">启用指纹</option>
+                <option value="false">关闭</option>
+              </select>
+            </label>
+            <label>指纹来源
+              <select id="fingerprint_source">
+                <option value="local">本地 / API</option>
+                <option value="cloud">云端</option>
+              </select>
+            </label>
+            <label class="span-2">指纹 Seed（可选）
+              <input id="fingerprint_seed" placeholder="留空随机；固定值可重复生成" />
+            </label>
+            <label class="span-2" style="display:flex;align-items:center;gap:8px;margin-top:4px">
+              <input id="fingerprint_strict" type="checkbox" checked style="width:auto" />
+              <span>严格模式：指纹 API 失败时阻止任务启动</span>
+            </label>
+            <label class="span-2" style="display:flex;align-items:center;gap:8px;margin-top:4px">
+              <input id="sub2api_import_use_signup_proxy" type="checkbox" style="width:auto" />
+              <span>导入 Sub2API 时跟随本次注册代理（批量开关，默认关闭）</span>
+            </label>
+            <label class="span-2" style="display:flex;align-items:center;gap:8px;margin-top:4px">
+              <input id="auth_only" type="checkbox" style="width:auto" />
+              <span>仅重新授权（跳过注册，适合 oai_pending 断点续跑）</span>
+            </label>
+            <label class="span-2" style="display:flex;align-items:center;gap:8px;margin-top:4px">
+              <input id="keep_browser_on_failure" type="checkbox" style="width:auto" />
+              <span>失败时保留浏览器窗口便于 noVNC 排查</span>
+            </label>
+            <label class="span-2" style="display:flex;align-items:center;gap:8px;margin-top:4px">
+              <input id="traffic_meter" type="checkbox" style="width:auto" />
+              <span>启用流量统计（可选；仍用上面粘贴的上游代理，本地只做计数）</span>
+            </label>
+            <label class="span-2">指定手机号（可选，一般留空自动取号）
+              <input id="forced_phone" placeholder="+1..." />
+            </label>
+          </div>
+          <div class="row-actions">
+            <button class="btn ghost" id="preflightBtn">启动前检查</button>
+            <button class="btn" id="startBtn">开始注册</button>
+            <button class="btn secondary" id="stopBtn">停止</button>
+            <button class="btn ghost" id="refreshAccountsBtn">刷新账号</button>
+            <button class="btn ghost" id="clearLogBtn">清空日志显示</button>
+            <button class="btn ghost" id="copyNovncBtn">复制 noVNC</button>
+          </div>
+          <div class="metrics" style="margin-top:14px" id="stateMetrics"></div>
+          <div class="metrics" style="margin-top:10px" id="trafficMetrics"></div>
+        </section>
+
+        <section class="card">
+          <h3>邮箱 / 导入 / 检查</h3>
+          <div class="cfg-grid">
+            <label>执行中分组
+              <input id="mail_pending_group" value="oai_pending" />
+            </label>
+            <label>成功分组
+              <input id="mail_success_group" value="oai_success" />
+            </label>
+            <label class="span-2">不可用邮箱分组
+              <input id="mail_bad_group" value="badmail" />
+            </label>
+            <label class="span-2">Sub2API 目标分组
+              <input id="sub2api_group" value="auto" placeholder="auto" />
+            </label>
+          </div>
+          <div class="metrics" style="margin-top:14px" id="preflightMetrics">
+            <div class="metric"><b>启动前检查</b><span>点左侧“启动前检查”后显示代理 / 邮箱 / Sub2API / 指纹 / 桌面</span></div>
+          </div>
+        </section>
+      </div>
+
+      <section class="card" style="margin-top:16px">
+        <div class="row" style="justify-content:space-between;align-items:center">
+          <h3 style="margin:0">实时日志</h3>
+          <span style="color:var(--muted);font-size:.84rem">引擎 uc_signup · 有头 DISPLAY=:1 · 控制面 /openai4</span>
+        </div>
+        <div class="log log-box" id="logs">—</div>
+      </section>
+
+      <section class="card" style="margin-top:16px">
+        <div class="row" style="justify-content:space-between;align-items:center">
+          <h3 style="margin:0">本批结果</h3>
+          <button class="btn ghost" id="copyResultsBtn">复制结果</button>
+        </div>
+        <pre class="log log-box" id="resultsBox" style="min-height:120px;max-height:28vh">—</pre>
+      </section>
+
+      <section class="card" style="margin-top:16px">
+        <div class="row" style="justify-content:space-between;align-items:center">
+          <h3 style="margin:0">流量统计记录</h3>
+          <span style="color:var(--muted);font-size:.84rem">与 OpenAI3 / 设置页共用 traffic_meter 存储</span>
+        </div>
+        <pre class="log log-box" id="trafficHistory" style="min-height:120px;max-height:28vh">—</pre>
+      </section>
+
+      <section class="card" style="margin-top:16px">
+        <div class="section-head"><div><h3>链路说明</h3><p>本页 = UC 有头生产线控制台；OpenAI2/3 仍独立保留。</p></div></div>
+        <div class="launch-list">
+          <div class="launch-item"><span class="launch-index">1</span><span><b>OpenAI 注册</b><small>本页 · UC 有头浏览器 · openai4 控制面</small></span></div>
+          <div class="launch-item"><span class="launch-index">2</span><span><b>OpenAI 2</b><small>gpt_outlook2 协议路线，独立保留</small></span></div>
+          <div class="launch-item"><span class="launch-index">3</span><span><b>OpenAI 3</b><small>chatgpt_register 纯 HTTP，独立保留</small></span></div>
+        </div>
+      </section>
+
+      <div class="footer-note">温暖、平静、亲近自然 · 凭证请妥善保管 · 仅本机管理接口</div>
+    </main>
+  </div>
+  <script src="../js/runtime-config.js"></script>
+  <script src="../js/api-client.js"></script>
+  <script src="../js/app.js"></script>
+  <script>
+(() => {
+  const { toast, fmt } = HelpOAI;
+  const $ = (id) => document.getElementById(id);
+  const selectedAccountKey = 'AutoMyAI.openai.selectedAccountId';
+  let desiredSourceGroup = '';
+  let accountCache = [];
+  let configHydrated = false;
+  let formDirty = false;
+  let savingConfig = false;
+  let lastKnownConfig = {};
+  let lastState = {};
+  let logsClearedAt = 0;
+
+  function api(method, path, body) {
+    return AutoMyAIAPI.openai4.request(method, path, body);
+  }
+
+  function boolSelect(id, value) {
+    $(id).value = value ? 'true' : 'false';
+  }
+
+  function readBoolSelect(id) {
+    return $(id).value === 'true';
+  }
+
+  function formConfig() {
+    return {
+      total: Number($('total').value || 1),
+      custom_proxy_url: $('custom_proxy_url').value.trim(),
+      fingerprint_enabled: readBoolSelect('fingerprint_enabled'),
+      fingerprint_source: $('fingerprint_source').value,
+      fingerprint_seed: $('fingerprint_seed').value.trim(),
+      fingerprint_strict: $('fingerprint_strict').checked,
+      mail_source_group: $('mail_source_group').value,
+      mail_pending_group: $('mail_pending_group').value.trim() || 'oai_pending',
+      mail_success_group: $('mail_success_group').value.trim() || 'oai_success',
+      mail_bad_group: $('mail_bad_group').value.trim() || 'badmail',
+      sub2api_group: $('sub2api_group').value.trim() || 'auto',
+      sub2api_import_use_signup_proxy: $('sub2api_import_use_signup_proxy').checked,
+      keep_browser_on_failure: $('keep_browser_on_failure').checked,
+      auth_only: !!($('auth_only') && $('auth_only').checked),
+      traffic_meter: !!($('traffic_meter') && $('traffic_meter').checked),
+      forced_phone: $('forced_phone').value.trim(),
+      selected_account_id: Number(($('accountSelect').value || '0').split('::')[0] || 0),
+      selected_account_email: (($('accountSelect').value || '').split('::')[1] || ''),
+    };
+  }
+
+  function applyConfig(cfg = {}, { force = false } = {}) {
+    if (formDirty && !force) return;
+    const proxyValue = (cfg.custom_proxy_url == null ? '' : String(cfg.custom_proxy_url));
+    $('custom_proxy_url').value = proxyValue;
+    boolSelect('fingerprint_enabled', cfg.fingerprint_enabled !== false);
+    if (cfg.fingerprint_source) $('fingerprint_source').value = cfg.fingerprint_source;
+    $('fingerprint_seed').value = cfg.fingerprint_seed || '';
+    $('fingerprint_strict').checked = cfg.fingerprint_strict !== false;
+    desiredSourceGroup = cfg.mail_source_group || desiredSourceGroup || '默认分组';
+    $('mail_pending_group').value = cfg.mail_pending_group || 'oai_pending';
+    $('mail_success_group').value = cfg.mail_success_group || 'oai_success';
+    $('mail_bad_group').value = cfg.mail_bad_group || 'badmail';
+    $('sub2api_group').value = cfg.sub2api_group || 'auto';
+    $('sub2api_import_use_signup_proxy').checked = !!cfg.sub2api_import_use_signup_proxy;
+    $('keep_browser_on_failure').checked = !!cfg.keep_browser_on_failure;
+    if ($('auth_only')) $('auth_only').checked = !!cfg.auth_only;
+    if ($('traffic_meter')) $('traffic_meter').checked = !!cfg.traffic_meter;
+    if (cfg.novnc_path) $('novncLink').href = cfg.novnc_path;
+    configHydrated = true;
+    formDirty = false;
+  }
+
+  function markDirty() {
+    if (!configHydrated || savingConfig) return;
+    formDirty = true;
+  }
+
+  function bindDirtyWatchers() {
+    const ids = [
+      'total', 'custom_proxy_url', 'fingerprint_enabled', 'fingerprint_source', 'fingerprint_seed',
+      'fingerprint_strict', 'mail_source_group', 'mail_pending_group', 'mail_success_group',
+      'mail_bad_group', 'sub2api_group', 'sub2api_import_use_signup_proxy', 'keep_browser_on_failure',
+      'auth_only', 'traffic_meter', 'forced_phone', 'accountSelect'
+    ];
+    ids.forEach((id) => {
+      const el = $(id);
+      if (!el) return;
+      el.addEventListener('input', markDirty);
+      el.addEventListener('change', markDirty);
+    });
+  }
+
+  function renderAccountOptions() {
+    const source = $('mail_source_group').value;
+    const list = accountCache.filter((item) => !source || item.group === source);
+    const saved = (() => { try { return localStorage.getItem(selectedAccountKey) || ''; } catch { return ''; } })();
+    const opts = ['<option value="">自动分配（推荐）</option>'];
+    list.forEach((item) => {
+      const value = `${item.id || 0}::${item.email || ''}`;
+      const selected = saved === value ? ' selected' : '';
+      opts.push(`<option value="${value}"${selected}>${item.email || item.id}</option>`);
+    });
+    $('accountSelect').innerHTML = opts.join('');
+    if ($('accountSelect').value) $('total').value = '1';
+  }
+
+  async function loadAccounts(forceToast = false) {
+    const data = await api('GET', '/accounts');
+    accountCache = data.accounts || [];
+    const groups = data.groups || [];
+    const current = desiredSourceGroup || $('mail_source_group').value || '默认分组';
+    const names = groups.map((g) => g.name).filter(Boolean);
+    if (!names.includes('默认分组')) names.unshift('默认分组');
+    if (!names.includes('oai_pending')) names.push('oai_pending');
+    $('mail_source_group').innerHTML = names.map((name) => {
+      const count = (groups.find((g) => g.name === name) || {}).count;
+      const label = count != null ? `${name} (${count})` : name;
+      return `<option value="${name}">${label}</option>`;
+    }).join('');
+    $('mail_source_group').value = names.includes(current) ? current : (names[0] || '默认分组');
+    desiredSourceGroup = $('mail_source_group').value;
+    renderAccountOptions();
+    if (forceToast) toast(`账号已刷新：可用 ${data.usable || 0} / 总计 ${data.total || 0}`, 'ok');
+    return data;
+  }
+
+
+  function phaseLabel(state = {}) {
+    if (state.running) return '运行中';
+    const phase = String(state.phase || '').toLowerCase();
+    const map = {
+      idle: '空闲',
+      done: '已完成',
+      completed: '已完成',
+      stopped: '已停止',
+      error: '失败',
+      running: '运行中',
+      starting: '启动中',
+      authorizing: '授权中',
+      waiting_sms: '等短信',
+      filling_sms_code: '填验证码',
+    };
+    if (map[phase]) return map[phase];
+    if (!phase || phase === '—') return '空闲';
+    return state.phase;
+  }
+
+  function shortProxy(value) {
+    const text = String(value || '').trim();
+    if (!text) return '—';
+    try {
+      const withScheme = text.includes('://') ? text : `http://${text}`;
+      const u = new URL(withScheme);
+      return `${u.hostname}${u.port ? ':' + u.port : ''}`;
+    } catch (e) {
+      return text.length > 42 ? text.slice(0, 39) + '...' : text;
+    }
+  }
+
+  function renderResults(state = {}) {
+    const box = $('resultsBox');
+    if (!box) return;
+    const rows = Array.isArray(state.results) ? state.results : [];
+    if (!rows.length) {
+      box.textContent = '暂无本批结果';
+      return;
+    }
+    box.textContent = rows.map((item, idx) => {
+      const email = item.email || item.account || '-';
+      const status = item.status || item.state || '-';
+      const error = item.error || item.message || '';
+      const started = item.startedAt || item.started_at || '';
+      const finished = item.finishedAt || item.finished_at || '';
+      return `${idx + 1}. ${email}  [${status}]  ${error}  ${started} -> ${finished}`.trim();
+    }).join('\n');
+  }
+
+  function renderTraffic(state = {}, cfg = {}) {
+    const tm = $('trafficMetrics');
+    if (!tm) return;
+    const traffic = state.traffic || null;
+    const meterOn = !!(state.traffic_meter || (cfg && cfg.traffic_meter) || traffic);
+    if (!meterOn && !traffic) {
+      tm.innerHTML = `<div class="metric"><b>流量</b><span>未启用</span></div>`;
+    } else if (traffic) {
+      tm.innerHTML = `
+        <div class="metric"><b>本任务流量</b><span>${traffic.bytes_total_h || ((traffic.bytes_total || 0) + ' B')}</span></div>
+        <div class="metric"><b>上行 / 下行</b><span>${traffic.bytes_sent || 0} / ${traffic.bytes_recv || 0} B</span></div>
+        <div class="metric"><b>连接</b><span>${traffic.connections || 0}</span></div>`;
+    } else {
+      tm.innerHTML = `<div class="metric"><b>流量</b><span>已启用，等待数据</span></div>`;
+    }
+  }
+
+  function renderState(state = {}, cfg = {}) {
+    lastState = state || {};
+    const running = !!state.running;
+    const label = phaseLabel(state);
+    $('topBadge').textContent = label;
+    $('topBadge').className = 'badge' + (running ? ' ok' : '');
+
+    const total = Number(state.total || 0);
+    const completed = Number(state.completed || 0);
+    const success = Number(state.success || 0);
+    const failed = Number(state.failed || 0);
+    const progress = total > 0
+      ? `${completed}/${total}（成功 ${success} / 失败 ${failed}）`
+      : (running ? '进行中' : '未开始');
+
+    const mode = (cfg.auth_only || state.auth_only) ? '仅授权' : '注册+授权';
+    const proxyRaw = state.current_proxy || cfg.resolved_proxy || cfg.custom_proxy_url || '';
+    const proxyText = shortProxy(proxyRaw);
+    const err = state.error ? String(state.error) : '';
+    const errShort = err ? (err.length > 48 ? err.slice(0, 48) + '…' : err) : '无';
+
+    $('stateMetrics').innerHTML = `
+      <div class="metric"><b>状态</b><span>${label}</span></div>
+      <div class="metric"><b>模式</b><span>${mode}</span></div>
+      <div class="metric"><b>进度</b><span>${progress}</span></div>
+      <div class="metric"><b>当前邮箱</b><span>${fmt(state.current_email || '—')}</span></div>
+      <div class="metric"><b>当前步骤</b><span>${fmt(state.current_step || '—')}</span></div>
+      <div class="metric"><b>手机号</b><span>${fmt(state.current_phone || '—')}</span></div>
+      <div class="metric"><b>代理</b><span title="${fmt(proxyRaw)}">${fmt(proxyText)}</span></div>
+      <div class="metric"><b>最近错误</b><span title="${fmt(err || '无')}">${fmt(errShort)}</span></div>`;
+    renderTraffic(state, cfg);
+    renderResults(state);
+  }
+
+  async function renderTrafficHistory() {
+    const hist = $('trafficHistory');
+    if (!hist) return null;
+    try {
+      const tr = await api('GET', '/traffic?tail=30');
+      const rows = tr.history || [];
+      if (!rows.length) {
+        hist.textContent = '暂无流量记录';
+      } else {
+        hist.textContent = rows.slice(0, 30).map((item) => {
+          const total = item.bytes_total_h || item.bytes_total || 0;
+          return `${item.started_at || item.id || '-'}  ${item.status || '-'}  ${total}  ↑${item.bytes_sent || 0} ↓${item.bytes_recv || 0}  ${item.upstream || ''}`;
+        }).join('\n');
+      }
+      return tr;
+    } catch (e) {
+      hist.textContent = `读取流量记录失败: ${e.message || e}`;
+      return null;
+    }
+  }
+
+  async function hydrateFormOnce() {
+    const data = await api('GET', '/status');
+    lastKnownConfig = data.config || {};
+    applyConfig(lastKnownConfig, { force: true });
+    renderState(data.state || {}, lastKnownConfig);
+    const logs = await api('GET', '/logs?tail=800');
+    const lines = (logs.logs || []).map((line) => `[${line.time || ''}] ${line.message || ''}`);
+    $('logs').textContent = lines.join('\n') || '暂无日志';
+    await renderTrafficHistory();
+    return data;
+  }
+
+  async function pollLive() {
+    const data = await api('GET', '/status');
+    lastKnownConfig = data.config || lastKnownConfig;
+    let state = data.state || {};
+    try {
+      const tr = await renderTrafficHistory();
+      if (tr && (tr.current || tr.enabled)) {
+        state = Object.assign({}, state, {
+          traffic: tr.current || state.traffic,
+          traffic_meter: true,
+        });
+      }
+    } catch (e) {}
+    renderState(state, lastKnownConfig);
+    const logs = await api('GET', '/logs?tail=800');
+    let rows = logs.logs || [];
+    if (logsClearedAt) {
+      rows = rows.filter((line) => {
+        const ts = Date.parse(line.time || '');
+        return !ts || ts >= logsClearedAt;
+      });
+    }
+    const lines = rows.map((line) => `[${line.time || ''}] ${line.message || ''}`);
+    const box = $('logs');
+    const atBottom = box.scrollTop + box.clientHeight >= box.scrollHeight - 40;
+    box.textContent = lines.join('\n') || '暂无日志';
+    if (atBottom) box.scrollTop = box.scrollHeight;
+    return data;
+  }
+
+  async function refreshAll() {
+    formDirty = false;
+    await hydrateFormOnce();
+    await loadAccounts(false);
+    toast('已刷新', 'ok');
+  }
+
+  async function saveConfig() {
+    savingConfig = true;
+    try {
+      const body = formConfig();
+      const data = await api('POST', '/config', body);
+      lastKnownConfig = data.config || body;
+      applyConfig(lastKnownConfig, { force: true });
+      formDirty = false;
+      toast('配置已保存', 'ok');
+      return data;
+    } finally {
+      savingConfig = false;
+    }
+  }
+
+  $('saveCfgBtn').onclick = () => saveConfig().catch((e) => toast(e.message, 'error'));
+  $('refreshBtn').onclick = () => refreshAll().catch((e) => toast(e.message, 'error'));
+  $('clearLogBtn').onclick = () => {
+    logsClearedAt = Date.now();
+    $('logs').textContent = '（已清空本地显示，新日志会继续出现）';
+    toast('日志显示已清空', 'ok');
+  };
+  $('copyNovncBtn').onclick = async () => {
+    const href = $('novncLink').href;
+    try {
+      await navigator.clipboard.writeText(href);
+      toast('noVNC 链接已复制', 'ok');
+    } catch (e) {
+      toast(href, 'ok');
+    }
+  };
+  $('copyResultsBtn').onclick = async () => {
+    const text = $('resultsBox').textContent || '';
+    try {
+      await navigator.clipboard.writeText(text);
+      toast('结果已复制', 'ok');
+    } catch (e) {
+      toast('复制失败，请手动选择', 'error');
+    }
+  };
+
+  $('preflightBtn').onclick = async () => {
+    try {
+      const body = formConfig();
+      if (!body.custom_proxy_url) {
+        toast('请先填写自定义注册代理完整链接', 'error');
+        return;
+      }
+      savingConfig = true;
+      try { await api('POST', '/config', body); } finally { savingConfig = false; }
+      formDirty = false;
+      const result = await api('POST', '/preflight', body);
+      const proxy = result.proxy || {};
+      const mail = result.mail || {};
+      const fp = result.fingerprint || {};
+      const uc = result.uc || {};
+      const display = result.display || {};
+      const sub2api = result.sub2api || {};
+      $('preflightMetrics').innerHTML = `
+        <div class="metric"><b>代理</b><span>${proxy.reachable ? '可达' : '不可达'} · ${fmt(shortProxy(proxy.proxy || ''))}</span></div>
+        <div class="metric"><b>邮箱</b><span>${fmt(mail.sourceGroup)} · 可用 ${fmt(mail.checked)} / 失败 ${fmt(mail.failed)}</span></div>
+        <div class="metric"><b>Sub2API</b><span>${sub2api.reachable ? '可达' : '未达'} · ${fmt(sub2api.groupName || sub2api.groupId || '—')}</span></div>
+        <div class="metric"><b>指纹</b><span>${fp.enabled === false ? '关闭' : (fp.reachable ? '可达' : '不可达')}</span></div>
+        <div class="metric"><b>UC / 桌面</b><span>${uc.reachable ? '可达' : '不可达'} · ${display.display || ':1'}</span></div>`;
+      toast(result.ok ? '启动前检查通过' : '启动前检查未通过', result.ok ? 'ok' : 'error');
+    } catch (e) {
+      $('preflightMetrics').innerHTML = `<div class="metric"><b>启动前检查失败</b><span>${e.message}</span></div>`;
+      toast(e.message, 'error');
+    }
+  };
+
+  $('startBtn').onclick = async () => {
+    try {
+      const body = formConfig();
+      if (!body.custom_proxy_url) {
+        toast('请先填写自定义注册代理完整链接', 'error');
+        return;
+      }
+      if (body.selected_account_email) body.total = 1;
+      const data = await api('POST', '/start', body);
+      try {
+        const cfgData = await api('GET', '/config');
+        lastKnownConfig = cfgData.config || lastKnownConfig;
+      } catch (e) {}
+      formDirty = false;
+      renderState(data.state || {}, lastKnownConfig);
+      toast(body.auth_only ? '已启动仅授权任务' : '已启动注册任务', 'ok');
+      pollLive().catch(() => {});
+    } catch (e) {
+      toast(e.message, 'error');
+    }
+  };
+
+  $('stopBtn').onclick = async () => {
+    try {
+      const data = await api('POST', '/stop', {});
+      renderState(data.state || {}, lastKnownConfig);
+      toast('已请求停止', 'ok');
+    } catch (e) {
+      toast(e.message, 'error');
+    }
+  };
+
+  $('accountSelect').onchange = () => {
+    try {
+      if ($('accountSelect').value) {
+        localStorage.setItem(selectedAccountKey, $('accountSelect').value);
+        $('total').value = '1';
+      } else {
+        localStorage.removeItem(selectedAccountKey);
+      }
+    } catch (e) {}
+  };
+  $('mail_source_group').onchange = () => {
+    try { localStorage.removeItem(selectedAccountKey); } catch (e) {}
+    desiredSourceGroup = $('mail_source_group').value;
+    renderAccountOptions();
+  };
+  $('refreshAccountsBtn').onclick = () => loadAccounts(true).catch((e) => toast(e.message, 'error'));
+
+  bindDirtyWatchers();
+  (async () => {
+    await hydrateFormOnce();
+    await loadAccounts(false);
+  })().catch((e) => toast(e.message, 'error'));
+  setInterval(() => { pollLive().catch(() => {}); }, 4000);
+})();
+  </script>
+</body>
+</html>

@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>登录 · automyai</title>
+  <link rel="stylesheet" href="../css/nature.css" />
+  <link rel="stylesheet" href="../css/auth.css" />
+</head>
+<body class="auth-page">
+  <main class="auth-shell">
+    <form class="card auth-card" id="loginForm">
+      <div class="auth-brand">
+        <div class="brand-mark" aria-hidden="true"></div>
+        <div><h1>automyai</h1><p>登录本机操作控制台</p></div>
+      </div>
+      <label for="adminPassword">管理员密码
+        <input id="adminPassword" type="password" autocomplete="current-password" autofocus required />
+      </label>
+      <button class="btn" type="submit">登录</button>
+      <p class="auth-error" id="loginError" role="alert"></p>
+      <p class="auth-mode" id="authMode"></p>
+    </form>
+  </main>
+  <script src="../js/runtime-config.js"></script>
+  <script src="../js/api-client.js"></script>
+  <script>
+  (() => {
+    const form = document.getElementById('loginForm');
+    const error = document.getElementById('loginError');
+    const requestedNext = new URLSearchParams(location.search).get('next') || AutoMyAIAPI.uiURL('/');
+    let next = AutoMyAIAPI.uiURL('/');
+    try {
+      const candidate = new URL(requestedNext, location.origin);
+      if (candidate.origin === location.origin) {
+        const uiRoot = AutoMyAIAPI.uiURL('/');
+        if (candidate.pathname === uiRoot.replace(/\/$/, '')) candidate.pathname = uiRoot;
+        next = `${candidate.pathname}${candidate.search}${candidate.hash}`;
+      }
+    } catch {}
+    document.getElementById('authMode').textContent = AutoMyAIAPI.config.authMode === 'header'
+      ? '独立前端模式 · 凭证仅保存在当前标签页'
+      : '同源 Cookie 模式';
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      error.textContent = '';
+      const button = form.querySelector('button');
+      button.disabled = true;
+      try {
+        await AutoMyAIAPI.login(document.getElementById('adminPassword').value);
+        location.replace(next);
+      } catch (cause) {
+        error.textContent = cause.message || String(cause);
+      } finally {
+        button.disabled = false;
+      }
+    });
+  })();
+  </script>
+</body>
+</html>

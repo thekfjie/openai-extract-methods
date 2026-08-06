@@ -1,0 +1,24 @@
+[Unit]
+Description=AutoMyAI OpenAI3 Outlook mail bridge
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/opt/automyai/tools/openai3
+Environment=PYTHONUNBUFFERED=1
+Environment=OPENAI3_MAIL_HOST=127.0.0.1
+Environment=OPENAI3_DATA_DIR=/opt/automyai/data/openai3
+EnvironmentFile=-/opt/automyai/data/openai3/env
+EnvironmentFile=/opt/automyai/config/ports.env
+ExecStart=/opt/automyai/tools/openai3/.venv/bin/python /opt/automyai/tools/openai3/mail_bridge.py
+Restart=always
+RestartSec=3
+TimeoutStopSec=15
+KillMode=mixed
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,834 @@
+{
+  "schema": "automyai.openai5.protocol-manifest.v1",
+  "generated_by": "tools/openai5/har_protocol_extract.py",
+  "captures": [
+    {
+      "file": "/tmp/headless-all-gpt.har",
+      "sha256": "2d2379ae9de9238d6b7f7c1aafc81e4313820923cb32a033aa7ec123580be2a3",
+      "entry_count": 1984,
+      "registration_records": [
+        {
+          "method": "GET",
+          "host": "chatgpt.com",
+          "path": "/api/auth/providers",
+          "role": "discover_auth_provider",
+          "status": 200,
+          "body_fields": [],
+          "redirect": "",
+          "set_cookie_names": []
+        },
+        {
+          "method": "GET",
+          "host": "chatgpt.com",
+          "path": "/api/auth/csrf",
+          "role": "fetch_csrf",
+          "status": 200,
+          "body_fields": [],
+          "redirect": "",
+          "set_cookie_names": [
+            "__Secure-next-auth.callback-url"
+          ]
+        },
+        {
+          "method": "POST",
+          "host": "chatgpt.com",
+          "path": "/api/auth/signin/openai",
+          "role": "begin_openai_oauth",
+          "status": 200,
+          "body_fields": [
+            "callbackUrl",
+            "csrfToken",
+            "json"
+          ],
+          "redirect": "",
+          "set_cookie_names": [
+            "__Secure-next-auth.callback-url",
+            "__Secure-next-auth.state"
+          ]
+        },
+        {
+          "method": "GET",
+          "host": "auth.openai.com",
+          "path": "/api/accounts/authorize",
+          "role": "authorize_account",
+          "status": 403,
+          "body_fields": [],
+          "redirect": "",
+          "set_cookie_names": [
+            "__cf_bm"
+          ]
+        },
+        {
+          "method": "GET",
+          "host": "auth.openai.com",
+          "path": "/api/accounts/authorize",
+          "role": "authorize_account",
+          "status": 403,
+          "body_fields": [],
+          "redirect": "",
+          "set_cookie_names": []
+        },
+        {
+          "method": "POST",
+          "host": "auth.openai.com",
+          "path": "/api/accounts/authorize",
+          "role": "authorize_account",
+          "status": 302,
+          "body_fields": [
+            "<dynamic_challenge_field>"
+          ],
+          "redirect": "auth.openai.com/api/accounts/authorize",
+          "set_cookie_names": []
+        },
+        {
+          "method": "GET",
+          "host": "auth.openai.com",
+          "path": "/api/accounts/authorize",
+          "role": "authorize_account",
+          "status": 302,
+          "body_fields": [],
+          "redirect": "auth.openai.com/email-verification",
+          "set_cookie_names": [
+            "__cflb",
+            "_cfuvid",
+            "auth-session-minimized",
+            "auth-session-minimized-client-checksum",
+            "auth_provider",
+            "hydra_redirect",
+            "iss_context",
+            "login_session",
+            "oai-client-auth-session",
+            "oai-did",
+            "oai-login-csrf_dev_3772291445",
+            "oaicom-stable-id",
+            "rg_context"
+          ]
+        },
+        {
+          "method": "GET",
+          "host": "auth.openai.com",
+          "path": "/api/accounts/authorize",
+          "role": "authorize_account",
+          "status": 302,
+          "body_fields": [],
+          "redirect": "auth.openai.com/email-verification",
+          "set_cookie_names": [
+            "__cflb",
+            "auth-session-minimized",
+            "auth-session-minimized-client-checksum",
+            "auth_provider",
+            "hydra_redirect",
+            "iss_context",
+            "login_session",
+            "oai-client-auth-session",
+            "oai-did",
+            "oai-login-csrf_dev_3772291445",
+            "rg_context"
+          ]
+        },
+        {
+          "method": "GET",
+          "host": "chatgpt.com",
+          "path": "/api/auth/providers",
+          "role": "discover_auth_provider",
+          "status": 304,
+          "body_fields": [],
+          "redirect": "",
+          "set_cookie_names": []
+        },
+        {
+          "method": "GET",
+          "host": "chatgpt.com",
+          "path": "/api/auth/csrf",
+          "role": "fetch_csrf",
+          "status": 304,
+          "body_fields": [],
+          "redirect": "",
+          "set_cookie_names": []
+        },
+        {
+          "method": "POST",
+          "host": "chatgpt.com",
+          "path": "/api/auth/signin/openai",
+          "role": "begin_openai_oauth",
+          "status": 200,
+          "body_fields": [
+            "callbackUrl",
+            "csrfToken",
+            "json"
+          ],
+          "redirect": "",
+          "set_cookie_names": [
+            "__Secure-next-auth.state"
+          ]
+        },
+        {
+          "method": "GET",
+          "host": "chatgpt.com",
+          "path": "/api/auth/providers",
+          "role": "discover_auth_provider",
+          "status": 403,
+          "body_fields": [],
+          "redirect": "",
+          "set_cookie_names": []
+        },
+        {
+          "method": "POST",
+          "host": "auth.openai.com",
+          "path": "/api/accounts/email-otp/validate",
+          "role": "validate_email_otp",
+          "status": 200,
+          "body_fields": [
+            "code"
+          ],
+          "redirect": "",
+          "set_cookie_names": [
+            "__cflb",
+            "auth-session-minimized",
+            "auth-session-minimized-client-checksum",
+            "auth_provider",
+            "hydra_redirect",
+            "login_session",
+            "oai-client-auth-session"
+          ]
+        },
+        {
+          "method": "POST",
+          "host": "auth.openai.com",
+          "path": "/api/accounts/create_account",
+          "role": "create_account",
+          "status": 200,
+          "body_fields": [
+            "birthdate",
+            "name"
+          ],
+          "redirect": "",
+          "set_cookie_names": [
+            "__cf_bm",
+            "auth-session-minimized",
+            "auth-session-minimized-client-checksum",
+            "auth_provider",
+            "hydra_redirect",
+            "login_session",
+            "oai-client-auth-session",
+            "unified_session_manifest",
+            "usc_uKjTADvhLXWENlAHN0sLZzX3"
+          ]
+        },
+        {
+          "method": "GET",
+          "host": "chatgpt.com",
+          "path": "/api/auth/callback/openai",
+          "role": "oauth_callback",
+          "status": 302,
+          "body_fields": [],
+          "redirect": "chatgpt.com/",
+          "set_cookie_names": [
+            "__Secure-next-auth.session-token",
+            "__Secure-next-auth.state",
+            "__Secure-oai-is",
+            "_account",
+            "_account_is_fedramp",
+            "_account_residency_region",
+            "_account_routing_override",
+            "oai-hlib",
+            "oai-login-page-load-pending",
+            "oai-logout-debug-context"
+          ]
+        },
+        {
+          "method": "GET",
+          "host": "auth.openai.com",
+          "path": "/oauth/authorize",
+          "role": "authorize_existing_session",
+          "status": 302,
+          "body_fields": [],
+          "redirect": "auth.openai.com/choose-an-account",
+          "set_cookie_names": [
+            "auth-session-minimized",
+            "auth-session-minimized-client-checksum",
+            "auth_provider",
+            "hydra_redirect",
+            "login_session",
+            "oai-client-auth-session",
+            "unified_session_manifest",
+            "usc_uKjTADvhLXWENlAHN0sLZzX3"
+          ]
+        },
+        {
+          "method": "POST",
+          "host": "auth.openai.com",
+          "path": "/api/accounts/session/select",
+          "role": "select_session",
+          "status": 200,
+          "body_fields": [
+            "session_id"
+          ],
+          "redirect": "",
+          "set_cookie_names": [
+            "__cflb",
+            "auth-session-minimized",
+            "auth-session-minimized-client-checksum",
+            "auth_provider",
+            "hydra_redirect",
+            "login_session",
+            "oai-client-auth-info",
+            "oai-client-auth-session",
+            "unified_session_manifest",
+            "usc_uKjTADvhLXWENlAHN0sLZzX3"
+          ]
+        },
+        {
+          "method": "POST",
+          "host": "auth.openai.com",
+          "path": "/api/accounts/add-phone/send",
+          "role": "send_phone_otp",
+          "status": 200,
+          "body_fields": [
+            "channel",
+            "phone_number"
+          ],
+          "redirect": "",
+          "set_cookie_names": [
+            "auth-session-minimized",
+            "auth-session-minimized-client-checksum",
+            "auth_provider",
+            "hydra_redirect",
+            "login_session",
+            "oai-client-auth-info",
+            "oai-client-auth-session",
+            "unified_session_manifest",
+            "usc_uKjTADvhLXWENlAHN0sLZzX3"
+          ]
+        },
+        {
+          "method": "POST",
+          "host": "auth.openai.com",
+          "path": "/api/accounts/phone-otp/validate",
+          "role": "validate_phone_otp",
+          "status": 200,
+          "body_fields": [
+            "code"
+          ],
+          "redirect": "",
+          "set_cookie_names": [
+            "auth-session-minimized",
+            "auth-session-minimized-client-checksum",
+            "auth_provider",
+            "hydra_redirect",
+            "login_session",
+            "oai-client-auth-info",
+            "oai-client-auth-session",
+            "unified_session_manifest",
+            "usc_uKjTADvhLXWENlAHN0sLZzX3"
+          ]
+        },
+        {
+          "method": "POST",
+          "host": "auth.openai.com",
+          "path": "/api/accounts/workspace/select",
+          "role": "select_workspace",
+          "status": 200,
+          "body_fields": [
+            "workspace_id"
+          ],
+          "redirect": "",
+          "set_cookie_names": [
+            "__cflb",
+            "auth-session-minimized",
+            "auth-session-minimized-client-checksum",
+            "auth_provider",
+            "hydra_redirect",
+            "login_session",
+            "oai-client-auth-info",
+            "oai-client-auth-session",
+            "unified_session_manifest",
+            "usc_uKjTADvhLXWENlAHN0sLZzX3"
+          ]
+        }
+      ],
+      "registration_roles": [
+        "authorize_account",
+        "authorize_existing_session",
+        "begin_openai_oauth",
+        "create_account",
+        "discover_auth_provider",
+        "fetch_csrf",
+        "oauth_callback",
+        "select_session",
+        "select_workspace",
+        "send_phone_otp",
+        "validate_email_otp",
+        "validate_phone_otp"
+      ],
+      "notes": [
+        "Values, cookies, OTPs, challenge payloads, authorization tokens, and account identifiers are intentionally omitted.",
+        "Repeated records are deduplicated by method/path/status/shape."
+      ]
+    },
+    {
+      "file": "/tmp/second-test-no-final-step.har",
+      "sha256": "3d64beb50139c8339d97bbde52da7cd0209adeac978b3c4d9a1b74d8c78a27f2",
+      "entry_count": 1535,
+      "registration_records": [
+        {
+          "method": "GET",
+          "host": "chatgpt.com",
+          "path": "/api/auth/providers",
+          "role": "discover_auth_provider",
+          "status": 200,
+          "body_fields": [],
+          "redirect": "",
+          "set_cookie_names": []
+        },
+        {
+          "method": "GET",
+          "host": "chatgpt.com",
+          "path": "/api/auth/csrf",
+          "role": "fetch_csrf",
+          "status": 200,
+          "body_fields": [],
+          "redirect": "",
+          "set_cookie_names": [
+            "__Secure-next-auth.callback-url"
+          ]
+        },
+        {
+          "method": "POST",
+          "host": "chatgpt.com",
+          "path": "/api/auth/signin/openai",
+          "role": "begin_openai_oauth",
+          "status": 200,
+          "body_fields": [
+            "callbackUrl",
+            "csrfToken",
+            "json"
+          ],
+          "redirect": "",
+          "set_cookie_names": [
+            "__Secure-next-auth.callback-url",
+            "__Secure-next-auth.state"
+          ]
+        },
+        {
+          "method": "GET",
+          "host": "auth.openai.com",
+          "path": "/api/accounts/authorize",
+          "role": "authorize_account",
+          "status": 403,
+          "body_fields": [],
+          "redirect": "",
+          "set_cookie_names": [
+            "__cf_bm"
+          ]
+        },
+        {
+          "method": "GET",
+          "host": "auth.openai.com",
+          "path": "/api/accounts/authorize",
+          "role": "authorize_account",
+          "status": 403,
+          "body_fields": [],
+          "redirect": "",
+          "set_cookie_names": []
+        },
+        {
+          "method": "POST",
+          "host": "auth.openai.com",
+          "path": "/api/accounts/authorize",
+          "role": "authorize_account",
+          "status": 302,
+          "body_fields": [
+            "<dynamic_challenge_field>"
+          ],
+          "redirect": "auth.openai.com/api/accounts/authorize",
+          "set_cookie_names": []
+        },
+        {
+          "method": "GET",
+          "host": "auth.openai.com",
+          "path": "/api/accounts/authorize",
+          "role": "authorize_account",
+          "status": 302,
+          "body_fields": [],
+          "redirect": "auth.openai.com/email-verification",
+          "set_cookie_names": [
+            "__cflb",
+            "_cfuvid",
+            "auth-session-minimized",
+            "auth-session-minimized-client-checksum",
+            "auth_provider",
+            "hydra_redirect",
+            "iss_context",
+            "login_session",
+            "oai-client-auth-session",
+            "oai-did",
+            "oai-login-csrf_dev_3772291445",
+            "oaicom-stable-id",
+            "rg_context"
+          ]
+        },
+        {
+          "method": "POST",
+          "host": "auth.openai.com",
+          "path": "/api/accounts/email-otp/validate",
+          "role": "validate_email_otp",
+          "status": 200,
+          "body_fields": [
+            "code"
+          ],
+          "redirect": "",
+          "set_cookie_names": [
+            "__cflb",
+            "auth-session-minimized",
+            "auth-session-minimized-client-checksum",
+            "auth_provider",
+            "hydra_redirect",
+            "login_session",
+            "oai-client-auth-session"
+          ]
+        },
+        {
+          "method": "POST",
+          "host": "auth.openai.com",
+          "path": "/api/accounts/create_account",
+          "role": "create_account",
+          "status": 500,
+          "body_fields": [
+            "birthdate",
+            "name"
+          ],
+          "redirect": "",
+          "set_cookie_names": [
+            "__cf_bm",
+            "auth-session-minimized",
+            "auth-session-minimized-client-checksum",
+            "auth_provider",
+            "hydra_redirect",
+            "login_session",
+            "oai-client-auth-session"
+          ]
+        },
+        {
+          "method": "POST",
+          "host": "auth.openai.com",
+          "path": "/api/accounts/create_account",
+          "role": "create_account",
+          "status": 409,
+          "body_fields": [
+            "birthdate",
+            "name"
+          ],
+          "redirect": "",
+          "set_cookie_names": [
+            "__cf_bm",
+            "auth-session-minimized",
+            "auth-session-minimized-client-checksum",
+            "auth_provider",
+            "hydra_redirect",
+            "login_session",
+            "oai-client-auth-session"
+          ]
+        },
+        {
+          "method": "GET",
+          "host": "chatgpt.com",
+          "path": "/api/auth/providers",
+          "role": "discover_auth_provider",
+          "status": 304,
+          "body_fields": [],
+          "redirect": "",
+          "set_cookie_names": []
+        },
+        {
+          "method": "GET",
+          "host": "chatgpt.com",
+          "path": "/api/auth/csrf",
+          "role": "fetch_csrf",
+          "status": 304,
+          "body_fields": [],
+          "redirect": "",
+          "set_cookie_names": []
+        },
+        {
+          "method": "POST",
+          "host": "chatgpt.com",
+          "path": "/api/auth/signin/openai",
+          "role": "begin_openai_oauth",
+          "status": 200,
+          "body_fields": [
+            "callbackUrl",
+            "csrfToken",
+            "json"
+          ],
+          "redirect": "",
+          "set_cookie_names": [
+            "__Secure-next-auth.state"
+          ]
+        },
+        {
+          "method": "GET",
+          "host": "auth.openai.com",
+          "path": "/api/accounts/authorize",
+          "role": "authorize_account",
+          "status": 302,
+          "body_fields": [],
+          "redirect": "auth.openai.com/log-in",
+          "set_cookie_names": [
+            "auth-session-minimized",
+            "auth-session-minimized-client-checksum",
+            "auth_provider",
+            "hydra_redirect",
+            "iss_context",
+            "login_session",
+            "oai-client-auth-session",
+            "oai-did",
+            "oai-login-csrf_dev_3772291445",
+            "rg_context"
+          ]
+        },
+        {
+          "method": "POST",
+          "host": "auth.openai.com",
+          "path": "/api/accounts/authorize/continue",
+          "role": "submit_identifier",
+          "status": 0,
+          "body_fields": [
+            "username"
+          ],
+          "redirect": "",
+          "set_cookie_names": []
+        },
+        {
+          "method": "POST",
+          "host": "auth.openai.com",
+          "path": "/api/accounts/authorize/continue",
+          "role": "submit_identifier",
+          "status": 200,
+          "body_fields": [
+            "username"
+          ],
+          "redirect": "",
+          "set_cookie_names": [
+            "__cflb",
+            "auth-session-minimized",
+            "auth-session-minimized-client-checksum",
+            "auth_provider",
+            "hydra_redirect",
+            "login_session",
+            "oai-client-auth-session"
+          ]
+        },
+        {
+          "method": "POST",
+          "host": "auth.openai.com",
+          "path": "/api/accounts/email-otp/validate",
+          "role": "validate_email_otp",
+          "status": 500,
+          "body_fields": [
+            "code"
+          ],
+          "redirect": "",
+          "set_cookie_names": [
+            "auth-session-minimized",
+            "auth-session-minimized-client-checksum",
+            "auth_provider",
+            "hydra_redirect",
+            "login_session",
+            "oai-client-auth-info",
+            "oai-client-auth-session"
+          ]
+        },
+        {
+          "method": "POST",
+          "host": "auth.openai.com",
+          "path": "/api/accounts/email-otp/validate",
+          "role": "validate_email_otp",
+          "status": 200,
+          "body_fields": [
+            "code"
+          ],
+          "redirect": "",
+          "set_cookie_names": [
+            "auth-session-minimized",
+            "auth-session-minimized-client-checksum",
+            "auth_provider",
+            "hydra_redirect",
+            "login_session",
+            "oai-client-auth-info",
+            "oai-client-auth-session",
+            "unified_session_manifest",
+            "usc_JzWyQw9NLCebm0vfsmS20KhP"
+          ]
+        },
+        {
+          "method": "GET",
+          "host": "chatgpt.com",
+          "path": "/api/auth/callback/openai",
+          "role": "oauth_callback",
+          "status": 302,
+          "body_fields": [],
+          "redirect": "chatgpt.com/",
+          "set_cookie_names": [
+            "__Secure-next-auth.session-token",
+            "__Secure-next-auth.state",
+            "__Secure-oai-is",
+            "_account",
+            "_account_is_fedramp",
+            "_account_residency_region",
+            "_account_routing_override",
+            "oai-hlib",
+            "oai-login-page-load-pending",
+            "oai-logout-debug-context"
+          ]
+        },
+        {
+          "method": "GET",
+          "host": "auth.openai.com",
+          "path": "/oauth/authorize",
+          "role": "authorize_existing_session",
+          "status": 302,
+          "body_fields": [],
+          "redirect": "auth.openai.com/choose-an-account",
+          "set_cookie_names": [
+            "auth-session-minimized",
+            "auth-session-minimized-client-checksum",
+            "auth_provider",
+            "hydra_redirect",
+            "login_session",
+            "oai-client-auth-info",
+            "oai-client-auth-session",
+            "unified_session_manifest",
+            "usc_JzWyQw9NLCebm0vfsmS20KhP"
+          ]
+        },
+        {
+          "method": "POST",
+          "host": "auth.openai.com",
+          "path": "/api/accounts/session/select",
+          "role": "select_session",
+          "status": 200,
+          "body_fields": [
+            "session_id"
+          ],
+          "redirect": "",
+          "set_cookie_names": [
+            "__cflb",
+            "auth-session-minimized",
+            "auth-session-minimized-client-checksum",
+            "auth_provider",
+            "hydra_redirect",
+            "login_session",
+            "oai-client-auth-info",
+            "oai-client-auth-session",
+            "unified_session_manifest",
+            "usc_JzWyQw9NLCebm0vfsmS20KhP"
+          ]
+        }
+      ],
+      "registration_roles": [
+        "authorize_account",
+        "authorize_existing_session",
+        "begin_openai_oauth",
+        "create_account",
+        "discover_auth_provider",
+        "fetch_csrf",
+        "oauth_callback",
+        "select_session",
+        "submit_identifier",
+        "validate_email_otp"
+      ],
+      "notes": [
+        "Values, cookies, OTPs, challenge payloads, authorization tokens, and account identifiers are intentionally omitted.",
+        "Repeated records are deduplicated by method/path/status/shape."
+      ]
+    }
+  ],
+  "protocol_roles": [
+    "authorize_account",
+    "authorize_existing_session",
+    "begin_openai_oauth",
+    "create_account",
+    "discover_auth_provider",
+    "fetch_csrf",
+    "oauth_callback",
+    "select_session",
+    "select_workspace",
+    "send_phone_otp",
+    "submit_identifier",
+    "validate_email_otp",
+    "validate_phone_otp"
+  ],
+  "branches": {
+    "new_account": [
+      "discover_auth_provider",
+      "fetch_csrf",
+      "begin_openai_oauth",
+      "authorize_account",
+      "validate_email_otp",
+      "create_account",
+      "oauth_callback"
+    ],
+    "existing_account": [
+      "discover_auth_provider",
+      "fetch_csrf",
+      "begin_openai_oauth",
+      "authorize_existing_session",
+      "submit_identifier",
+      "validate_email_otp",
+      "oauth_callback"
+    ],
+    "post_callback_enrichment": [
+      "select_session",
+      "send_phone_otp",
+      "validate_phone_otp",
+      "select_workspace"
+    ]
+  },
+  "dynamic_fields": {
+    "csrf": [
+      "csrfToken",
+      "__Host-next-auth.csrf-token"
+    ],
+    "otp": [
+      "code"
+    ],
+    "identity": [
+      "username",
+      "phone_number",
+      "session_id",
+      "workspace_id"
+    ],
+    "challenge": [
+      "<dynamic_challenge_field>",
+      "opaque"
+    ]
+  },
+  "fingerprint_contract": {
+    "source_service": "openai4 / automyai-fingerprint-api",
+    "endpoint": "POST http://127.0.0.1:50001/oai/fingerprint/generate",
+    "entry": "openai3",
+    "preset": "windows-11-chrome",
+    "browser_version": "150.0.0.0",
+    "source": "local or cloud",
+    "required_outputs": [
+      "user_agent",
+      "http_headers",
+      "chromium_base_args",
+      "chromium_cdp_commands",
+      "sentinel_navigator",
+      "device_id",
+      "profile_id",
+      "provenance"
+    ],
+    "reuse_rule": "One generated profile per mailbox transaction; preserve profile_id and device_id across the 500/409 login-recovery branch and transport-only restart."
+  },
+  "headless_execution_plan": {
+    "context": "No Chromium context on the normal path; bind the generated profile to the HTTP/Sentinel transaction.",
+    "transport": "HTTP protocol client for provider, CSRF, OAuth, OTP, profile, callback, session, and import requests; stop with challenge_required if a browser-only challenge appears.",
+    "otp_provider": "typed slot: EMAIL_OTP_PROVIDER",
+    "phone_provider": "typed slot: PHONE_OTP_PROVIDER",
+    "state_store": "typed slot: REGISTRATION_STATE_STORE",
+    "dry_run_default": false
+  }
+}

@@ -1,0 +1,235 @@
+﻿<!doctype html>
+<html lang="zh-CN" data-api-base="/card-link" class="neo-page">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#080a0d">
+  <title>Checkout Atelier · 实验界面</title>
+  <link rel="stylesheet" href="/card-link/static/card-flow.css?v=45">
+  <link rel="stylesheet" href="/card-link/neo-assets/card-flow-neo.css?v=9">
+  <script src="https://js.stripe.com/v3/"></script>
+</head>
+<body>
+  <canvas id="neoField" aria-hidden="true"></canvas>
+  <div class="noise" aria-hidden="true"></div>
+  <div class="cursor-aura" aria-hidden="true"></div>
+
+  <header class="neo-nav">
+    <a class="neo-brand" href="/card-link/neo/" aria-label="Checkout Atelier 首页">
+      <span class="brand-sigil"><i data-lucide="orbit"></i></span>
+      <span><b>CHECKOUT</b><small>ATELIER / 02</small></span>
+    </a>
+    <div class="nav-status"><span class="live-pulse"></span><span>PAYMENT SYSTEM ONLINE</span></div>
+    <div id="neoCurrentCdk" class="neo-current-cdk" title="当前 CDK"><i data-lucide="key-round"></i><span>CDK</span><b>未连接</b><small></small></div>
+    <div class="nav-actions">
+      <button id="neoThemeButton" class="icon-button" type="button" aria-label="切换显示模式" title="切换显示模式"><i data-lucide="sun"></i></button>
+      <a href="/card-link/" class="ghost-link"><i data-lucide="panels-top-left"></i><span>经典界面</span></a>
+      <button id="neoCommandButton" class="icon-button" type="button" aria-label="快捷导航"><i data-lucide="command"></i></button>
+    </div>
+  </header>
+
+  <section id="cdkGate" class="cdk-access-panel" aria-live="polite">
+    <div class="cdk-access-head">
+      <span class="cdk-mark"><i data-lucide="key-round"></i></span>
+      <div><b>访问凭证</b><small id="cdkMessage">正在检查</small></div>
+    </div>
+    <div id="cdkUsageBadge" class="cdk-usage-badge" hidden></div>
+    <div id="cdkCurrentRecord" class="cdk-current-record" hidden></div>
+    <div id="cdkEntryForm" class="cdk-entry-form">
+      <input id="cdkInput" type="text" autocomplete="off" spellcheck="false" placeholder="CDK-XXXX-XXXX-XXXX-XXXX-XXXX">
+      <button id="cdkActivateButton" type="button"><i data-lucide="arrow-right"></i><span>验证</span></button>
+    </div>
+    <div class="cdk-tools-inline">
+      <button id="cdkSwitchButton" class="cdk-switch-button" type="button" hidden><i data-lucide="refresh-cw"></i><span>更换 CDK</span></button>
+      <button id="cdkMergeToggleButton" class="cdk-switch-button" type="button"><i data-lucide="combine"></i><span>融合 CDK</span></button>
+      <button id="cdkReleaseTasksButton" class="cdk-switch-button cdk-release-button" type="button" hidden><i data-lucide="unplug"></i><span>释放任务</span></button>
+      <button id="cdkTaskQueryButton" class="cdk-switch-button" type="button" hidden><i data-lucide="list-filter"></i><span>任务查询</span></button>
+      <button id="cdkMergeHistoryButton" class="cdk-switch-button" type="button" hidden><i data-lucide="git-merge"></i><span>融合记录</span></button>
+    </div>
+  </section>
+
+  <section id="cdkMergeDialog" class="cdk-merge-dialog" hidden>
+    <div class="cdk-merge-card">
+      <div class="dialog-kicker"><i data-lucide="combine"></i><span>MERGE CREDENTIALS</span></div>
+      <div class="cdk-merge-title"><div><b>CDK 融合</b><small>每行一个完整 CDK，至少输入两个</small></div><button id="cdkMergeClose" type="button" aria-label="关闭"><i data-lucide="x"></i></button></div>
+      <textarea id="cdkMergeCodes" spellcheck="false" placeholder="CDK-XXXX-XXXX-XXXX-XXXX-XXXX&#10;CDK-YYYY-YYYY-YYYY-YYYY-YYYY"></textarea>
+      <div class="cdk-merge-actions"><button id="cdkMergeSubmit" type="button"><i data-lucide="combine"></i><span>确认融合</span></button><button id="cdkMergeCopy" type="button" hidden><i data-lucide="copy"></i><span>复制新 CDK</span></button></div>
+      <div id="cdkMergeMessage" class="cdk-merge-message"></div>
+      <textarea id="cdkMergedCode" class="cdk-merged-code" readonly hidden></textarea>
+    </div>
+  </section>
+
+  <section id="cdkToolsDialog" class="cdk-merge-dialog" hidden>
+    <div class="cdk-merge-card cdk-tools-card">
+      <div class="dialog-kicker"><i data-lucide="scan-search"></i><span>CREDENTIAL INTELLIGENCE</span></div>
+      <div class="cdk-merge-title"><div><b>CDK 查询</b><small>查看任务状态，或通过子 CDK 查找融合 CDK</small></div><button id="cdkToolsClose" type="button" aria-label="关闭"><i data-lucide="x"></i></button></div>
+      <div class="cdk-tools-actions"><button id="cdkQueryCurrentTasks" type="button"><i data-lucide="activity"></i><span>查询当前 CDK 任务</span></button></div>
+      <label class="cdk-tools-input"><span>子 CDK</span><input id="cdkMergeLookupInput" placeholder="CDK-XXXX-XXXX-XXXX-XXXX-XXXX"><button id="cdkMergeLookupSubmit" type="button"><i data-lucide="search"></i><span>查找融合 CDK</span></button></label>
+      <div id="cdkToolsMessage" class="cdk-merge-message"></div>
+      <div id="cdkToolsResult" class="cdk-tools-result"></div>
+    </div>
+  </section>
+
+  <main class="neo-shell">
+    <section class="neo-hero" data-neo-section="00">
+      <div class="hero-index"><span>PRIVATE PAYMENT WORKSPACE</span><span>SHANGHAI / 2026</span></div>
+      <div class="hero-copy">
+        <p class="eyebrow"><i data-lucide="sparkles"></i><span>ONE CARD / MULTI AT / PARALLEL CHECKOUT</span></p>
+        <h1><span>让支付流程</span><em>成为可见的秩序。</em></h1>
+        <p class="hero-lede">同一张卡片，多账户并行编排。绑卡、创建 Checkout、提链与协议支付，被压缩进一条清晰、连续、可控的操作轨道。</p>
+      </div>
+      <div class="hero-orbit" aria-hidden="true"><div class="orbit-core"><i data-lucide="credit-card"></i></div><span></span><span></span><span></span></div>
+      <div class="hero-metrics">
+        <div><small>FLOW</small><b>04</b><span>阶段</span></div>
+        <div><small>MODE</small><b>10</b><span>并发上限</span></div>
+        <div><small>STATE</small><b>LIVE</b><span>实时任务</span></div>
+      </div>
+    </section>
+
+    <section class="flow-deck">
+      <aside class="flow-rail" aria-label="流程导航">
+        <span class="rail-label">WORKFLOW</span>
+        <div class="steps batch-steps">
+          <span id="stepCard" class="active"><i data-lucide="credit-card"></i><b>01</b><em>卡片</em></span>
+          <span id="stepAt"><i data-lucide="fingerprint"></i><b>02</b><em>账户</em></span>
+          <span id="stepBind"><i data-lucide="link-2"></i><b>03</b><em>绑定</em></span>
+          <span id="stepLink"><i data-lucide="route"></i><b>04</b><em>提链</em></span>
+        </div>
+        <div class="rail-caption"><span></span><p>每一阶段都保留状态反馈，并将错误隔离至对应账户。</p></div>
+      </aside>
+
+      <div class="flow-content">
+        <section class="workspace-panel setup-panel" data-neo-section="01">
+          <div class="panel-head">
+            <div class="panel-number">01</div>
+            <div><p>PAYMENT INSTRUMENT</p><h2>卡片与账户</h2></div>
+            <span class="panel-tag"><i data-lucide="shield-check"></i>STRIPE ELEMENTS</span>
+          </div>
+
+          <div class="setup-grid">
+            <section class="batch-section card-setup-section neo-module">
+              <div class="section-title">
+                <div><i data-lucide="credit-card"></i><span><b>卡片信息</b><small>敏感字段仅由 Stripe 安全组件处理</small></span></div>
+                <span class="tag">CARD FIRST</span>
+              </div>
+              <div class="card-visual" aria-hidden="true">
+                <div class="card-visual-top"><span>CHECKOUT / ATELIER</span><div class="card-brand-lockup"><b id="neoCardBrand">CARD</b><i data-lucide="contactless"></i></div></div>
+                <div class="card-hardware"><div class="card-chip"><i data-lucide="cpu"></i></div><span class="card-signal">SECURE ELEMENT</span></div>
+                <div id="neoCardPreviewNumber" class="card-preview-number"><span>••••</span><span>••••</span><span>••••</span><span>••••</span></div>
+                <div class="card-visual-bottom"><div><small>CARD HOLDER</small><b>CHECKOUT USER</b></div><div><small>VALID THRU</small><b id="neoCardExpiry">MM / YY</b></div></div>
+              </div>
+              <div class="card-fields-grid">
+                <label class="card-field card-number-field"><span>卡号</span><div id="cardNumberElement" class="card-field-box"></div></label>
+                <label class="card-field"><span>有效期</span><div id="cardExpiryElement" class="card-field-box"></div></label>
+                <label class="card-field"><span>CVC</span><div id="cardCvcElement" class="card-field-box"></div></label>
+              </div>
+              <div id="cardReady" class="inline-state">填写 AT 和代理池后加载安全输入框</div>
+              <button id="loadCardButton" class="secondary load-card-button" type="button" disabled><i data-lucide="scan-line"></i><span>加载安全卡片输入框</span></button>
+            </section>
+
+            <section class="batch-section neo-module at-module">
+              <div class="section-title at-section-title">
+                <div><i data-lucide="fingerprint"></i><span><b>AT 列表</b><small>支持 JWT、Session JSON 与混合文本智能识别</small></span></div>
+                <div class="at-title-actions"><span id="atCount" class="tag">1 AT</span><button id="addAtButton" class="secondary small add-at-button" type="button"><i data-lucide="plus"></i><span>添加 AT</span></button></div>
+              </div>
+              <div id="atList" class="at-list"></div>
+            </section>
+          </div>
+        </section>
+
+        <section class="workspace-panel proxy-pool-section" data-neo-section="02">
+          <div class="panel-head">
+            <div class="panel-number">02</div>
+            <div><p>NETWORK TOPOLOGY</p><h2>双代理池</h2></div>
+            <span class="panel-tag"><i data-lucide="waypoints"></i>US + TR</span>
+          </div>
+          <div class="proxy-intro"><p>两个池承担不同职责，绑定与 Checkout 创建使用 US，优惠与提链使用 TR。代理仅保存在当前浏览器。</p><span>每池最多 500 条</span></div>
+          <div class="dual-proxy-grid">
+            <div class="proxy-pool-card neo-module">
+              <div class="proxy-pool-head"><span class="pool-id">A</span><div><b>代理池 1</b><small>绑定 / Checkout</small></div><span id="bindProxyCount" class="tag">0 PROXY</span></div>
+              <textarea id="bindProxyPool" class="proxy-pool-input" spellcheck="false" autocomplete="off" placeholder="US proxy&#10;host:port:username:password&#10;socks5://username:password@host:port"></textarea>
+            </div>
+            <div class="proxy-pool-card neo-module">
+              <div class="proxy-pool-head"><span class="pool-id">B</span><div><b>代理池 2</b><small>优惠 / 提链</small></div><span id="promoProxyCount" class="tag">0 PROXY</span></div>
+              <textarea id="promoProxyPool" class="proxy-pool-input" spellcheck="false" autocomplete="off" placeholder="TR proxy&#10;host:port:username:password&#10;socks5://username:password@host:port"></textarea>
+            </div>
+          </div>
+          <label class="proxy-protocol-control"><span>代理协议</span><select id="proxyProtocol"><option value="socks5h">SOCKS5H · 粘性 / DNS 走代理</option><option value="socks5">SOCKS5 · 粘性</option><option value="http">HTTP CONNECT</option></select><small>US、TR、绑卡、提链和最终支付统一使用；不带协议前缀的地址按此选项解析。</small></label>
+          <div class="proxy-pool-note"><i data-lucide="hard-drive"></i><span>代理仅保存于当前浏览器本地，不上传为永久配置。</span></div>
+        </section>
+
+        <section class="workspace-panel launch-panel" data-neo-section="03">
+          <div class="launch-top">
+            <div class="launch-copy">
+            <p>EXECUTION CONTROL</p><h2>启动批量流程</h2><span>系统将按账户建立独立任务，并在同一视图内持续更新进度、链接与支付结果。</span>
+          </div>
+            <div class="action-console">
+            <label class="concurrency-control"><span>流水线并发</span><input id="batchConcurrency" type="number" min="1" max="10" value="3" inputmode="numeric"><small>/ 10</small></label>
+            <div class="action-row">
+              <button id="startButton" type="button" disabled><i data-lucide="play"></i><span>开始批量绑卡并提链</span></button>
+              <button id="stopButton" class="secondary" type="button" disabled><i data-lucide="square"></i><span>停止</span></button>
+            </div>
+          </div>
+          </div>
+          <div class="bind-pipeline" aria-label="并发绑卡流水线">
+            <div><span>01</span><i data-lucide="layers-3"></i><b>会话并发准备</b><small>并行解析 AT、SetupIntent 与账单资料</small></div>
+            <div class="confirm-lane"><span>02</span><i data-lucide="shield-check"></i><b>安全确认单通道</b><small>同一 Stripe Elements 严格互斥，避免 in-flight 冲突</small></div>
+            <div><span>03</span><i data-lucide="git-branch"></i><b>绑定与提链并发</b><small>已确认账户立即并发 Attach、Checkout 与轮询</small></div>
+          </div>
+          <div class="progress-wrap">
+            <div class="progress-meta"><span id="progressText">等待开始</span><span id="progressPercent">0%</span></div>
+            <div class="progress-track"><i id="progressBar"></i></div>
+          </div>
+        </section>
+
+        <section class="workspace-panel result-section" data-neo-section="04">
+          <div class="panel-head result-head">
+            <div class="panel-number">04</div>
+            <div><p>LIVE OUTPUT</p><h2>提链结果</h2></div>
+            <div class="mini-actions result-actions">
+              <label class="select-all-pay"><input id="selectAllPay" type="checkbox"><span>全选成功任务</span></label>
+              <button id="batchPayButton" class="small batch-pay-button" type="button" disabled><i data-lucide="send"></i><span>支付已选（0）</span></button>
+              <button id="copyButton" class="secondary small" type="button"><i data-lucide="copy"></i><span>复制全部</span></button>
+              <button id="clearButton" class="secondary small" type="button"><i data-lucide="trash-2"></i><span>清空</span></button>
+            </div>
+          </div>
+          <div class="result-stage"><div class="result-grid-lines" aria-hidden="true"></div><div id="taskRows" class="task-rows"></div><div class="result-empty-hint"><i data-lucide="radar"></i><span>任务将在这里实时出现</span></div></div>
+        </section>
+
+        <div id="status" class="status"><i data-lucide="info"></i><span>请先填写卡片信息，再粘贴 AT 列表。</span></div>
+      </div>
+    </section>
+  </main>
+
+  <div id="neoCommand" class="neo-command" hidden>
+    <div class="command-card">
+      <div class="command-head"><i data-lucide="command"></i><span>快速导航</span><button type="button" data-command-close aria-label="关闭"><i data-lucide="x"></i></button></div>
+      <button type="button" data-scroll-to="01"><span>01</span>卡片与账户<i data-lucide="arrow-up-right"></i></button>
+      <button type="button" data-scroll-to="02"><span>02</span>双代理池<i data-lucide="arrow-up-right"></i></button>
+      <button type="button" data-scroll-to="03"><span>03</span>执行控制<i data-lucide="arrow-up-right"></i></button>
+      <button type="button" data-scroll-to="04"><span>04</span>实时结果<i data-lucide="arrow-up-right"></i></button>
+    </div>
+  </div>
+
+  <script src="/card-link/neo-assets/lucide.min.js?v=0468"></script>
+  <script src="/card-link/static/cdk-gate.js?v=9"></script>
+  <script src="/card-link/neo-assets/card-flow-neo-core.js?v=6"></script>
+  <script src="/card-link/neo-assets/card-flow-neo.js?v=7"></script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

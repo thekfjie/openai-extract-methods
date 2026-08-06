@@ -1,0 +1,27 @@
+[Unit]
+Description=AutoMyAI OpenAI registration control plane (UC-backed)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/opt/automyai/tools/openai4
+Environment=OPENAI4_HOST=127.0.0.1
+Environment=OPENAI4_DATA_DIR=/opt/automyai/data/openai4
+Environment=OPENAI4_MAIN_API_BASE=http://127.0.0.1:13030
+Environment=AUTOMYAI_CONFIG=/opt/automyai/config.json
+Environment=OAI_FINGERPRINT_SDK_DIR=/opt/automyai/fingerprint/sdk
+Environment=FINGERPRINT_API_KEY_FILE=/opt/automyai/data/fingerprint-api/api.key
+Environment=OPENAI4_FINGERPRINT_API_URL=http://127.0.0.1:50001
+EnvironmentFile=/opt/automyai/config/ports.env
+EnvironmentFile=-/opt/automyai/.env
+ExecStart=/opt/automyai/tools/openai4/.venv/bin/python -m uvicorn webapp:app --host 127.0.0.1 --port ${OPENAI4_PORT}
+Restart=on-failure
+RestartSec=3
+TimeoutStopSec=15
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target

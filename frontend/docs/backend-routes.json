@@ -1,0 +1,1415 @@
+{
+  "version": 1,
+  "generatedBy": "scripts/gen-backend-routes.py",
+  "note": "Complete inventory of the main service (/api) as dispatched by AppHandler.handle_api. Regenerate after changing a route; tests/test_api_routes.py fails when this file drifts.",
+  "dispatchOrder": [
+    "handle_auth_api",
+    "handle_public_status_api",
+    "handle_grok_log_api",
+    "handle_system_api",
+    "handle_address_profiles_api",
+    "handle_file_library_api",
+    "handle_extract_api",
+    "handle_browser_live_api",
+    "handle_mail_queue_api",
+    "handle_temp_mail_api",
+    "handle_sub2api_api",
+    "handle_purchase_api",
+    "handle_activation_api",
+    "handle_phone_api",
+    "handle_uc_signup_api",
+    "handle_apple_mail_api",
+    "handle_mail_admin_api",
+    "handle_outlook_register_api",
+    "handle_extension_api"
+  ],
+  "groupDescriptions": {
+    "handle_auth_api": "Administrator session",
+    "handle_public_status_api": "Public status surface",
+    "handle_grok_log_api": "Grok registration logs",
+    "handle_system_api": "Health, runtime settings and API index",
+    "handle_address_profiles_api": "Allow-listed remote address fixtures",
+    "handle_file_library_api": "Administrator text-file library",
+    "handle_paypal_protocol_api": "Payment protocol module inventory",
+    "handle_browser_live_api": "Signup browser live view",
+    "handle_mail_queue_api": "Signup email queue and OutlookEmail",
+    "handle_temp_mail_api": "Temp-mail addresses",
+    "handle_sub2api_api": "Sub2API, CPA monitor and OpenAI OAuth import",
+    "handle_purchase_api": "Purchase settings and HeroSMS catalog",
+    "handle_activation_api": "SMS activations",
+    "handle_phone_api": "Phone pool",
+    "handle_uc_signup_api": "OpenAI browser signup",
+    "handle_apple_mail_api": "Apple Mail channel",
+    "handle_outlook_register_api": "Outlook/Hotmail pure-protocol mailbox registration",
+    "handle_extract_api": "Authenticated bridge to the loopback Go extraction service",
+    "handle_extension_api": "Grok, converters, checkout-link extraction and mail policy extensions"
+  },
+  "publicStatusPaths": [
+    "/api/public/cpa",
+    "/api/public/cpa-pool",
+    "/api/public/cpa/wake",
+    "/api/public/lab-status",
+    "/api/public/logs",
+    "/api/public/status",
+    "/api/public/ttk/logs",
+    "/api/public/wake"
+  ],
+  "routes": [
+    {
+      "methods": [
+        "GET"
+      ],
+      "paths": [
+        "/api/auth/status"
+      ],
+      "group": "handle_auth_api",
+      "source": "server.py",
+      "auth": "public"
+    },
+    {
+      "methods": [
+        "POST"
+      ],
+      "paths": [
+        "/api/auth/login"
+      ],
+      "group": "handle_auth_api",
+      "source": "server.py",
+      "auth": "public"
+    },
+    {
+      "methods": [
+        "POST"
+      ],
+      "paths": [
+        "/api/auth/logout"
+      ],
+      "group": "handle_auth_api",
+      "source": "server.py",
+      "auth": "public"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "paths": [
+        "/api/public/cpa",
+        "/api/public/cpa-pool",
+        "/api/public/cpa/wake",
+        "/api/public/lab-status",
+        "/api/public/logs",
+        "/api/public/status",
+        "/api/public/ttk/logs",
+        "/api/public/wake"
+      ],
+      "group": "handle_public_status_api",
+      "source": "server.py",
+      "auth": "public"
+    },
+    {
+      "methods": [
+        "POST"
+      ],
+      "paths": [
+        "/api/public/cpa-pool/wake",
+        "/api/public/cpa/wake",
+        "/api/public/wake"
+      ],
+      "group": "handle_public_status_api",
+      "source": "server.py",
+      "auth": "public"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "paths": [
+        "/api/grok/registration/logs"
+      ],
+      "group": "handle_grok_log_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "paths": [
+        "/api/settings"
+      ],
+      "group": "handle_system_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "POST"
+      ],
+      "paths": [
+        "/api/settings"
+      ],
+      "group": "handle_system_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "POST"
+      ],
+      "paths": [
+        "/api/proxy/check"
+      ],
+      "group": "handle_system_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "paths": [
+        "/api/traffic"
+      ],
+      "group": "handle_system_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "paths": [
+        "/api/health"
+      ],
+      "group": "handle_system_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "paths": [
+        "/api/config"
+      ],
+      "group": "handle_system_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "paths": [
+        "/api/app-settings"
+      ],
+      "group": "handle_system_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "POST"
+      ],
+      "paths": [
+        "/api/app-settings"
+      ],
+      "group": "handle_system_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "paths": [
+        "/api"
+      ],
+      "group": "handle_system_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "paths": [
+        "/api/address-profiles/us-tax-free"
+      ],
+      "group": "handle_address_profiles_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "paths": [
+        "/api/address-profiles/countries"
+      ],
+      "group": "handle_address_profiles_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "ANY"
+      ],
+      "paths": [
+        "/api/address-profiles/random"
+      ],
+      "group": "handle_address_profiles_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "paths": [
+        "/api/file-library"
+      ],
+      "group": "handle_file_library_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "DELETE",
+        "GET",
+        "POST"
+      ],
+      "prefix": "/api/file-library/",
+      "group": "handle_file_library_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "paths": [
+        "/api/extract/catalog"
+      ],
+      "group": "handle_extract_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "paths": [
+        "/api/extract/jobs"
+      ],
+      "group": "handle_extract_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET",
+        "DELETE"
+      ],
+      "prefix": "/api/extract/jobs/",
+      "group": "handle_extract_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "POST"
+      ],
+      "prefix": "/api/extract/jobs/",
+      "suffix": "/cancel",
+      "group": "handle_extract_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "paths": [
+        "/api/extract-methods/catalog"
+      ],
+      "group": "handle_extract_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "POST"
+      ],
+      "paths": [
+        "/api/extract-methods/run",
+        "/api/long-link-task",
+        "/api/extract-pp",
+        "/api/paper-card-task",
+        "/api/ph-link-task",
+        "/api/momo-eligibility",
+        "/api/kakao-long-link-task",
+        "/api/upi-long-link-task",
+        "/api/ideal-long-link-task",
+        "/api/gopay-long-link-task"
+      ],
+      "group": "handle_extract_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "paths": [
+        "/api/browser-live/status"
+      ],
+      "group": "handle_browser_live_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "paths": [
+        "/api/email-queue"
+      ],
+      "group": "handle_mail_queue_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "POST"
+      ],
+      "paths": [
+        "/api/email-queue"
+      ],
+      "group": "handle_mail_queue_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "POST"
+      ],
+      "paths": [
+        "/api/email-queue/generate"
+      ],
+      "group": "handle_mail_queue_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "paths": [
+        "/api/email-queue/mail/latest"
+      ],
+      "group": "handle_mail_queue_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "POST"
+      ],
+      "paths": [
+        "/api/email-queue/import-outlook-source"
+      ],
+      "group": "handle_mail_queue_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "paths": [
+        "/api/outlook-email/inventory"
+      ],
+      "group": "handle_mail_queue_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "paths": [
+        "/api/outlook-email/accounts"
+      ],
+      "group": "handle_mail_queue_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "POST"
+      ],
+      "paths": [
+        "/api/outlook-email/groups/ensure"
+      ],
+      "group": "handle_mail_queue_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "POST"
+      ],
+      "paths": [
+        "/api/outlook-email/accounts/move"
+      ],
+      "group": "handle_mail_queue_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "paths": [
+        "/api/temp-mail/settings"
+      ],
+      "group": "handle_temp_mail_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "POST"
+      ],
+      "paths": [
+        "/api/temp-mail/address"
+      ],
+      "group": "handle_temp_mail_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "prefix": "/api/temp-mail/address/",
+      "suffix": "/mails/latest",
+      "group": "handle_temp_mail_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "prefix": "/api/temp-mail/address/",
+      "suffix": "/mails",
+      "group": "handle_temp_mail_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "DELETE"
+      ],
+      "prefix": "/api/temp-mail/address/",
+      "group": "handle_temp_mail_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "paths": [
+        "/api/sub2api/compliance"
+      ],
+      "group": "handle_sub2api_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "paths": [
+        "/api/sub2api/groups"
+      ],
+      "group": "handle_sub2api_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "paths": [
+        "/api/sub2api/monitor/status"
+      ],
+      "group": "handle_sub2api_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "POST"
+      ],
+      "paths": [
+        "/api/sub2api/monitor/check"
+      ],
+      "group": "handle_sub2api_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "paths": [
+        "/api/cpa/monitor/status"
+      ],
+      "group": "handle_sub2api_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "POST"
+      ],
+      "paths": [
+        "/api/cpa/monitor/check"
+      ],
+      "group": "handle_sub2api_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "paths": [
+        "/api/sub2api/openai-auth-url"
+      ],
+      "group": "handle_sub2api_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "POST"
+      ],
+      "paths": [
+        "/api/sub2api/openai-callback"
+      ],
+      "group": "handle_sub2api_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "ANY"
+      ],
+      "prefix": "/api/codex-oauth",
+      "group": "handle_sub2api_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "paths": [
+        "/api/purchase-settings"
+      ],
+      "group": "handle_purchase_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "POST"
+      ],
+      "paths": [
+        "/api/purchase-settings"
+      ],
+      "group": "handle_purchase_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "paths": [
+        "/api/purchase-catalog/countries"
+      ],
+      "group": "handle_purchase_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "POST"
+      ],
+      "paths": [
+        "/api/purchase-catalog/countries/refresh"
+      ],
+      "group": "handle_purchase_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "paths": [
+        "/api/purchase-catalog/operators"
+      ],
+      "group": "handle_purchase_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "paths": [
+        "/api/options"
+      ],
+      "group": "handle_purchase_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "paths": [
+        "/api/country-lookup"
+      ],
+      "group": "handle_purchase_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "paths": [
+        "/api/balance"
+      ],
+      "group": "handle_purchase_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "paths": [
+        "/api/pricing"
+      ],
+      "group": "handle_purchase_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "paths": [
+        "/api/catalog"
+      ],
+      "group": "handle_purchase_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "paths": [
+        "/api/activations"
+      ],
+      "group": "handle_activation_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "paths": [
+        "/api/current-phone"
+      ],
+      "group": "handle_activation_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "paths": [
+        "/api/activations/latest"
+      ],
+      "group": "handle_activation_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "POST"
+      ],
+      "paths": [
+        "/api/activations/import"
+      ],
+      "group": "handle_activation_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "POST"
+      ],
+      "paths": [
+        "/api/activations"
+      ],
+      "group": "handle_activation_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "POST"
+      ],
+      "paths": [
+        "/api/purchase"
+      ],
+      "group": "handle_activation_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "POST"
+      ],
+      "paths": [
+        "/api/activations/sync"
+      ],
+      "group": "handle_activation_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "prefix": "/api/activations/",
+      "suffix": "/code",
+      "group": "handle_activation_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "prefix": "/api/activations/",
+      "group": "handle_activation_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "POST"
+      ],
+      "prefix": "/api/activations/",
+      "group": "handle_activation_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "paths": [
+        "/api/phones/pool"
+      ],
+      "group": "handle_phone_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "prefix": "/api/phones/",
+      "suffix": "/code",
+      "group": "handle_phone_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "prefix": "/api/phones/",
+      "suffix": "/history",
+      "group": "handle_phone_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "prefix": "/api/phones/",
+      "group": "handle_phone_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "POST"
+      ],
+      "prefix": "/api/phones/",
+      "group": "handle_phone_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "paths": [
+        "/api/uc-signup/status"
+      ],
+      "group": "handle_uc_signup_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "POST"
+      ],
+      "paths": [
+        "/api/uc-signup/start"
+      ],
+      "group": "handle_uc_signup_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "POST"
+      ],
+      "paths": [
+        "/api/uc-signup/stop"
+      ],
+      "group": "handle_uc_signup_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "paths": [
+        "/api/uc-signup/logs"
+      ],
+      "group": "handle_uc_signup_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "paths": [
+        "/api/apple-mail/status"
+      ],
+      "group": "handle_apple_mail_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "paths": [
+        "/api/apple-mail/logs"
+      ],
+      "group": "handle_apple_mail_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "paths": [
+        "/api/mail-admin/free-accounts"
+      ],
+      "group": "handle_mail_admin_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "paths": [
+        "/api/mail-admin/openai-signup-pool"
+      ],
+      "group": "handle_mail_admin_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "POST"
+      ],
+      "paths": [
+        "/api/mail-admin/openai-signup-pool/import"
+      ],
+      "group": "handle_mail_admin_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "POST"
+      ],
+      "paths": [
+        "/api/mail-admin/free-accounts/materialize"
+      ],
+      "group": "handle_mail_admin_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "paths": [
+        "/api/outlook-register/status"
+      ],
+      "group": "handle_outlook_register_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "paths": [
+        "/api/outlook-register/logs"
+      ],
+      "group": "handle_outlook_register_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "paths": [
+        "/api/outlook-register/accounts"
+      ],
+      "group": "handle_outlook_register_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "POST"
+      ],
+      "paths": [
+        "/api/outlook-register/start"
+      ],
+      "group": "handle_outlook_register_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "POST"
+      ],
+      "paths": [
+        "/api/outlook-register/stop"
+      ],
+      "group": "handle_outlook_register_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "POST"
+      ],
+      "paths": [
+        "/api/outlook-register/proxies"
+      ],
+      "group": "handle_outlook_register_api",
+      "source": "server.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "paths": [
+        "/api/extensions/status"
+      ],
+      "group": "handle_extension_api",
+      "source": "extensions_api.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "paths": [
+        "/api/grok/signup/status"
+      ],
+      "group": "handle_extension_api",
+      "source": "extensions_api.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "paths": [
+        "/api/grok/signup/logs"
+      ],
+      "group": "handle_extension_api",
+      "source": "extensions_api.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "paths": [
+        "/api/grok/ttk/traffic"
+      ],
+      "group": "handle_extension_api",
+      "source": "extensions_api.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "paths": [
+        "/api/grok/ttk/status"
+      ],
+      "group": "handle_extension_api",
+      "source": "extensions_api.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "paths": [
+        "/api/grok/ttk/config"
+      ],
+      "group": "handle_extension_api",
+      "source": "extensions_api.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "POST"
+      ],
+      "paths": [
+        "/api/grok/ttk/config"
+      ],
+      "group": "handle_extension_api",
+      "source": "extensions_api.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "POST"
+      ],
+      "paths": [
+        "/api/grok/ttk/start"
+      ],
+      "group": "handle_extension_api",
+      "source": "extensions_api.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "POST"
+      ],
+      "paths": [
+        "/api/grok/ttk/stop"
+      ],
+      "group": "handle_extension_api",
+      "source": "extensions_api.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "paths": [
+        "/api/grok/ttk/logs"
+      ],
+      "group": "handle_extension_api",
+      "source": "extensions_api.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "paths": [
+        "/api/grok/ttk/results"
+      ],
+      "group": "handle_extension_api",
+      "source": "extensions_api.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "paths": [
+        "/api/grok/ttk/exports"
+      ],
+      "group": "handle_extension_api",
+      "source": "extensions_api.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "paths": [
+        "/api/grok/ttk/export"
+      ],
+      "group": "handle_extension_api",
+      "source": "extensions_api.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "POST"
+      ],
+      "paths": [
+        "/api/grok/ttk/sync"
+      ],
+      "group": "handle_extension_api",
+      "source": "extensions_api.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "POST"
+      ],
+      "paths": [
+        "/api/grok/import/grok2api"
+      ],
+      "group": "handle_extension_api",
+      "source": "extensions_api.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "POST"
+      ],
+      "paths": [
+        "/api/grok/signup/start"
+      ],
+      "group": "handle_extension_api",
+      "source": "extensions_api.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "POST"
+      ],
+      "paths": [
+        "/api/grok/signup/stop"
+      ],
+      "group": "handle_extension_api",
+      "source": "extensions_api.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "POST"
+      ],
+      "paths": [
+        "/api/grok/signup/result"
+      ],
+      "group": "handle_extension_api",
+      "source": "extensions_api.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "paths": [
+        "/api/grok/results"
+      ],
+      "group": "handle_extension_api",
+      "source": "extensions_api.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "POST"
+      ],
+      "paths": [
+        "/api/grok/import/sso"
+      ],
+      "group": "handle_extension_api",
+      "source": "extensions_api.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "POST"
+      ],
+      "paths": [
+        "/api/tools/chatgpt-promo-check"
+      ],
+      "group": "handle_extension_api",
+      "source": "extensions_api.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "POST"
+      ],
+      "paths": [
+        "/api/convert/openai"
+      ],
+      "group": "handle_extension_api",
+      "source": "extensions_api.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "POST"
+      ],
+      "paths": [
+        "/api/convert/grok"
+      ],
+      "group": "handle_extension_api",
+      "source": "extensions_api.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "POST"
+      ],
+      "paths": [
+        "/api/convert/openai/import-sub2api"
+      ],
+      "group": "handle_extension_api",
+      "source": "extensions_api.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "POST"
+      ],
+      "paths": [
+        "/api/convert/grok/import"
+      ],
+      "group": "handle_extension_api",
+      "source": "extensions_api.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "POST"
+      ],
+      "paths": [
+        "/api/email-queue/allocate"
+      ],
+      "group": "handle_extension_api",
+      "source": "extensions_api.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "POST"
+      ],
+      "paths": [
+        "/api/email-queue/allocation/result"
+      ],
+      "group": "handle_extension_api",
+      "source": "extensions_api.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "paths": [
+        "/api/email-queue/platform-usage"
+      ],
+      "group": "handle_extension_api",
+      "source": "extensions_api.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "POST"
+      ],
+      "paths": [
+        "/api/email-queue/generate-domain"
+      ],
+      "group": "handle_extension_api",
+      "source": "extensions_api.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "POST"
+      ],
+      "paths": [
+        "/api/outlook-email/groups/replan"
+      ],
+      "group": "handle_extension_api",
+      "source": "extensions_api.py",
+      "auth": "admin"
+    },
+    {
+      "methods": [
+        "GET"
+      ],
+      "paths": [
+        "/api/cpa/monitor/status"
+      ],
+      "group": "handle_extension_api",
+      "source": "extensions_api.py",
+      "auth": "admin",
+      "shadowedBy": "server.py"
+    },
+    {
+      "methods": [
+        "POST"
+      ],
+      "paths": [
+        "/api/cpa/monitor/check"
+      ],
+      "group": "handle_extension_api",
+      "source": "extensions_api.py",
+      "auth": "admin",
+      "shadowedBy": "server.py"
+    }
+  ]
+}

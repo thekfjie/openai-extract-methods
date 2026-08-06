@@ -1,0 +1,331 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.invalid/roxybrowser-fingerprint-profile-v2.schema.json",
+  "title": "RoxyBrowser-compatible fingerprint profile",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion", "purpose", "id", "seed", "preset", "generator", "engine", "os",
+    "machine", "locale", "navigator", "screen", "graphics", "canvas", "audioContext",
+    "clientRects", "fonts", "speechSynthesis", "mediaDevices", "webrtc", "geolocation",
+    "content", "security", "runtime", "battery", "network", "bluetooth"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 2 },
+    "purpose": { "const": "local-browser-compatibility-testing" },
+    "id": { "type": "string", "pattern": "^[0-9a-f]{16}$" },
+    "seed": { "type": "string" },
+    "preset": { "type": "string" },
+    "generator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["algorithm", "featureMode", "deterministic", "baseDataSource", "provider"],
+      "properties": {
+        "algorithm": { "const": "roxybrowser-3.9.2-compatible" },
+        "featureMode": { "enum": ["random", "original-defaults"] },
+        "deterministic": { "type": "boolean" },
+        "baseDataSource": { "enum": ["local-template", "authorized-provider"] },
+        "provider": { "type": ["string", "null"] }
+      }
+    },
+    "engine": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["family", "version", "userAgent", "userAgentMetadata"],
+      "properties": {
+        "family": { "enum": ["Chrome", "Firefox"] },
+        "version": { "type": "string", "minLength": 1 },
+        "userAgent": { "type": "string", "minLength": 1 },
+        "userAgentMetadata": {
+          "oneOf": [
+            { "type": "null" },
+            {
+              "type": "object",
+              "required": ["brands", "fullVersionList", "platform", "mobile", "platformVersion", "architecture", "model", "bitness", "wow64"],
+              "properties": {
+                "brands": { "type": "array", "items": { "$ref": "#/$defs/brandVersion" } },
+                "fullVersionList": { "type": "array", "items": { "$ref": "#/$defs/brandVersion" } },
+                "platform": { "type": "string" },
+                "mobile": { "type": "boolean" },
+                "platformVersion": { "type": "string" },
+                "architecture": { "type": "string" },
+                "model": { "type": "string" },
+                "bitness": { "type": "string" },
+                "wow64": { "type": "boolean" }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "os": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version", "architecture", "model"],
+      "properties": {
+        "name": { "enum": ["Windows", "macOS", "Linux", "Android", "IOS"] },
+        "version": { "type": "string" },
+        "architecture": { "type": "string" },
+        "model": { "type": "string" }
+      }
+    },
+    "machine": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["computerName", "macAddress"],
+      "properties": {
+        "computerName": { "type": "string" },
+        "macAddress": { "type": "string", "pattern": "^([0-9A-F]{2}:){5}[0-9A-F]{2}$" }
+      }
+    },
+    "locale": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["appLocale", "acceptLanguage", "timezone"],
+      "properties": {
+        "appLocale": { "type": "string" },
+        "acceptLanguage": { "type": "string" },
+        "timezone": { "type": "string" }
+      }
+    },
+    "navigator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["platform", "hardwareConcurrency", "deviceMemory", "maxTouchPoints", "mobile", "doNotTrack", "pluginsEnabled", "plugins"],
+      "properties": {
+        "platform": { "type": "string" },
+        "hardwareConcurrency": { "type": "integer", "minimum": 1 },
+        "deviceMemory": { "type": "number", "minimum": 0 },
+        "maxTouchPoints": { "type": "integer", "minimum": 0 },
+        "mobile": { "type": "boolean" },
+        "doNotTrack": { "type": "boolean" },
+        "pluginsEnabled": { "type": "boolean" },
+        "plugins": { "type": "array", "items": { "type": "object" } }
+      }
+    },
+    "screen": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["width", "height", "availWidth", "availHeight", "colorDepth", "pixelDepth", "devicePixelRatio"],
+      "properties": {
+        "width": { "type": "integer", "minimum": 1 },
+        "height": { "type": "integer", "minimum": 1 },
+        "availWidth": { "type": "integer", "minimum": 0 },
+        "availHeight": { "type": "integer", "minimum": 0 },
+        "colorDepth": { "type": "integer", "minimum": 0 },
+        "pixelDepth": { "type": "integer", "minimum": 0 },
+        "devicePixelRatio": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    },
+    "graphics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["webglInfoEnabled", "webglVendor", "webglRenderer", "webgpu", "noise"],
+      "properties": {
+        "webglInfoEnabled": { "type": "boolean" },
+        "webglVendor": { "type": "string" },
+        "webglRenderer": { "type": "string" },
+        "webgpu": {
+          "type": "object",
+          "required": ["mode", "vendor"],
+          "properties": { "mode": { "type": "string" }, "vendor": { "type": "string" } }
+        },
+        "noise": { "$ref": "#/$defs/noise" }
+      }
+    },
+    "canvas": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["enabled", "value", "valueV2"],
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "value": { "type": "string", "pattern": "^[0-9A-F]{32}$" },
+        "valueV2": { "type": "number" }
+      }
+    },
+    "audioContext": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["enabled", "value", "version", "interval"],
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "value": { "type": "number", "minimum": 0, "exclusiveMaximum": 1 },
+        "version": { "const": "2" },
+        "interval": { "const": 100 }
+      }
+    },
+    "clientRects": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["enabled", "noiseFactorX", "noiseFactorY"],
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "noiseFactorX": { "type": "number", "minimum": -1, "exclusiveMaximum": 1 },
+        "noiseFactorY": { "type": "number", "minimum": -1, "exclusiveMaximum": 1 }
+      }
+    },
+    "fonts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["enabled", "localCatalog", "disabled", "allowed"],
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "localCatalog": { "$ref": "#/$defs/stringArray" },
+        "disabled": { "$ref": "#/$defs/stringArray" },
+        "allowed": { "$ref": "#/$defs/stringArray" }
+      }
+    },
+    "speechSynthesis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["enabled", "voices"],
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "voices": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "lang", "isLocalService"],
+            "properties": {
+              "name": { "type": "string" },
+              "lang": { "type": "string" },
+              "isLocalService": { "type": "boolean" }
+            }
+          }
+        }
+      }
+    },
+    "mediaDevices": {
+      "type": "object",
+      "required": ["enabled", "devices"],
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "devices": { "type": "array", "items": { "type": "object" }, "minItems": 1 }
+      }
+    },
+    "webrtc": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "remoteIp"],
+      "properties": {
+        "mode": { "enum": ["altered", "real", "disable"] },
+        "remoteIp": { "type": ["string", "null"] }
+      }
+    },
+    "geolocation": {
+      "type": "object",
+      "required": ["mode", "enableFakeLocationData", "latitude", "longitude", "accuracy", "altitude"],
+      "properties": {
+        "mode": { "enum": ["prompt", "allow", "block", "disable"] },
+        "enableFakeLocationData": { "type": "boolean" },
+        "latitude": { "type": ["number", "null"] },
+        "longitude": { "type": ["number", "null"] },
+        "accuracy": { "type": ["number", "null"] },
+        "altitude": { "type": ["number", "null"] }
+      }
+    },
+    "content": {
+      "type": "object",
+      "required": ["blockImages", "imageSizeLimit", "disablePlayVideo", "disablePlaySound", "disablePasswordSaveTips"],
+      "properties": {
+        "blockImages": { "type": "boolean" },
+        "imageSizeLimit": { "type": ["number", "null"] },
+        "disablePlayVideo": { "type": "boolean" },
+        "disablePlaySound": { "type": "boolean" },
+        "disablePasswordSaveTips": { "type": "boolean" }
+      }
+    },
+    "security": {
+      "type": "object",
+      "required": ["ignoreCertificateErrors", "sslCipherSuiteBlacklist", "portScanProtection", "portScanAllowList"],
+      "properties": {
+        "ignoreCertificateErrors": { "type": "boolean" },
+        "sslCipherSuiteBlacklist": { "$ref": "#/$defs/stringArray" },
+        "portScanProtection": { "type": "boolean" },
+        "portScanAllowList": { "type": "array", "items": { "type": ["string", "integer"] } }
+      }
+    },
+    "runtime": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["gpuAcceleration", "sandboxPermission", "colorScheme", "window"],
+      "properties": {
+        "gpuAcceleration": { "type": "boolean" },
+        "sandboxPermission": { "type": "boolean" },
+        "colorScheme": { "enum": ["system", "light", "dark"] },
+        "window": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["mode", "width", "height", "position"],
+          "properties": {
+            "mode": { "enum": ["maximized", "normal"] },
+            "width": { "type": "integer", "minimum": 1 },
+            "height": { "type": "integer", "minimum": 1 },
+            "position": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["xRatio", "yRatio", "anchor"],
+              "properties": {
+                "xRatio": { "type": "number", "minimum": 0, "maximum": 1 },
+                "yRatio": { "type": "number", "minimum": 0, "maximum": 1 },
+                "anchor": { "enum": ["tl", "tr", "br", "bl"] }
+              }
+            }
+          }
+        }
+      }
+    },
+    "battery": { "$ref": "#/$defs/deviceFeature" },
+    "network": {
+      "type": "object",
+      "required": ["enabled", "type", "effectiveType", "downlink", "downlinkMax", "rtt", "saveData"],
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "type": { "type": "string" },
+        "effectiveType": { "type": "string" },
+        "downlink": { "type": ["number", "string"] },
+        "downlinkMax": { "type": ["number", "string"] },
+        "rtt": { "type": ["number", "string"] },
+        "saveData": { "type": "boolean" }
+      }
+    },
+    "bluetooth": {
+      "type": "object",
+      "required": ["enabled", "adapterAvailable"],
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "adapterAvailable": { "type": "boolean" }
+      }
+    }
+  },
+  "$defs": {
+    "brandVersion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["brand", "version"],
+      "properties": { "brand": { "type": "string" }, "version": { "type": "string" } }
+    },
+    "stringArray": { "type": "array", "items": { "type": "string" } },
+    "noise": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["enabled", "interval", "value"],
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "interval": { "const": 1 },
+        "value": { "type": ["string", "number"] }
+      }
+    },
+    "deviceFeature": {
+      "type": "object",
+      "required": ["enabled", "charging", "chargingTime", "dischargingTime", "level"],
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "charging": { "type": "boolean" },
+        "chargingTime": { "type": ["number", "string"] },
+        "dischargingTime": { "type": ["number", "string"] },
+        "level": { "type": ["number", "string"] }
+      }
+    }
+  }
+}

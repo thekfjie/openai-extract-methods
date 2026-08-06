@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>邮箱与分组 · automyai</title>
+  <link rel="stylesheet" href="../css/nature.css" />
+</head>
+<body data-page="mail">
+  <div class="app">
+    
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-mark"></div>
+    <div>
+      <h1>automyai</h1>
+      <p>控制台</p>
+    </div>
+  </div>
+  <nav class="nav">
+    <a href="/ui/" data-page="overview"><span class="dot"></span>总览</a>
+    <a href="/ui/pages/openai.html" data-page="openai"><span class="dot"></span>OpenAI 注册</a>
+    <a href="/ui/pages/openai2.html" data-page="openai2"><span class="dot"></span>OpenAI 2</a>
+    <a href="/ui/pages/openai3.html" data-page="openai3"><span class="dot"></span>OpenAI 3</a>
+    <a href="/ui/pages/apple_mail.html" data-page="apple-mail"><span class="dot"></span>Apple Mail</a>
+    <a href="/ui/pages/grok.html" data-page="grok"><span class="dot"></span>Grok 注册</a>
+    <a href="/grok2/accounts" target="_blank"><span class="dot"></span>Grok 2</a>
+    <a href="/ui/pages/convert.html" data-page="convert"><span class="dot"></span>OAI 转换</a>
+    <a href="/ui/pages/mail.html" data-page="mail"><span class="dot"></span>邮箱与分组</a>
+    <a href="/ui/pages/settings.html" data-page="settings"><span class="dot"></span>设置</a>
+    <a href="/ui/pages/tools.html" data-page="tools"><span class="dot"></span>工具 / 日志</a>
+  </nav>
+</aside>
+
+    <main class="main">
+      
+<div class="topbar"><div><h2>邮箱与分组</h2><div class="hint">库存优先 · 域名二级兜底 · OutlookEmail 分组</div></div></div>
+<div class="grid cols-2">
+  <section class="card">
+    <h3>分配策略试运行</h3>
+    <label>平台
+      <select id="platform"><option value="oai">OpenAI</option><option value="grok">Grok</option></select>
+    </label>
+    <div class="row">
+      <button class="btn" id="allocBtn">分配一个邮箱</button>
+      <button class="btn secondary" id="replanBtn">确保新分组</button>
+    </div>
+    <pre class="log" id="allocOut" style="margin-top:12px">—</pre>
+  </section>
+  <section class="card">
+    <h3>生成域名邮箱（二级优先）</h3>
+    <label>根域名<input id="domain" placeholder="example.com"/></label>
+    <label>数量<input id="count" type="number" value="5" min="1"/></label>
+    <label>本地前缀（可选）<input id="prefix" placeholder=""/></label>
+    <div class="row"><button class="btn" id="genBtn">生成并入队</button></div>
+    <pre class="log" id="genOut" style="margin-top:12px">—</pre>
+  </section>
+</div>
+<section class="card" style="margin-top:16px">
+  <h3>当前队列</h3>
+  <div class="row" style="margin-bottom:10px"><button class="btn ghost" id="queueBtn">刷新队列</button></div>
+  <pre class="log" id="queueOut">—</pre>
+</section>
+
+      <div class="footer-note">温暖、平静、亲近自然 · 凭证请妥善保管 · 仅本机管理接口</div>
+    </main>
+  </div>
+  <script src="../js/runtime-config.js"></script>
+  <script src="../js/api-client.js"></script>
+  <script src="../js/app.js"></script>
+  <script>
+(() => {
+const { api, toast } = HelpOAI;
+document.getElementById('allocBtn').onclick = async ()=>{
+  try{ const res=await api('POST','/email-queue/allocate',{platform:document.getElementById('platform').value,preferInventory:true}); document.getElementById('allocOut').textContent=JSON.stringify(res,null,2); toast('已分配','ok'); }
+  catch(e){ toast(e.message,'error'); }
+};
+document.getElementById('replanBtn').onclick = async ()=>{
+  try{ const res=await api('POST','/outlook-email/groups/replan',{}); document.getElementById('allocOut').textContent=JSON.stringify(res,null,2); toast('分组已确保','ok'); }
+  catch(e){ toast(e.message,'error'); }
+};
+document.getElementById('genBtn').onclick = async ()=>{
+  try{ const res=await api('POST','/email-queue/generate-domain',{domain:document.getElementById('domain').value,count:Number(document.getElementById('count').value||1),prefix:document.getElementById('prefix').value,preferSubdomain:true}); document.getElementById('genOut').textContent=JSON.stringify(res,null,2); toast('已生成','ok'); }
+  catch(e){ toast(e.message,'error'); }
+};
+document.getElementById('queueBtn').onclick = async ()=>{
+  try{ const res=await api('GET','/email-queue'); document.getElementById('queueOut').textContent=JSON.stringify(res,null,2); }
+  catch(e){ toast(e.message,'error'); }
+};
+document.getElementById('queueBtn').click();
+})();
+</script>
+</body>
+</html>

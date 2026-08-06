@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>设置 · automyai</title>
+  <link rel="stylesheet" href="../css/nature.css" />
+</head>
+<body data-page="settings">
+  <div class="app">
+    
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-mark"></div>
+    <div>
+      <h1>automyai</h1>
+      <p>控制台</p>
+    </div>
+  </div>
+  <nav class="nav">
+    <a href="/ui/" data-page="overview"><span class="dot"></span>总览</a>
+    <a href="/ui/pages/openai.html" data-page="openai"><span class="dot"></span>OpenAI 注册</a>
+    <a href="/ui/pages/openai2.html" data-page="openai2"><span class="dot"></span>OpenAI 2</a>
+    <a href="/ui/pages/openai3.html" data-page="openai3"><span class="dot"></span>OpenAI 3</a>
+    <a href="/ui/pages/apple_mail.html" data-page="apple-mail"><span class="dot"></span>Apple Mail</a>
+    <a href="/ui/pages/grok.html" data-page="grok"><span class="dot"></span>Grok 注册</a>
+    <a href="/grok2/accounts" target="_blank"><span class="dot"></span>Grok 2</a>
+    <a href="/ui/pages/convert.html" data-page="convert"><span class="dot"></span>OAI 转换</a>
+    <a href="/ui/pages/mail.html" data-page="mail"><span class="dot"></span>邮箱与分组</a>
+    <a href="/ui/pages/settings.html" data-page="settings"><span class="dot"></span>设置</a>
+    <a href="/ui/pages/tools.html" data-page="tools"><span class="dot"></span>工具 / 日志</a>
+  </nav>
+</aside>
+
+    <main class="main">
+      
+<div class="topbar"><div><p class="eyebrow">Local configuration</p><h2>设置</h2><div class="hint">保存到本地 config.json。Cliproxy 完整链接会按你的要求显示并可直接编辑。</div></div></div>
+<section class="card">
+  <div class="section-head"><div><h3>扩展相关配置</h3><p>仅展示常用的 CPA、邮件与本机服务项。</p></div></div>
+  <div class="notice warn"><strong>安全提示</strong><span>密钥字段不会读取或显示。仅在需要替换时填写新值；空白字段不会覆盖现有密钥。</span></div>
+  <div class="grid cols-2" id="fields"></div>
+  <div class="row" style="margin-top:12px">
+    <button class="btn" id="saveBtn">保存</button>
+    <button class="btn ghost" id="reloadBtn">重新加载</button>
+  </div>
+  <pre class="log" id="out" style="margin-top:12px">—</pre>
+</section>
+
+<section class="card" id="proxyCheckCard">
+  <div class="section-head"><div><h3>代理出口检测</h3><p>默认使用本地地区代理；只有切换到 Cliproxy 时才消耗家宽动态代理流量。</p></div></div>
+  <div class="row">
+    <button class="btn" id="checkProxyBtn" type="button">检测当前注册代理</button>
+    <button class="btn ghost" id="checkCliproxyBtn" type="button">检测 Cliproxy</button>
+  </div>
+  <pre class="log" id="proxyCheckOut" style="margin-top:12px;white-space:pre-wrap">尚未检测</pre>
+</section>
+
+
+<section class="card" id="trafficCard">
+  <div class="section-head">
+    <div>
+      <h3>流量统计（可选）</h3>
+      <p>默认关闭。开启后，OpenAI3 / Grok TTK / Grok2 注册机会把上游代理先经本机计数再转发（仍用你配置的上游）。</p>
+    </div>
+  </div>
+  <label class="inline-check" style="display:flex;align-items:center;gap:10px;margin:8px 0 12px">
+    <input id="trafficMeterEnabled" type="checkbox" style="width:auto" />
+    <span>启用流量统计（全局默认；各注册页仍可单独改本次任务）</span>
+  </label>
+  <div class="metrics" id="trafficMetrics" style="margin-bottom:10px">
+    <div class="metric"><b>状态</b><span id="tmStatus">—</span></div>
+    <div class="metric"><b>历史条数</b><span id="tmCount">—</span></div>
+    <div class="metric"><b>最近合计</b><span id="tmLast">—</span></div>
+  </div>
+  <div class="row" style="margin-bottom:10px">
+    <button class="btn" id="trafficSaveBtn" type="button">保存流量开关</button>
+    <button class="btn ghost" id="trafficRefreshBtn" type="button">刷新记录</button>
+  </div>
+  <pre class="log" id="trafficHistory" style="min-height:140px;max-height:32vh;white-space:pre-wrap">加载中…</pre>
+  <p class="hint" style="margin-top:8px">记录文件：<code>/opt/automyai/data/traffic_meter/sessions.jsonl</code> · API：<code>/api/traffic</code></p>
+</section>
+
+      <div class="footer-note">温暖、平静、亲近自然 · 凭证请妥善保管 · 仅本机管理接口</div>
+    </main>
+  </div>
+  <script src="../js/runtime-config.js"></script>
+  <script src="../js/api-client.js"></script>
+  <script src="../js/app.js"></script>
+  <script src="../js/settings.js"></script>
+</body>
+</html>

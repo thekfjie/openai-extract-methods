@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>OpenAI 注册3 · automyai</title>
+  <link rel="stylesheet" href="../css/nature.css" />
+  <style>
+    .cfg-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px 14px; }
+    .cfg-grid label.span-2 { grid-column:1 / -1; }
+    @media (max-width: 900px){ .cfg-grid { grid-template-columns:1fr; } }
+    .log-box { min-height:280px; max-height:48vh; overflow:auto; white-space:pre-wrap; }
+  </style>
+</head>
+<body data-page="openai3">
+  <div class="app">
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-mark"></div>
+    <div>
+      <h1>automyai</h1>
+      <p>控制台</p>
+    </div>
+  </div>
+  <nav class="nav">
+    <a href="/ui/" data-page="overview"><span class="dot"></span>总览</a>
+    <a href="/ui/pages/openai.html" data-page="openai"><span class="dot"></span>OpenAI 注册</a>
+    <a href="/ui/pages/openai2.html" data-page="openai2"><span class="dot"></span>OpenAI 2</a>
+    <a href="/ui/pages/openai3.html" data-page="openai3"><span class="dot"></span>OpenAI 3</a>
+    <a href="/ui/pages/apple_mail.html" data-page="apple-mail"><span class="dot"></span>Apple Mail</a>
+    <a href="/ui/pages/grok.html" data-page="grok"><span class="dot"></span>Grok 注册</a>
+    <a href="/grok2/accounts" target="_blank"><span class="dot"></span>Grok 2</a>
+    <a href="/ui/pages/convert.html" data-page="convert"><span class="dot"></span>OAI 转换</a>
+    <a href="/ui/pages/mail.html" data-page="mail"><span class="dot"></span>邮箱与分组</a>
+    <a href="/ui/pages/settings.html" data-page="settings"><span class="dot"></span>设置</a>
+    <a href="/ui/pages/tools.html" data-page="tools"><span class="dot"></span>工具 / 日志</a>
+  </nav>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div>
+      <h2>OpenAI 注册 3</h2>
+      <div class="hint">chatgpt_register 主程序 · Go 指纹模块 · OutlookEmail · 与 OpenAI 1/2 隔离</div>
+    </div>
+    <div class="row">
+      <span class="badge" id="topBadge">检查中</span>
+      <button class="btn ghost" id="refreshBtn">刷新</button>
+      <button class="btn ghost" id="saveCfgBtn">保存配置</button>
+    </div>
+  </div>
+
+  <div class="grid cols-2">
+    <section class="card">
+      <h3>任务控制</h3>
+      <div class="cfg-grid" id="runForm">
+        <label>并发
+          <input id="concurrency" type="number" min="1" max="20" value="1" />
+        </label>
+        <label>总数
+          <input id="total" type="number" min="1" max="200" value="1" />
+        </label>
+        <label>账号来源分组
+          <select id="mail_source_group"><option value="默认分组">默认分组</option></select>
+        </label>
+        <label>账号分配
+          <select id="accountSelect"><option value="">自动分配（推荐）</option></select>
+        </label>
+        <label>指纹模块
+          <select id="fingerprint_enabled">
+            <option value="true">启用 Go 指纹</option>
+            <option value="false">关闭，使用原程序默认值</option>
+          </select>
+        </label>
+        <label>指纹来源
+          <select id="fingerprint_source">
+            <option value="local">本地生成</option>
+            <option value="cloud">Roxy 云端</option>
+          </select>
+        </label>
+        <label class="span-2">指纹 Seed（可选）
+          <input id="fingerprint_seed" placeholder="留空随机；固定值可重复生成" />
+        </label>
+        <label class="span-2" style="display:flex;align-items:center;gap:8px;margin-top:4px">
+          <input id="fingerprint_strict" type="checkbox" checked style="width:auto" />
+          <span>严格模式：Go 指纹失败时阻止任务启动，不静默退回默认指纹</span>
+        </label>
+        <label class="span-2">代理（可选，直接粘贴 cliproxy 链接即可）
+          <input id="proxy" placeholder="http://user:pass@host:port" />
+        </label>
+        <label class="span-2" style="display:flex;align-items:center;gap:8px;margin-top:4px">
+          <input id="traffic_meter" type="checkbox" style="width:auto" />
+          <span>启用流量统计（可选；仍用上面粘贴的上游代理，本地只做计数）</span>
+        </label>
+      </div>
+      <div class="row" style="margin-top:14px">
+        <button class="btn ghost" id="preflightBtn">启动前检查</button>
+        <button class="btn" id="startBtn">开始注册</button>
+        <button class="btn secondary" id="stopBtn">停止</button>
+        <button class="btn ghost" id="refreshAccountsBtn">刷新账号</button>
+      </div>
+      <p style="color:var(--muted);font-size:.84rem;margin:10px 0 0">固定 Firefox 147；系统从 Windows / macOS 中生成。选择单个账号后总数固定为 1。</p>
+      <div class="metrics" style="margin-top:14px" id="stateMetrics"></div>
+      <div class="metrics" style="margin-top:10px" id="trafficMetrics"></div>
+    </section>
+
+    <section class="card">
+      <h3>邮箱 / 导入配置</h3>
+      <p style="color:var(--muted);font-size:.86rem;margin:0 0 10px">注册成功后直接导入 Sub2API，不经过 CPA；账号来源请在左侧任务区选择。</p>
+      <div class="cfg-grid">
+        <label>执行中分组
+          <input id="mail_pending_group" value="oai_pending" />
+        </label>
+        <label>成功分组
+          <input id="mail_success_group" value="oai_success" />
+        </label>
+        <label class="span-2">不可用邮箱分组
+          <input id="mail_bad_group" value="badmail" />
+        </label>
+        <label class="span-2">MAIL_PASS
+          <input id="mail_pass" class="sensitive" type="password" placeholder="未设置" />
+        </label>
+        <label class="span-2">Sub2API 目标分组
+          <input id="sub2api_group" value="auto" placeholder="auto" />
+        </label>
+      </div>
+      <div class="metrics" style="margin-top:14px" id="preflightMetrics">
+        <div class="metric"><b>启动前检查</b><span>尚未检查代理、邮箱和 Sub2API</span></div>
+      </div>
+    </section>
+  </div>
+
+  <section class="card" style="margin-top:16px">
+    <div class="row" style="justify-content:space-between">
+      <h3 style="margin:0">实时日志</h3>
+      <span style="color:var(--muted);font-size:.84rem">accounts → /opt/automyai/data/openai3/accounts/accounts.txt</span>
+    </div>
+    <div class="log log-box" id="logs">—</div>
+  </section>
+
+  <section class="card" style="margin-top:16px">
+    <div class="row" style="justify-content:space-between">
+      <h3 style="margin:0">流量统计记录</h3>
+      <span style="color:var(--muted);font-size:.84rem">默认关闭；开启后按任务汇总上下行</span>
+    </div>
+    <pre class="log log-box" id="trafficHistory" style="min-height:120px;max-height:28vh">—</pre>
+  </section>
+
+  <section class="card" style="margin-top:16px">
+    <h3>隔离说明</h3>
+    <div class="grid cols-3">
+      <div>
+        <div style="color:var(--muted);font-size:.84rem;margin-bottom:6px">OpenAI 1</div>
+        <div>UC 浏览器注册 · browser_profiles</div>
+      </div>
+      <div>
+        <div style="color:var(--muted);font-size:.84rem;margin-bottom:6px">OpenAI 2</div>
+        <div>gpt-outlook2 协议 · data/gpt_outlook2</div>
+      </div>
+      <div>
+        <div style="color:var(--muted);font-size:.84rem;margin-bottom:6px">OpenAI 3（本页）</div>
+        <div>chatgpt_register · data/openai3 · :8791</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="footer-note">温暖、平静、亲近自然 · 凭证请妥善保管 · 仅本机管理接口</div>
+</main>
+</div>
+<script src="../js/runtime-config.js"></script>
+<script src="../js/api-client.js"></script>
+<script src="../js/app.js"></script>
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const toast = (msg, type='info') => {
+    if (window.HelpOAI && HelpOAI.toast) return HelpOAI.toast(msg, type);
+    alert(msg);
+  };
+  let accounts = [];
+  let accountGroups = [];
+  const defaultSourceGroup = '默认分组';
+  let desiredSourceGroup = defaultSourceGroup;
+  let proxyConfigured = false;
+  let configHydrated = false;
+  const selectedAccountKey = 'AutoMyAI.openai3.selectedAccountId';
+  async function api(method, path, body) {
+    return AutoMyAIAPI.openai3.request(method, path, body);
+  }
+  function renderAccountOptions() {
+    const select = $('accountSelect');
+    const sourceGroup = $('mail_source_group').value || defaultSourceGroup;
+    const pool = accounts.filter(account => account.selectable && account.groupName === sourceGroup);
+    let remembered = '';
+    try { remembered = localStorage.getItem(selectedAccountKey) || ''; } catch {}
+    select.replaceChildren(new Option(`自动分配（推荐，${pool.length} 个可用）`, ''));
+    pool.forEach(account => select.add(new Option(`${account.email} · #${account.id}`, String(account.id))));
+    if (pool.some(account => String(account.id) === remembered)) select.value = remembered;
+    if (select.value) $('total').value = '1';
+  }
+  async function loadAccounts(showToast=false) {
+    const response = await AutoMyAIAPI.main.get('/outlook-email/accounts');
+    accounts = response.accounts || [];
+    accountGroups = (response.groups || []).filter(group => !group.badmail && group.selectable > 0);
+    const groupSelect = $('mail_source_group');
+    const desired = desiredSourceGroup || groupSelect.value || defaultSourceGroup;
+    groupSelect.replaceChildren();
+    accountGroups.forEach(group => groupSelect.add(new Option(`${group.name}（${group.selectable}）`, group.name)));
+    groupSelect.value = accountGroups.some(group => group.name === desired)
+      ? desired
+      : (accountGroups.some(group => group.name === defaultSourceGroup) ? defaultSourceGroup : (accountGroups[0]?.name || ''));
+    desiredSourceGroup = groupSelect.value;
+    renderAccountOptions();
+    if (showToast) toast(`账号池已刷新：${groupSelect.value}`, 'ok');
+  }
+  function selectedAccount() {
+    return accounts.find(account => String(account.id) === $('accountSelect').value) || null;
+  }
+  function renderState(st) {
+    const s = st || {};
+    $('topBadge').textContent = s.running ? '运行中' : (s.phase || '空闲');
+    $('topBadge').className = 'badge' + (s.running ? ' ok' : '');
+    $('stateMetrics').innerHTML = `
+      <div class="metric"><b>状态</b><span>${s.phase || '—'} / ${s.running ? '运行中' : '空闲'}</span></div>
+      <div class="metric"><b>进度</b><span>完成 ${s.completed || 0} · 失败 ${s.failed || 0} · 目标 ${s.total || 0}</span></div>
+      <div class="metric"><b>并发</b><span>${s.concurrency || 1}</span></div>
+      <div class="metric"><b>PID</b><span>${s.pid || '—'}</span></div>`;
+    const t = s.traffic || null;
+    const tm = $('trafficMetrics');
+    if (tm) {
+      if (!s.traffic_meter && !t) {
+        tm.innerHTML = `<div class="metric"><b>流量统计</b><span>未启用</span></div>`;
+      } else if (t) {
+        tm.innerHTML = `
+          <div class="metric"><b>本任务流量</b><span>${t.bytes_total_h || ((t.bytes_total || 0) + ' B')}</span></div>
+          <div class="metric"><b>上行/下行</b><span>${t.bytes_sent || 0} / ${t.bytes_recv || 0} B</span></div>
+          <div class="metric"><b>连接数</b><span>${t.connections || 0}</span></div>
+          <div class="metric"><b>会话</b><span>${t.id || '—'}</span></div>`;
+      } else {
+        tm.innerHTML = `<div class="metric"><b>流量统计</b><span>已启用，等待数据</span></div>`;
+      }
+    }
+  }
+  function renderTrafficHistory(items) {
+    const el = $('trafficHistory');
+    if (!el) return;
+    const rows = items || [];
+    if (!rows.length) {
+      el.textContent = '暂无记录。开启「启用流量统计」后跑任务会写入这里。';
+      return;
+    }
+    el.textContent = rows.map((t) => {
+      const total = t.bytes_total_h || ((t.bytes_total || 0) + ' B');
+      return `${t.started_at || ''}  ${t.status || ''}  total=${total}  up=${t.bytes_sent || 0} down=${t.bytes_recv || 0}  run=${t.run_id || t.id || ''}`;
+    }).join('\n');
+  }
+  function applyConfig(cfg) {
+    cfg = cfg || {};
+    proxyConfigured = !!cfg.proxy_configured;
+    $('proxy').value = '';
+    $('proxy').placeholder = proxyConfigured ? '代理已保存；留空保持不变' : 'http://user:pass@host:port 或 host:port:user:pass';
+    if ($('traffic_meter')) $('traffic_meter').checked = !!cfg.traffic_meter;
+    $('mail_pass').value = '';
+    $('mail_pass').placeholder = cfg.mail_pass === '***' ? '已设置（留空不改）' : '未设置';
+    $('sub2api_group').value = cfg.sub2api_group || 'auto';
+    $('fingerprint_enabled').value = cfg.fingerprint_enabled === false ? 'false' : 'true';
+    $('fingerprint_source').value = cfg.fingerprint_source || 'local';
+    $('fingerprint_seed').value = cfg.fingerprint_seed || '';
+    $('fingerprint_strict').checked = cfg.fingerprint_strict !== false;
+    desiredSourceGroup = cfg.mail_source_group || defaultSourceGroup;
+    if (accountGroups.length) {
+      $('mail_source_group').value = accountGroups.some(group => group.name === desiredSourceGroup)
+        ? desiredSourceGroup
+        : (accountGroups.some(group => group.name === defaultSourceGroup) ? defaultSourceGroup : (accountGroups[0]?.name || ''));
+      desiredSourceGroup = $('mail_source_group').value;
+    }
+    $('mail_pending_group').value = cfg.mail_pending_group || 'oai_pending';
+    $('mail_success_group').value = cfg.mail_success_group || 'oai_success';
+    $('mail_bad_group').value = cfg.mail_bad_group || 'badmail';
+    renderAccountOptions();
+  }
+  function requestBody() {
+    const account = selectedAccount();
+    return {
+      concurrency: Number($('concurrency').value || 1),
+      total: Number($('total').value || 1),
+      proxy: $('proxy').value.trim(),
+      traffic_meter: !!($('traffic_meter') && $('traffic_meter').checked),
+      mail_pass: $('mail_pass').value.trim() || '***',
+      sub2api_group: $('sub2api_group').value.trim() || 'auto',
+      selected_account_id: account ? Number(account.id) : 0,
+      selected_account_email: account ? account.email : '',
+      selected_account_group: account ? (account.groupName || '') : '',
+      fingerprint_enabled: $('fingerprint_enabled').value === 'true',
+      fingerprint_source: $('fingerprint_source').value,
+      fingerprint_seed: $('fingerprint_seed').value.trim(),
+      fingerprint_strict: $('fingerprint_strict').checked,
+      mail_source_group: $('mail_source_group').value,
+      mail_pending_group: $('mail_pending_group').value.trim(),
+      mail_success_group: $('mail_success_group').value.trim(),
+      mail_bad_group: $('mail_bad_group').value.trim(),
+    };
+  }
+  async function refresh() {
+    try {
+      const st = await api('GET', '/status');
+      renderState(st.state || {});
+      if (st.config && !configHydrated) {
+        applyConfig(st.config);
+        configHydrated = true;
+      }
+      const logs = await api('GET', '/logs?tail=300');
+      const lines = (logs.logs || []).map(l => `[${l.time || ''}] ${l.message || ''}`).join('\n');
+      $('logs').textContent = lines || '暂无日志';
+      $('logs').scrollTop = $('logs').scrollHeight;
+      try {
+        const tr = await api('GET', '/traffic?tail=30');
+        if (tr.current) {
+          renderState(Object.assign({}, st.state || {}, { traffic: tr.current, traffic_meter: true }));
+        }
+        renderTrafficHistory(tr.items || []);
+      } catch (_) {}
+    } catch (e) {
+      $('topBadge').textContent = '不可用';
+      $('topBadge').className = 'badge';
+      toast(e.message, 'error');
+    }
+  }
+  $('refreshBtn').onclick = refresh;
+  $('saveCfgBtn').onclick = async () => {
+    try {
+      const body = {
+        proxy: $('proxy').value.trim() || (proxyConfigured ? '***' : ''),
+        traffic_meter: !!( $('traffic_meter') && $('traffic_meter').checked ),
+        mail_pass: $('mail_pass').value.trim() || '***',
+        sub2api_group: $('sub2api_group').value.trim() || 'auto',
+        fingerprint_enabled: $('fingerprint_enabled').value === 'true',
+        fingerprint_source: $('fingerprint_source').value,
+        fingerprint_seed: $('fingerprint_seed').value.trim(),
+        fingerprint_strict: $('fingerprint_strict').checked,
+        mail_source_group: $('mail_source_group').value,
+        mail_pending_group: $('mail_pending_group').value.trim(),
+        mail_success_group: $('mail_success_group').value.trim(),
+        mail_bad_group: $('mail_bad_group').value.trim(),
+      };
+      const res = await api('POST', '/config', body);
+      applyConfig(res.config || {});
+      configHydrated = true;
+      await loadAccounts(false);
+      toast('配置已保存', 'ok');
+    } catch (e) { toast(e.message, 'error'); }
+  };
+  $('startBtn').onclick = async () => {
+    try {
+      await api('POST', '/start', requestBody());
+      toast('已启动 OpenAI 3 注册', 'ok');
+      refresh();
+    } catch (e) { toast(e.message, 'error'); }
+  };
+  $('preflightBtn').onclick = async () => {
+    try {
+      const result = await api('POST', '/preflight', requestBody());
+      if (result.proxy?.schemeAdjusted && $('proxy').value.trim().toLowerCase().startsWith('https://')) {
+        $('proxy').value = 'http://' + $('proxy').value.trim().slice('https://'.length);
+      }
+      const mail = result.mail || {};
+      const mailBridge = result.mailBridge || {};
+      const sub2api = result.sub2api || {};
+      $('preflightMetrics').innerHTML = `
+        <div class="metric"><b>代理</b><span>${result.proxy?.configured ? `可连接 · HTTP ${result.proxy.status}${result.proxy.schemeAdjusted ? ' · 已纠正为 HTTP CONNECT' : ''}` : '直连模式'}</span></div>
+        <div class="metric"><b>成功导入</b><span>Sub2API / ${sub2api.groupName || '—'} · ${sub2api.status || '可用'}</span></div>
+        <div class="metric"><b>验证码服务</b><span>Mail Bridge · 127.0.0.1:${mailBridge.port || '—'} · 可连接</span></div>
+        <div class="metric"><b>来源池</b><span>${mail.sourceGroup || '—'} · 已检查 ${mail.checked || 0}</span></div>
+        <div class="metric"><b>执行中 → 成功</b><span>${mail.pendingGroup || '—'} → ${mail.successGroup || '—'}</span></div>
+        <div class="metric"><b>坏邮箱</b><span>${mail.badGroup || '—'} · 检查失败 ${mail.failed || 0} · 明确失效 ${mail.definitiveFailures || 0}</span></div>`;
+      toast('代理、邮箱和 Sub2API 启动前检查通过', 'ok');
+    } catch (e) {
+      $('preflightMetrics').innerHTML = `<div class="metric"><b>启动前检查失败</b><span>${e.message}</span></div>`;
+      toast(e.message, 'error');
+    }
+  };
+  $('stopBtn').onclick = async () => {
+    try {
+      await api('POST', '/stop', {});
+      toast('已请求停止');
+      refresh();
+    } catch (e) { toast(e.message, 'error'); }
+  };
+  $('accountSelect').onchange = () => {
+    try {
+      if ($('accountSelect').value) {
+        localStorage.setItem(selectedAccountKey, $('accountSelect').value);
+        $('total').value = '1';
+      } else {
+        localStorage.removeItem(selectedAccountKey);
+      }
+    } catch {}
+  };
+  $('mail_source_group').onchange = () => {
+    try { localStorage.removeItem(selectedAccountKey); } catch {}
+    desiredSourceGroup = $('mail_source_group').value;
+    renderAccountOptions();
+  };
+  $('refreshAccountsBtn').onclick = () => loadAccounts(true).catch(e => toast(e.message, 'error'));
+  (async () => {
+    await refresh();
+    await loadAccounts(false);
+  })().catch(e => toast(e.message, 'error'));
+  setInterval(refresh, 4000);
+})();
+</script>
+</body>
+</html>

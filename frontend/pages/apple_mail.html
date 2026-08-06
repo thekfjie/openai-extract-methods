@@ -1,0 +1,446 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Apple Mail · automyai</title>
+  <link rel="stylesheet" href="../css/nature.css" />
+  <style>
+    .apple-grid { display:grid; grid-template-columns: 1.1fr .9fr; gap:14px; margin-top:14px; }
+    .apple-grid .card { margin:0; }
+    .apple-note {
+      border:1px solid rgba(214,140,48,.35);
+      background: linear-gradient(180deg, rgba(255,244,214,.95), rgba(255,250,235,.92));
+      color:#6a4b12;
+      border-radius: var(--radius);
+      padding:12px 14px;
+      margin-top:12px;
+      line-height:1.55;
+    }
+    :root[data-theme="dark"] .apple-note {
+      background: linear-gradient(180deg, rgba(84,56,12,.55), rgba(42,30,10,.72));
+      color:#f0d7a0;
+      border-color: rgba(240,180,70,.35);
+    }
+    .apple-metrics { display:grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap:10px; margin-top:12px; }
+    .codebox {
+      width:100%; min-height:180px; resize:vertical; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size:12px; line-height:1.45; border-radius:12px; border:1px solid var(--line); padding:12px; background:rgba(0,0,0,.03);
+    }
+    .logbox {
+      white-space:pre-wrap; word-break:break-word; min-height:220px; max-height:420px; overflow:auto;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:12px; line-height:1.45;
+      border:1px solid var(--line); border-radius:12px; padding:12px; background:rgba(0,0,0,.03);
+    }
+    .field-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .field-grid label { display:grid; gap:6px; font-size:.86rem; color:var(--muted); }
+    .field-grid input, .field-grid textarea, .field-grid select {
+      width:100%; border:1px solid var(--line); border-radius:10px; padding:10px 12px; background:var(--paper); color:inherit;
+    }
+    .field-grid .full { grid-column: 1 / -1; }
+    .pill-row { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+    .pill { display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px; border:1px solid var(--line); font-size:.82rem; background:rgba(255,255,255,.45); }
+    .steps { display:grid; gap:8px; margin:0; padding-left:18px; color:var(--muted); font-size:.9rem; }
+    @media (max-width: 1100px) {
+      .apple-grid { grid-template-columns: 1fr; }
+      .apple-metrics, .field-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 720px) {
+      .apple-metrics, .field-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body data-page="apple-mail">
+  <div class="app">
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-mark"></div>
+    <div>
+      <h1>automyai</h1>
+      <p>控制台</p>
+    </div>
+  </div>
+  <nav class="nav">
+    <a href="/ui/" data-page="overview"><span class="dot"></span>总览</a>
+    <a href="/ui/pages/openai.html" data-page="openai"><span class="dot"></span>OpenAI 注册</a>
+    <a href="/ui/pages/openai2.html" data-page="openai2"><span class="dot"></span>OpenAI 2</a>
+    <a href="/ui/pages/openai3.html" data-page="openai3"><span class="dot"></span>OpenAI 3</a>
+    <a href="/ui/pages/apple_mail.html" data-page="apple-mail"><span class="dot"></span>Apple Mail</a>
+    <a href="/ui/pages/grok.html" data-page="grok"><span class="dot"></span>Grok 注册</a>
+    <a href="/grok2/accounts" target="_blank"><span class="dot"></span>Grok 2</a>
+    <a href="/ui/pages/convert.html" data-page="convert"><span class="dot"></span>OAI 转换</a>
+    <a href="/ui/pages/mail.html" data-page="mail"><span class="dot"></span>邮箱与分组</a>
+    <a href="/ui/pages/settings.html" data-page="settings"><span class="dot"></span>设置</a>
+    <a href="/ui/pages/tools.html" data-page="tools"><span class="dot"></span>工具 / 日志</a>
+  </nav>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div>
+      <h2>Apple Mail</h2>
+      <div class="hint">独立通道：iCloud / Hide My Email 接码注册 ChatGPT，不与 OpenAI 1/2/3 混用</div>
+    </div>
+    <div class="row">
+      <span class="badge" id="poolBadge">号池检查中</span>
+      <button class="btn ghost" id="reloadPoolBtn">刷新号池</button>
+      <a class="btn secondary" href="../js/apple_mail_console.js" target="_blank" rel="noreferrer">打开脚本</a>
+    </div>
+  </div>
+
+  <div class="apple-note">
+    <b>指纹提示：</b>受控服务端按 <b>gpt_outlook 同款思路</b>：每号一套一致指纹（TLS/UA/screen/lang + 新 deviceId），默认偏 Safari 随机；并一遍过不主动 resend OTP。浏览器控制台路径仍建议 Firefox 147。<br>
+    <b>代理门禁：</b>真实使用前必须走项目代理（默认 Mihomo <code>http://172.19.0.1:7905</code>），禁止本地真实 IP 直连注册。<br>
+    <b>当前模式：</b>先静态 dry-run 验证逻辑与连通性，不自动发起真实注册。
+  </div>
+
+  <div class="apple-metrics">
+    <div class="metric"><b>邮箱池</b><span id="mEmails">—</span></div>
+    <div class="metric"><b>姓名池</b><span id="mNames">—</span></div>
+    <div class="metric"><b>当前步骤</b><span id="mStep">空闲</span></div>
+    <div class="metric"><b>指纹策略</b><span id="mFp">Safari/随机隔离</span></div>
+  </div>
+
+  <div class="apple-grid">
+    <section class="card">
+      <div class="section-head">
+        <div>
+          <h3>通道配置</h3>
+          <p class="muted" style="margin:6px 0 0;color:var(--muted);font-size:.86rem">密钥只保存在本机浏览器 localStorage，不写进仓库</p>
+        </div>
+      </div>
+      <div class="field-grid" style="margin-top:12px">
+        <label class="full">Mail API Base
+          <input id="mailBase" placeholder="https://apimail.kfjie.me" />
+        </label>
+        <label class="full">Mail Admin Auth
+          <input id="adminAuth" type="password" placeholder="x-admin-auth" autocomplete="off" />
+        </label>
+        <label class="full">Import Base
+          <input id="importBase" placeholder="https://cloud.opus.sryze.cc" />
+        </label>
+        <label class="full">Import API Key
+          <input id="importApiKey" type="password" placeholder="X-API-Key / Bearer" autocomplete="off" />
+        </label>
+        <label class="full">项目代理（必填，禁止直连）
+          <input id="proxyUrl" placeholder="http://172.19.0.1:7905" />
+        </label>
+        <label>默认密码
+          <input id="defaultPassword" type="password" placeholder="ChatGPT 注册密码" autocomplete="off" />
+        </label>
+        <label>起始下标
+          <input id="startIndex" type="number" min="0" value="0" />
+        </label>
+        <label>批量数量
+          <input id="batchCount" type="number" min="1" value="1" />
+        </label>
+        <label>指纹策略
+          <select id="fpPolicy">
+            <option value="safari" selected>Safari 随机（对齐 Outlook/OpenAI2 隔离）</option>
+            <option value="firefox">Firefox 随机</option>
+            <option value="chrome">Chrome 随机</option>
+            <option value="edge">Edge 随机</option>
+          </select>
+        </label>
+      </div>
+      <div class="row" style="margin-top:14px;gap:8px;flex-wrap:wrap">
+        <button class="btn" id="saveCfgBtn">保存本机配置</button>
+        <button class="btn secondary" id="copyBootBtn">复制注入脚本</button>
+        <button class="btn ghost" id="copyConsoleBtn">复制完整控制台脚本</button>
+        <button class="btn ghost" id="testMailBtn">测试拉信(走代理说明)</button>
+        <button class="btn" id="dryRunBtn">静态 Dry-Run 说明</button>
+      </div>
+      <div class="pill-row">
+        <span class="pill">数据: /opt/automyai/data/apple_mail</span>
+        <span class="pill">脚本: tools/apple_mail</span>
+        <span class="pill">原件: refs/apple_mail</span>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-head">
+        <div>
+          <h3>使用步骤</h3>
+          <p class="muted" style="margin:6px 0 0;color:var(--muted);font-size:.86rem">控制台注入方式，当前先独立窗口落地</p>
+        </div>
+      </div>
+      <ol class="steps" style="margin-top:12px">
+        <li>浏览器建议使用 <b>Firefox 147</b>（指纹不过关时优先切这个）。</li>
+        <li>本页填好 Mail Admin Auth / Import API Key，点「保存本机配置」。</li>
+        <li>点「复制注入脚本」，打开 ChatGPT 注册页控制台粘贴执行。</li>
+        <li>执行 <code>await AppleMail.auto()</code> 或批量 <code>await AppleMail.autoBatch(3)</code>。</li>
+        <li>成功后会从 apimail 拉验证码，并把 session 导到 import 服务。</li>
+      </ol>
+      <div style="margin-top:14px">
+        <h4 style="margin:0 0 8px;font-size:.95rem">号池预览</h4>
+        <div class="logbox" id="poolPreview">加载中…</div>
+      </div>
+    </section>
+  </div>
+
+  <section class="card" style="margin-top:14px">
+    <div class="section-head" style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap">
+      <div>
+        <h3>注入脚本预览</h3>
+        <p class="muted" style="margin:6px 0 0;color:var(--muted);font-size:.86rem">会带上当前号池 + 本机配置；完整逻辑脚本单独提供</p>
+      </div>
+      <div class="row">
+        <button class="btn secondary" id="refreshBootBtn">重新生成</button>
+      </div>
+    </div>
+    <textarea class="codebox" id="bootPreview" readonly style="margin-top:12px"></textarea>
+  </section>
+
+  <section class="card" style="margin-top:14px">
+    <div class="section-head" style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap">
+      <div>
+        <h3>运行进度 / 实时日志</h3>
+        <p class="muted" style="margin:6px 0 0;color:var(--muted);font-size:.86rem">显示受控试跑当前步骤（指纹/代理/OTP/导入）。每 2 秒刷新。</p>
+      </div>
+      <div class="row" style="gap:8px;flex-wrap:wrap">
+        <span class="badge" id="runBadge">空闲</span>
+        <button class="btn ghost" id="refreshRunBtn">刷新日志</button>
+      </div>
+    </div>
+    <div class="pill-row" style="margin-top:10px">
+      <span class="pill" id="runEmail">邮箱: —</span>
+      <span class="pill" id="runFp">指纹: —</span>
+      <span class="pill" id="runProxy">代理: —</span>
+      <span class="pill" id="runSource">发件: —</span>
+    </div>
+    <div class="logbox" id="runLog" style="margin-top:12px;min-height:220px;white-space:pre-wrap">暂无运行日志。启动受控试跑后这里会显示步骤。</div>
+    <div class="logbox" id="localLog" style="margin-top:12px">本页操作日志：准备就绪。</div>
+  </section>
+</main>
+  </div>
+
+  <script src="../js/runtime-config.js"></script>
+  <script src="../js/api-client.js"></script>
+  <script src="../js/app.js"></script>
+  <script>
+  (() => {
+    const $ = (id) => document.getElementById(id);
+    const state = {
+      emails: [],
+      names: [],
+      config: {},
+      consoleScript: '',
+    };
+
+    function toast(msg, type='info') {
+      if (window.HelpOAI && HelpOAI.toast) return HelpOAI.toast(msg, type);
+      log(msg);
+    }
+    
+    async function refreshRunStatus() {
+      try {
+        const data = await AutoMyAIAPI.main.get('/apple-mail/status?tail=250').catch(() => null);
+        if (!data) return;
+        const running = !!data.running;
+        const step = data.currentStepLabel || data.currentStep || '空闲';
+        if ($('mStep')) $('mStep').textContent = step;
+        if ($('runBadge')) {
+          $('runBadge').textContent = running ? ('运行中 · ' + (data.currentStep || 'step')) : (data.ok === false ? '失败/空闲' : '空闲');
+        }
+        if ($('runEmail')) $('runEmail').textContent = '邮箱: ' + (data.email || '—');
+        const fp = data.fingerprint || {};
+        if ($('runFp')) $('runFp').textContent = '指纹: ' + (data.impersonate || fp.impersonate || '—') + (fp.screen ? (' / ' + fp.screen) : '');
+        const pi = data.proxyIdentity || {};
+        if ($('runProxy')) $('runProxy').textContent = '代理: ' + ((pi.country || '') + ' ' + (pi.ip || data.proxy || '—')).trim();
+        if ($('runSource')) $('runSource').textContent = '发件: ' + (data.sourceEmail || '—');
+        const lines = (data.logs || []).map(l => {
+          const t = (l.time || '').replace('T',' ').replace('Z','');
+          return `[${t}] [${l.level || 'INFO'}] [${l.step || '-'}] ${l.message || ''}`;
+        });
+        if ($('runLog')) {
+          $('runLog').textContent = lines.join('\n') || '暂无运行日志。启动受控试跑后这里会显示步骤。';
+          $('runLog').scrollTop = $('runLog').scrollHeight;
+        }
+      } catch (e) {
+        // ignore transient
+      }
+    }
+
+    function log(msg) {
+      const el = $('localLog');
+      if (!el) { console.log('[apple-mail]', msg); return; }
+      const line = `[${new Date().toLocaleTimeString()}] ${msg}`;
+      const prev = el.textContent || '';
+      el.textContent = ((prev === '准备就绪。' || prev === '本页操作日志：准备就绪。') ? '' : prev + '\n') + line;
+      el.scrollTop = el.scrollHeight;
+    }
+    function lsGet(k, d='') { try { return localStorage.getItem(k) || d; } catch { return d; } }
+    function lsSet(k, v) { try { localStorage.setItem(k, v || ''); } catch {} }
+
+    function loadLocalCfg() {
+      $('mailBase').value = lsGet('AppleMail.mailBase', state.config.mailBase || 'https://apimail.kfjie.me');
+      $('importBase').value = lsGet('AppleMail.importBase', state.config.importBase || 'https://cloud.opus.sryze.cc');
+      if ($('proxyUrl')) $('proxyUrl').value = lsGet('AppleMail.proxyUrl', state.config.proxyUrl || 'http://172.19.0.1:7905');
+      $('adminAuth').value = lsGet('AppleMail.adminAuth', '');
+      $('importApiKey').value = lsGet('AppleMail.importApiKey', '');
+      $('defaultPassword').value = lsGet('AppleMail.password', '');
+      if ($('fpPolicy')) $('fpPolicy').value = lsGet('AppleMail.fpPolicy', 'safari');
+      const cursor = Number(lsGet('AppleMail.cursor', '0') || '0');
+      $('startIndex').value = Number.isFinite(cursor) ? cursor : 0;
+    }
+
+    function saveLocalCfg() {
+      lsSet('AppleMail.mailBase', $('mailBase').value.trim());
+      lsSet('AppleMail.importBase', $('importBase').value.trim());
+      if ($('proxyUrl')) lsSet('AppleMail.proxyUrl', $('proxyUrl').value.trim());
+      lsSet('AppleMail.adminAuth', $('adminAuth').value.trim());
+      lsSet('AppleMail.importApiKey', $('importApiKey').value.trim());
+      lsSet('AppleMail.password', $('defaultPassword').value);
+      if ($('fpPolicy')) lsSet('AppleMail.fpPolicy', $('fpPolicy').value || 'safari');
+      lsSet('AppleMail.cursor', String(Math.max(0, Number($('startIndex').value || 0))));
+      try {
+        localStorage.setItem('AppleMail.emails', JSON.stringify(state.emails || []));
+        localStorage.setItem('AppleMail.names', JSON.stringify(state.names || []));
+      } catch {}
+      buildBoot();
+      toast('本机配置已保存', 'ok');
+      log('saved local config');
+    }
+
+    function renderPool() {
+      if ($('mEmails')) $('mEmails').textContent = String(state.emails.length);
+      if ($('mNames')) $('mNames').textContent = String(state.names.length);
+      if ($('mFp')) $('mFp').textContent = ($('fpPolicy') && $('fpPolicy').value) || 'chrome131';
+      $('poolBadge').textContent = state.emails.length ? `号池 ${state.emails.length}` : '号池为空';
+      $('poolBadge').className = 'badge' + (state.emails.length ? ' ok' : '');
+      const preview = state.emails.slice(0, 12).map((e, i) => `${String(i).padStart(3,'0')}  ${e}  |  ${(state.names[i % Math.max(state.names.length,1)] || '')}`).join('\n');
+      $('poolPreview').textContent = preview || '号池为空，请检查 /data/apple_mail/emails.json';
+    }
+
+    function buildBoot() {
+      const cfg = {
+        mailBase: $('mailBase').value.trim() || 'https://apimail.kfjie.me',
+        importBase: $('importBase').value.trim() || 'https://cloud.opus.sryze.cc',
+        adminAuth: $('adminAuth').value.trim(),
+        importApiKey: $('importApiKey').value.trim(),
+        defaultPassword: $('defaultPassword').value,
+        fingerprintBrowser: 'firefox',
+        fingerprintVersion: '147',
+        proxyUrl: ($('proxyUrl') ? $('proxyUrl').value.trim() : '') || 'http://172.19.0.1:7905',
+        requireProxy: true,
+        dryRunDefault: true,
+      };
+      const startIndex = Math.max(0, Number($('startIndex').value || 0));
+      const batchCount = Math.max(1, Number($('batchCount').value || 1));
+      const consoleScriptUrl = AutoMyAIAPI.uiURL('/js/apple_mail_console.js');
+      const boot = `/* Apple Mail bootstrap - paste in ChatGPT page console */
+window.AppleMailConfig = ${JSON.stringify({ mailBase: cfg.mailBase, importBase: cfg.importBase, proxyUrl: cfg.proxyUrl, requireProxy: true, dryRunDefault: true, fingerprintBrowser: 'firefox', fingerprintVersion: '147' }, null, 2)};
+window.AppleMailEmails = ${JSON.stringify(state.emails, null, 2)};
+window.AppleMailNames = ${JSON.stringify(state.names, null, 2)};
+localStorage.setItem('AppleMail.mailBase', ${JSON.stringify(cfg.mailBase)});
+localStorage.setItem('AppleMail.importBase', ${JSON.stringify(cfg.importBase)});
+localStorage.setItem('AppleMail.adminAuth', ${JSON.stringify(cfg.adminAuth)});
+localStorage.setItem('AppleMail.importApiKey', ${JSON.stringify(cfg.importApiKey)});
+localStorage.setItem('AppleMail.password', ${JSON.stringify(cfg.defaultPassword)});
+localStorage.setItem('AppleMail.cursor', ${JSON.stringify(String(startIndex))});
+console.log('%cApple Mail bootstrap ready | emails=' + window.AppleMailEmails.length, 'color:#0a7;font-weight:bold');
+console.log('%c指纹建议: Firefox 147', 'color:#c60;font-weight:bold');
+console.log('%c代理门禁: ' + window.AppleMailConfig.proxyUrl + '（禁止本地真实IP直连）', 'color:#06c;font-weight:bold');
+console.log('%c默认 dry-run：先验证，不自动真实注册', 'color:#666;font-weight:bold');
+console.log('Next: paste full script ${consoleScriptUrl} , then await AppleMail.auto() or await AppleMail.autoBatch(${batchCount})');
+`;
+      $('bootPreview').value = boot;
+      return { boot, cfg, startIndex, batchCount };
+    }
+
+    async function copyText(text, okMsg) {
+      try {
+        await navigator.clipboard.writeText(text);
+        toast(okMsg || '已复制', 'ok');
+        return true;
+      } catch (e) {
+        // fallback
+        const ta = document.createElement('textarea');
+        ta.value = text; document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy'); toast(okMsg || '已复制', 'ok'); return true; }
+        catch (err) { toast('复制失败: ' + err, 'error'); return false; }
+        finally { ta.remove(); }
+      }
+    }
+
+    async function loadPool() {
+      const [emails, names, cfg, script] = await Promise.all([
+        AutoMyAIAPI.fetchAsset('/js/apple_mail_emails.json', 'json').catch(() => []),
+        AutoMyAIAPI.fetchAsset('/js/apple_mail_names.json', 'json').catch(() => []),
+        AutoMyAIAPI.fetchAsset('/js/apple_mail_config.json', 'json').catch(() => ({})),
+        AutoMyAIAPI.fetchAsset('/js/apple_mail_console.js', 'text').catch(() => ''),
+      ]);
+      state.emails = Array.isArray(emails) ? emails : [];
+      state.names = Array.isArray(names) ? names : [];
+      state.config = cfg || {};
+      state.consoleScript = script || '';
+      loadLocalCfg();
+      renderPool();
+      buildBoot();
+      log(`loaded pool emails=${state.emails.length} names=${state.names.length}`);
+    }
+
+    async function testMail() {
+      const mailBase = $('mailBase').value.trim().replace(/\/+$/, '');
+      const adminAuth = $('adminAuth').value.trim();
+      const email = state.emails[Number($('startIndex').value || 0)] || state.emails[0];
+      const proxy = ($('proxyUrl') && $('proxyUrl').value.trim()) || '';
+      if (!proxy) return toast('未配置项目代理，已拦截（禁止真实IP直连）', 'error');
+      if (!mailBase || !adminAuth) return toast('请先填 Mail Base 和 Admin Auth', 'error');
+      log('注意：浏览器侧拉信无法强制系统代理，真实注册请用带代理的 Firefox 147 配置');
+      if (!email) return toast('号池为空', 'error');
+      log('test mail for ' + email);
+      try {
+        const url = mailBase + '/admin/mails?limit=5&offset=0&address=' + encodeURIComponent(email);
+        const r = await fetch(url, { headers: { Accept: 'application/json', 'x-admin-auth': adminAuth } });
+        const text = await r.text();
+        if (!r.ok) throw new Error('HTTP ' + r.status + ' ' + text.slice(0, 180));
+        log('mail ok: ' + text.slice(0, 240));
+        toast('拉信接口可用', 'ok');
+      } catch (e) {
+        log('mail failed: ' + e);
+        toast('拉信失败: ' + e.message, 'error');
+      }
+    }
+
+    $('saveCfgBtn').onclick = saveLocalCfg;
+    $('reloadPoolBtn').onclick = () => loadPool().then(() => toast('号池已刷新', 'ok'));
+    $('refreshBootBtn').onclick = () => { buildBoot(); toast('已重新生成', 'ok'); };
+    $('copyBootBtn').onclick = async () => {
+      saveLocalCfg();
+      const { boot } = buildBoot();
+      await copyText(boot, '注入脚本已复制');
+      log('copied bootstrap');
+    };
+    $('copyConsoleBtn').onclick = async () => {
+      if (!state.consoleScript) return toast('完整脚本未加载', 'error');
+      await copyText(state.consoleScript, '完整控制台脚本已复制');
+      log('copied full console script');
+    };
+    $('testMailBtn').onclick = testMail;
+    if ($('dryRunBtn')) $('dryRunBtn').onclick = () => {
+      const proxy = ($('proxyUrl') && $('proxyUrl').value.trim()) || 'http://172.19.0.1:7905';
+      const msg = [
+        '静态 Dry-Run 清单：',
+        '1) 独立页面 / 号池 / 控制台脚本已加载',
+        '2) 指纹策略 Firefox 147',
+        '3) 代理门禁: ' + proxy,
+        '4) 不自动打开 ChatGPT，不自动注册，不自动导号',
+        '5) 服务端可跑: python /opt/automyai/tools/apple_mail/static_dry_run.py',
+      ].join('\n');
+      log(msg);
+      toast('已输出 dry-run 说明', 'ok');
+      alert(msg);
+    };
+    ['mailBase','importBase','startIndex','batchCount'].forEach(id => {
+      $(id).addEventListener('input', () => { renderPool(); buildBoot(); });
+    });
+
+    loadPool().catch(e => {
+      log('load failed: ' + e);
+      toast('加载失败: ' + e.message, 'error');
+    });
+  })();
+  </script>
+</body>
+</html>

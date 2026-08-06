@@ -1,0 +1,892 @@
+{
+  "profile": {
+    "schemaVersion": 2,
+    "purpose": "local-browser-compatibility-testing",
+    "id": "720d7226e2207e5a",
+    "seed": "sample-windows-10-chrome",
+    "preset": "windows-10-chrome",
+    "generator": {
+      "algorithm": "roxybrowser-3.9.2-compatible",
+      "featureMode": "random",
+      "deterministic": true,
+      "baseDataSource": "local-template",
+      "provider": null
+    },
+    "engine": {
+      "family": "Chrome",
+      "version": "144.0.7559.236",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.7559.236 Safari/537.36",
+      "userAgentMetadata": {
+        "brands": [
+          {
+            "brand": "Chromium",
+            "version": "144"
+          },
+          {
+            "brand": "Google Chrome",
+            "version": "144"
+          },
+          {
+            "brand": "Not/A)Brand",
+            "version": "24"
+          }
+        ],
+        "fullVersionList": [
+          {
+            "brand": "Chromium",
+            "version": "144.0.7559.236"
+          },
+          {
+            "brand": "Google Chrome",
+            "version": "144.0.7559.236"
+          },
+          {
+            "brand": "Not/A)Brand",
+            "version": "24.0.0.0"
+          }
+        ],
+        "platform": "Windows",
+        "mobile": false,
+        "platformVersion": "10.0.0",
+        "architecture": "x86",
+        "model": "",
+        "bitness": "64",
+        "wow64": false
+      }
+    },
+    "os": {
+      "name": "Windows",
+      "version": "10",
+      "architecture": "x86",
+      "model": ""
+    },
+    "machine": {
+      "computerName": "DESKTOP-FF5DB49",
+      "macAddress": "02:D8:4C:21:02:3A"
+    },
+    "locale": {
+      "appLocale": "ja-JP",
+      "acceptLanguage": "ja-JP,ja;q=0.9,en;q=0.7",
+      "timezone": "Asia/Tokyo"
+    },
+    "navigator": {
+      "platform": "Win32",
+      "hardwareConcurrency": 16,
+      "deviceMemory": 16,
+      "maxTouchPoints": 0,
+      "mobile": false,
+      "doNotTrack": true,
+      "pluginsEnabled": true,
+      "plugins": [
+        {
+          "name": "PDF Viewer",
+          "path": "internal-pdf-viewer",
+          "desc": "Portable Document Format|Portable Document Format",
+          "version": "",
+          "mime": [
+            {
+              "mime_type": "application/pdf",
+              "file_extensions": "pdf"
+            },
+            {
+              "mime_type": "text/pdf",
+              "file_extensions": "pdf"
+            }
+          ]
+        },
+        {
+          "name": "Chrome PDF Viewer",
+          "path": "internal-pdf-viewer",
+          "desc": "Portable Document Format|Portable Document Format",
+          "version": "",
+          "mime": [
+            {
+              "mime_type": "application/pdf",
+              "file_extensions": "pdf"
+            },
+            {
+              "mime_type": "text/pdf",
+              "file_extensions": "pdf"
+            }
+          ]
+        },
+        {
+          "name": "Chromium PDF Viewer",
+          "path": "internal-pdf-viewer",
+          "desc": "Portable Document Format|Portable Document Format",
+          "version": "",
+          "mime": [
+            {
+              "mime_type": "application/pdf",
+              "file_extensions": "pdf"
+            },
+            {
+              "mime_type": "text/pdf",
+              "file_extensions": "pdf"
+            }
+          ]
+        },
+        {
+          "name": "Microsoft Edge PDF Viewer",
+          "path": "internal-pdf-viewer",
+          "desc": "Portable Document Format|Portable Document Format",
+          "version": "",
+          "mime": [
+            {
+              "mime_type": "application/pdf",
+              "file_extensions": "pdf"
+            },
+            {
+              "mime_type": "text/pdf",
+              "file_extensions": "pdf"
+            }
+          ]
+        },
+        {
+          "name": "WebKit built-in PDF",
+          "path": "internal-pdf-viewer",
+          "desc": "Portable Document Format|Portable Document Format",
+          "version": "",
+          "mime": [
+            {
+              "mime_type": "application/pdf",
+              "file_extensions": "pdf"
+            },
+            {
+              "mime_type": "text/pdf",
+              "file_extensions": "pdf"
+            }
+          ]
+        }
+      ]
+    },
+    "screen": {
+      "width": 1920,
+      "height": 1080,
+      "availWidth": 1920,
+      "availHeight": 1042,
+      "colorDepth": 24,
+      "pixelDepth": 24,
+      "devicePixelRatio": 1
+    },
+    "graphics": {
+      "webglInfoEnabled": true,
+      "webglVendor": "Google Inc. (Intel)",
+      "webglRenderer": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "webgpu": {
+        "mode": "real",
+        "vendor": ""
+      },
+      "noise": {
+        "enabled": true,
+        "interval": 1,
+        "value": "02D4CV954VHI4INU"
+      }
+    },
+    "canvas": {
+      "enabled": true,
+      "value": "B45DA79664AA8589F8AB8C3EF48202D3",
+      "valueV2": 17201
+    },
+    "audioContext": {
+      "enabled": true,
+      "value": 0.6906073817517608,
+      "version": "2",
+      "interval": 100
+    },
+    "clientRects": {
+      "enabled": true,
+      "noiseFactorX": -0.9325649277307093,
+      "noiseFactorY": 0.9173555979505181
+    },
+    "fonts": {
+      "enabled": true,
+      "localCatalog": [
+        "Arial",
+        "Calibri",
+        "Cambria",
+        "Cambria Math",
+        "Candara",
+        "Comic Sans MS",
+        "Consolas",
+        "Constantia",
+        "Corbel",
+        "Courier New",
+        "Ebrima",
+        "Georgia",
+        "Impact",
+        "Lucida Console",
+        "Malgun Gothic",
+        "Microsoft JhengHei",
+        "Microsoft Sans Serif",
+        "Microsoft YaHei",
+        "Palatino Linotype",
+        "Segoe UI",
+        "Segoe UI Emoji",
+        "Segoe UI Symbol",
+        "Tahoma",
+        "Times New Roman",
+        "Trebuchet MS",
+        "Verdana",
+        "Yu Gothic"
+      ],
+      "disabled": [
+        "Tahoma",
+        "Times New Roman"
+      ],
+      "allowed": [
+        "McLaren",
+        "Radley",
+        "Mistral",
+        "Noto Serif JP",
+        "Mrs Saint Delafield",
+        "ARCHER",
+        "Charmonman",
+        "Fjalla One",
+        "Sail",
+        "Cuprum",
+        "Almarai",
+        "Montserrat Alternates",
+        "Palatino",
+        "Apple Color Emoji",
+        "Thonburi",
+        "Mogra",
+        "ZapfHumnst Dm BT",
+        "Oleo Script Swash Caps",
+        "Small Fonts",
+        "Sedgwick Ave Display",
+        "Stoke",
+        "Average Sans",
+        "Lao UI",
+        "Dekko",
+        "Sree Krushnadevaraya",
+        "ADOBE CASLON PRO",
+        "Limelight",
+        "IM Fell English SC",
+        "Fascinate Inline",
+        "Libre Barcode 128 Text",
+        "CG Times",
+        "Tinos",
+        "Averia Serif Libre",
+        "Serifa",
+        "Suranna",
+        "Hiragino Kaku Gothic ProN",
+        "Mongolian Baiti",
+        "Graduate",
+        "Allerta",
+        "Dhurjati",
+        "Saira Stencil One",
+        "Serifa Th BT",
+        "Sue Ellen Francisco",
+        "Comic Sans",
+        "Marcellus",
+        "Caesar Dressing",
+        "Electrolize",
+        "SimSun",
+        "Redressed",
+        "Amiri",
+        "Scope One",
+        "Astloch",
+        "Erica One",
+        "Heiti TC",
+        "Patua One",
+        "Coustard",
+        "FrankRuehl",
+        "Varela Round",
+        "M PLUS Rounded 1c",
+        "Jomhuria",
+        "Rye",
+        "Signika",
+        "Black Han Sans",
+        "Martel Sans",
+        "Habibi",
+        "Source Sans Pro",
+        "Zurich BlkEx BT",
+        "Days One",
+        "Voltaire",
+        "Farro",
+        "IM Fell Great Primer",
+        "Bowlby One SC",
+        "Corben",
+        "Niconne",
+        "Kumar One",
+        "Dotum",
+        "TypoUpright BT",
+        "Dauphin",
+        "Kartika",
+        "Perpetua",
+        "Rock Salt",
+        "Yeon Sung",
+        "Arbutus",
+        "Gautami",
+        "Alice",
+        "Gamja Flower",
+        "MoolBoran",
+        "Tristan",
+        "Meiryo UI",
+        "Script MT Bold",
+        "Zilla Slab",
+        "Tw Cen MT Condensed Extra Bold",
+        "Share Tech",
+        "Chela One",
+        "Chenla",
+        "Just Me Again Down Here",
+        "Noto Sans Canadian Aboriginal",
+        "Fontdiner Swanky",
+        "Poller One",
+        "Raleway Dots",
+        "Noto Sans Georgian",
+        "Noto Sans Gujarati",
+        "Vani",
+        "Gochi Hand",
+        "Korinna BT",
+        "Homenaje",
+        "Constantia",
+        "Microsoft Yi Baiti",
+        "Noto Sans Lao",
+        "Source Code Pro",
+        "Wingdings",
+        "SimHei",
+        "Cezanne",
+        "Angsana New",
+        "Combo",
+        "Sunflower",
+        "Vibur",
+        "Signika Negative",
+        "Noto Sans Thaana",
+        "Sofadi One",
+        "Wingdings 3",
+        "Palatino Linotype",
+        "Noto Serif Armenian",
+        "Boogaloo",
+        "MingLiU_HKSCS",
+        "MingLiU_HKSCS-ExtB"
+      ]
+    },
+    "speechSynthesis": {
+      "enabled": false,
+      "voices": [
+        {
+          "name": "Microsoft David - English (United States)",
+          "isLocalService": true,
+          "lang": "en-US"
+        },
+        {
+          "name": "Microsoft Mark - English (United States)",
+          "isLocalService": true,
+          "lang": "en-US"
+        },
+        {
+          "name": "Microsoft Zira - English (United States)",
+          "isLocalService": true,
+          "lang": "en-US"
+        },
+        {
+          "name": "Google हिन्दी",
+          "lang": "hi-IN",
+          "isLocalService": true
+        },
+        {
+          "name": "Google Bahasa Indonesia",
+          "lang": "id-ID",
+          "isLocalService": true
+        },
+        {
+          "name": "Google 한국의",
+          "lang": "ko-KR",
+          "isLocalService": true
+        },
+        {
+          "name": "Google Deutsch",
+          "lang": "de-DE",
+          "isLocalService": false
+        },
+        {
+          "name": "Google español",
+          "lang": "es-ES",
+          "isLocalService": false
+        },
+        {
+          "name": "Google español de Estados Unidos",
+          "lang": "es-US",
+          "isLocalService": false
+        },
+        {
+          "name": "Google français",
+          "lang": "fr-FR",
+          "isLocalService": false
+        },
+        {
+          "name": "Google italiano",
+          "lang": "it-IT",
+          "isLocalService": false
+        },
+        {
+          "name": "Google Nederlands",
+          "lang": "nl-NL",
+          "isLocalService": false
+        },
+        {
+          "name": "Google polski",
+          "lang": "pl-PL",
+          "isLocalService": false
+        },
+        {
+          "name": "Google português do Brasil",
+          "lang": "pt-BR",
+          "isLocalService": false
+        },
+        {
+          "name": "Google UK English Female",
+          "lang": "en-GB",
+          "isLocalService": false
+        },
+        {
+          "name": "Google US English",
+          "lang": "en-US",
+          "isLocalService": false
+        },
+        {
+          "name": "Google русский",
+          "lang": "ru-RU",
+          "isLocalService": false
+        },
+        {
+          "name": "Google 國語（臺灣）",
+          "lang": "zh-TW",
+          "isLocalService": false
+        },
+        {
+          "name": "Google 日本語",
+          "lang": "ja-JP",
+          "isLocalService": false
+        },
+        {
+          "name": "Google 普通话（中国大陆）",
+          "lang": "zh-CN",
+          "isLocalService": false
+        },
+        {
+          "name": "Google 粤語（香港）",
+          "lang": "zh-HK",
+          "isLocalService": false
+        }
+      ]
+    },
+    "mediaDevices": {
+      "enabled": true,
+      "devices": [
+        {
+          "deviceType": "audioinput",
+          "deviceId": "ac319198f4621dc4038fc4e7dbeb20dc8a10679ccdb06e1755f6599d166f9501",
+          "label": "Default - Microphone",
+          "groupId": "20e8e4ab7c4f346f4e55b4695b9982bb"
+        },
+        {
+          "deviceType": "audiooutput",
+          "deviceId": "56d5d64970bccc19560818c057d46be73f8b42768c36e77875b3ad77de00aad5",
+          "label": "Default - Speakers",
+          "groupId": "20e8e4ab7c4f346f4e55b4695b9982bb"
+        },
+        {
+          "deviceType": "videoinput",
+          "deviceId": "b5adbca9fe0e3dffa4cac5bd38d529d72c5f2a3725683caa6c8bf27feef7fae3",
+          "label": "Integrated Camera",
+          "groupId": "20e8e4ab7c4f346f4e55b4695b9982bb"
+        }
+      ]
+    },
+    "webrtc": {
+      "mode": "disable",
+      "remoteIp": null
+    },
+    "geolocation": {
+      "mode": "block",
+      "enableFakeLocationData": true,
+      "latitude": null,
+      "longitude": null,
+      "accuracy": null,
+      "altitude": null
+    },
+    "content": {
+      "blockImages": false,
+      "imageSizeLimit": null,
+      "disablePlayVideo": false,
+      "disablePlaySound": false,
+      "disablePasswordSaveTips": false
+    },
+    "security": {
+      "ignoreCertificateErrors": false,
+      "sslCipherSuiteBlacklist": [],
+      "portScanProtection": true,
+      "portScanAllowList": []
+    },
+    "runtime": {
+      "gpuAcceleration": true,
+      "sandboxPermission": false,
+      "colorScheme": "system",
+      "window": {
+        "mode": "maximized",
+        "width": 1280,
+        "height": 720,
+        "position": {
+          "xRatio": 0,
+          "yRatio": 0,
+          "anchor": "tl"
+        }
+      }
+    },
+    "battery": {
+      "enabled": false,
+      "charging": false,
+      "chargingTime": "",
+      "dischargingTime": "",
+      "level": ""
+    },
+    "network": {
+      "enabled": true,
+      "type": "ethernet",
+      "effectiveType": "4g",
+      "downlink": 25,
+      "downlinkMax": 1000,
+      "rtt": 25,
+      "saveData": false
+    },
+    "bluetooth": {
+      "enabled": false,
+      "adapterAvailable": false
+    }
+  },
+  "roxyConfig": {
+    "computerName": "DESKTOP-FF5DB49",
+    "macAddress": "02:D8:4C:21:02:3A",
+    "searchEngine": {
+      "name": "Google"
+    },
+    "appLocale": "ja-JP",
+    "acceptLang": "ja-JP,ja;q=0.9,en;q=0.7",
+    "timeZone": "Asia/Tokyo",
+    "chromeVersion": "144.0.7559.236",
+    "chromeType": "Google Chrome",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.7559.236 Safari/537.36",
+    "audioBuffer": {
+      "version": "2",
+      "enableAudioBufferNoise": true,
+      "audioBufferNoiseValue": 0.6906073817517608,
+      "audioBufferNoiseInterval": 100
+    },
+    "canvasContext": {
+      "enableCanvasContextNoise": true,
+      "canvasContextNoiseValue": "B45DA79664AA8589F8AB8C3EF48202D3",
+      "canvasContextNoiseValueV2": 17201
+    },
+    "clientRects": {
+      "enable": true,
+      "clientRectsNoiseFactorX": -0.9325649277307093,
+      "clientRectsNoiseFactorY": 0.9173555979505181
+    },
+    "WebGL": {
+      "webglRenderer": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "webglVendor": "Google Inc. (Intel)",
+      "enableWebGLRendererNoise": true,
+      "webGLRendererNoiseInterval": 1,
+      "webGLRendererNoiseValue": "02D4CV954VHI4INU"
+    },
+    "WebGPU": {
+      "mode": "real",
+      "vendor": ""
+    },
+    "disableFontListV2": "Tahoma;Times New Roman",
+    "allowFontList": "McLaren;Radley;Mistral;Noto Serif JP;Mrs Saint Delafield;ARCHER;Charmonman;Fjalla One;Sail;Cuprum;Almarai;Montserrat Alternates;Palatino;Apple Color Emoji;Thonburi;Mogra;ZapfHumnst Dm BT;Oleo Script Swash Caps;Small Fonts;Sedgwick Ave Display;Stoke;Average Sans;Lao UI;Dekko;Sree Krushnadevaraya;ADOBE CASLON PRO;Limelight;IM Fell English SC;Fascinate Inline;Libre Barcode 128 Text;CG Times;Tinos;Averia Serif Libre;Serifa;Suranna;Hiragino Kaku Gothic ProN;Mongolian Baiti;Graduate;Allerta;Dhurjati;Saira Stencil One;Serifa Th BT;Sue Ellen Francisco;Comic Sans;Marcellus;Caesar Dressing;Electrolize;SimSun;Redressed;Amiri;Scope One;Astloch;Erica One;Heiti TC;Patua One;Coustard;FrankRuehl;Varela Round;M PLUS Rounded 1c;Jomhuria;Rye;Signika;Black Han Sans;Martel Sans;Habibi;Source Sans Pro;Zurich BlkEx BT;Days One;Voltaire;Farro;IM Fell Great Primer;Bowlby One SC;Corben;Niconne;Kumar One;Dotum;TypoUpright BT;Dauphin;Kartika;Perpetua;Rock Salt;Yeon Sung;Arbutus;Gautami;Alice;Gamja Flower;MoolBoran;Tristan;Meiryo UI;Script MT Bold;Zilla Slab;Tw Cen MT Condensed Extra Bold;Share Tech;Chela One;Chenla;Just Me Again Down Here;Noto Sans Canadian Aboriginal;Fontdiner Swanky;Poller One;Raleway Dots;Noto Sans Georgian;Noto Sans Gujarati;Vani;Gochi Hand;Korinna BT;Homenaje;Constantia;Microsoft Yi Baiti;Noto Sans Lao;Source Code Pro;Wingdings;SimHei;Cezanne;Angsana New;Combo;Sunflower;Vibur;Signika Negative;Noto Sans Thaana;Sofadi One;Wingdings 3;Palatino Linotype;Noto Serif Armenian;Boogaloo;MingLiU_HKSCS;MingLiU_HKSCS-ExtB",
+    "doNotTrack": true,
+    "geoLocation": {
+      "mode": "block",
+      "enableFakeLocationData": true,
+      "locationLatitude": null,
+      "locationLongitude": null,
+      "locationAccuracy": null,
+      "locationAltitude": null
+    },
+    "blockImages": false,
+    "ignoreCertificateErrors": false,
+    "disablePlayVideo": false,
+    "disablePlaySound": false,
+    "disablePasswordSaveTips": false,
+    "navigator": {
+      "platform": "Win32",
+      "hardwareConcurrency": 16,
+      "maxTouchPoints": 0,
+      "deviceMemory": 16,
+      "plugins": [
+        {
+          "name": "PDF Viewer",
+          "path": "internal-pdf-viewer",
+          "desc": "Portable Document Format|Portable Document Format",
+          "version": "",
+          "mime": [
+            {
+              "mime_type": "application/pdf",
+              "file_extensions": "pdf"
+            },
+            {
+              "mime_type": "text/pdf",
+              "file_extensions": "pdf"
+            }
+          ]
+        },
+        {
+          "name": "Chrome PDF Viewer",
+          "path": "internal-pdf-viewer",
+          "desc": "Portable Document Format|Portable Document Format",
+          "version": "",
+          "mime": [
+            {
+              "mime_type": "application/pdf",
+              "file_extensions": "pdf"
+            },
+            {
+              "mime_type": "text/pdf",
+              "file_extensions": "pdf"
+            }
+          ]
+        },
+        {
+          "name": "Chromium PDF Viewer",
+          "path": "internal-pdf-viewer",
+          "desc": "Portable Document Format|Portable Document Format",
+          "version": "",
+          "mime": [
+            {
+              "mime_type": "application/pdf",
+              "file_extensions": "pdf"
+            },
+            {
+              "mime_type": "text/pdf",
+              "file_extensions": "pdf"
+            }
+          ]
+        },
+        {
+          "name": "Microsoft Edge PDF Viewer",
+          "path": "internal-pdf-viewer",
+          "desc": "Portable Document Format|Portable Document Format",
+          "version": "",
+          "mime": [
+            {
+              "mime_type": "application/pdf",
+              "file_extensions": "pdf"
+            },
+            {
+              "mime_type": "text/pdf",
+              "file_extensions": "pdf"
+            }
+          ]
+        },
+        {
+          "name": "WebKit built-in PDF",
+          "path": "internal-pdf-viewer",
+          "desc": "Portable Document Format|Portable Document Format",
+          "version": "",
+          "mime": [
+            {
+              "mime_type": "application/pdf",
+              "file_extensions": "pdf"
+            },
+            {
+              "mime_type": "text/pdf",
+              "file_extensions": "pdf"
+            }
+          ]
+        }
+      ]
+    },
+    "userAgentMetadata": {
+      "platform": "Windows",
+      "mobile": false,
+      "platformVersion": "10.0.0"
+    },
+    "portScan": {
+      "enablePortScanWhiteList": true,
+      "portScanWhiteList": "0"
+    },
+    "screen": {
+      "pixelDepth": 24,
+      "colorDepth": 24,
+      "width": 1920,
+      "height": 1080,
+      "availWidth": 1920,
+      "availHeight": 1042,
+      "devicePixelRatio": 1
+    },
+    "speechSynthesis": {
+      "enable": false,
+      "voices": [
+        {
+          "name": "Microsoft David - English (United States)",
+          "isLocalService": true,
+          "lang": "en-US"
+        },
+        {
+          "name": "Microsoft Mark - English (United States)",
+          "isLocalService": true,
+          "lang": "en-US"
+        },
+        {
+          "name": "Microsoft Zira - English (United States)",
+          "isLocalService": true,
+          "lang": "en-US"
+        },
+        {
+          "name": "Google हिन्दी",
+          "lang": "hi-IN",
+          "isLocalService": true
+        },
+        {
+          "name": "Google Bahasa Indonesia",
+          "lang": "id-ID",
+          "isLocalService": true
+        },
+        {
+          "name": "Google 한국의",
+          "lang": "ko-KR",
+          "isLocalService": true
+        },
+        {
+          "name": "Google Deutsch",
+          "lang": "de-DE",
+          "isLocalService": false
+        },
+        {
+          "name": "Google español",
+          "lang": "es-ES",
+          "isLocalService": false
+        },
+        {
+          "name": "Google español de Estados Unidos",
+          "lang": "es-US",
+          "isLocalService": false
+        },
+        {
+          "name": "Google français",
+          "lang": "fr-FR",
+          "isLocalService": false
+        },
+        {
+          "name": "Google italiano",
+          "lang": "it-IT",
+          "isLocalService": false
+        },
+        {
+          "name": "Google Nederlands",
+          "lang": "nl-NL",
+          "isLocalService": false
+        },
+        {
+          "name": "Google polski",
+          "lang": "pl-PL",
+          "isLocalService": false
+        },
+        {
+          "name": "Google português do Brasil",
+          "lang": "pt-BR",
+          "isLocalService": false
+        },
+        {
+          "name": "Google UK English Female",
+          "lang": "en-GB",
+          "isLocalService": false
+        },
+        {
+          "name": "Google US English",
+          "lang": "en-US",
+          "isLocalService": false
+        },
+        {
+          "name": "Google русский",
+          "lang": "ru-RU",
+          "isLocalService": false
+        },
+        {
+          "name": "Google 國語（臺灣）",
+          "lang": "zh-TW",
+          "isLocalService": false
+        },
+        {
+          "name": "Google 日本語",
+          "lang": "ja-JP",
+          "isLocalService": false
+        },
+        {
+          "name": "Google 普通话（中国大陆）",
+          "lang": "zh-CN",
+          "isLocalService": false
+        },
+        {
+          "name": "Google 粤語（香港）",
+          "lang": "zh-HK",
+          "isLocalService": false
+        }
+      ]
+    },
+    "webRtcMode": "disableOk",
+    "ssl": {
+      "cipherSuiteBlacklist": ""
+    },
+    "battery": {
+      "enable": false,
+      "charging": false,
+      "chargingTime": "",
+      "dischargingTime": "",
+      "level": ""
+    },
+    "network": {
+      "enable": true,
+      "nettype": "ethernet",
+      "effectiveType": "4g",
+      "downlink": 25,
+      "downlinkMax": 1000,
+      "rtt": 25,
+      "saveData": false
+    },
+    "bluetooth": {
+      "enable": false,
+      "bluetoothAdapter": false
+    }
+  },
+  "runtimeConfig": {
+    "engine": "Chrome",
+    "launchArgs": [
+      "--disable-background-mode",
+      "--disable-popup-blocking",
+      "--no-first-run",
+      "--no-default-browser-check",
+      "--remote-debugging-port=0",
+      "--use-mock-keychain",
+      "--user-data-dir=<USER_DATA_DIR>",
+      "--no-sandbox",
+      "--disable-setuid-sandbox",
+      "--password-store=basic",
+      "--disable-backgrounding-occluded-windows",
+      "--start-maximized"
+    ],
+    "preferences": {
+      "browser": {
+        "theme": {
+          "color_scheme2": 0,
+          "color_scheme": 0
+        }
+      }
+    },
+    "localState": {
+      "background_mode": {
+        "enabled": false
+      }
+    },
+    "colorSchemeCache": "system",
+    "originalSemantics": {
+      "chromeSandboxAlwaysDisabled": true,
+      "requestedSandboxPermission": false,
+      "arbitraryStartupParametersAccepted": false
+    }
+  }
+}

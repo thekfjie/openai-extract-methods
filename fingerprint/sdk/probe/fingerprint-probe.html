@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>本地浏览器指纹观测页</title>
+  <style>
+    :root { color-scheme: light dark; font-family: system-ui, sans-serif; }
+    body { max-width: 960px; margin: 32px auto; padding: 0 20px 48px; }
+    h1 { font-size: 1.6rem; }
+    p { line-height: 1.55; }
+    button { padding: 9px 14px; margin-bottom: 16px; }
+    pre { overflow: auto; padding: 16px; border: 1px solid #8886; border-radius: 8px; line-height: 1.45; }
+  </style>
+</head>
+<body>
+  <h1>本地浏览器指纹观测页</h1>
+  <p>该页面只在当前页面读取浏览器公开 API，不上传数据。请在目标 Roxy 浏览器环境中打开本文件，然后与生成的 profile JSON 对照。</p>
+  <button id="refresh" type="button">重新采集</button>
+  <pre id="result">采集中……</pre>
+  <canvas id="canvas" width="360" height="80" hidden></canvas>
+  <script>
+    async function sha256(text) {
+      const bytes = new TextEncoder().encode(text);
+      const hash = await crypto.subtle.digest("SHA-256", bytes);
+      return [...new Uint8Array(hash)].map((value) => value.toString(16).padStart(2, "0")).join("");
+    }
+
+    function webgl() {
+      const canvas = document.createElement("canvas");
+      const gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+      if (!gl) return { available: false };
+      const debug = gl.getExtension("WEBGL_debug_renderer_info");
+      return {
+        available: true,
+        vendor: debug ? gl.getParameter(debug.UNMASKED_VENDOR_WEBGL) : gl.getParameter(gl.VENDOR),
+        renderer: debug ? gl.getParameter(debug.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER),
+        version: gl.getParameter(gl.VERSION)
+      };
+    }
+
+    async function canvasHash() {
+      const canvas = document.querySelector("#canvas");
+      const context = canvas.getContext("2d");
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      context.textBaseline = "alphabetic";
+      context.font = "18px Arial";
+      context.fillStyle = "#f60";
+      context.fillRect(8, 8, 120, 32);
+      context.fillStyle = "#069";
+      context.fillText("Roxy local fingerprint 3.9.2 🧪", 12, 58);
+      return sha256(canvas.toDataURL());
+    }
+
+    async function audioHash() {
+      const Offline = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+      if (!Offline) return null;
+      const context = new Offline(1, 44100, 44100);
+      const oscillator = context.createOscillator();
+      const compressor = context.createDynamicsCompressor();
+      oscillator.type = "triangle";
+      oscillator.frequency.value = 10000;
+      oscillator.connect(compressor);
+      compressor.connect(context.destination);
+      oscillator.start(0);
+      const rendered = await context.startRendering();
+      const samples = rendered.getChannelData(0).slice(4500, 5000);
+      return sha256(new Uint8Array(samples.buffer));
+    }
+
+    function voices() {
+      return speechSynthesis.getVoices().map(({ name, lang, localService }) => ({ name, lang, localService }));
+    }
+
+    async function collect() {
+      const uaData = navigator.userAgentData;
+      let highEntropy = null;
+      if (uaData?.getHighEntropyValues) {
+        try {
+          highEntropy = await uaData.getHighEntropyValues(["architecture", "bitness", "model", "platformVersion", "uaFullVersion"]);
+        } catch {}
+      }
+      const result = {
+        collectedAt: new Date().toISOString(),
+        userAgent: navigator.userAgent,
+        userAgentData: uaData ? { brands: uaData.brands, mobile: uaData.mobile, platform: uaData.platform, highEntropy } : null,
+        navigator: {
+          platform: navigator.platform,
+          language: navigator.language,
+          languages: navigator.languages,
+          hardwareConcurrency: navigator.hardwareConcurrency,
+          deviceMemory: navigator.deviceMemory,
+          maxTouchPoints: navigator.maxTouchPoints,
+          doNotTrack: navigator.doNotTrack,
+          plugins: [...navigator.plugins].map((plugin) => plugin.name)
+        },
+        screen: {
+          width: screen.width,
+          height: screen.height,
+          availWidth: screen.availWidth,
+          availHeight: screen.availHeight,
+          colorDepth: screen.colorDepth,
+          pixelDepth: screen.pixelDepth,
+          devicePixelRatio
+        },
+        locale: {
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          locale: Intl.DateTimeFormat().resolvedOptions().locale,
+          timezoneOffsetMinutes: new Date().getTimezoneOffset()
+        },
+        webgl: webgl(),
+        canvasSha256: await canvasHash(),
+        audioSha256: await audioHash(),
+        clientRect: document.body.getBoundingClientRect().toJSON(),
+        voices: voices(),
+        mediaDevicesSupported: Boolean(navigator.mediaDevices?.enumerateDevices)
+      };
+      document.querySelector("#result").textContent = JSON.stringify(result, null, 2);
+    }
+
+    document.querySelector("#refresh").addEventListener("click", collect);
+    speechSynthesis.addEventListener?.("voiceschanged", collect, { once: true });
+    collect();
+  </script>
+</body>
+</html>

@@ -1,0 +1,1001 @@
+{
+  "profile": {
+    "schemaVersion": 2,
+    "purpose": "local-browser-compatibility-testing",
+    "id": "e460ad4c63cb484d",
+    "seed": "sample-ios-chrome",
+    "preset": "ios-chrome",
+    "generator": {
+      "algorithm": "roxybrowser-3.9.2-compatible",
+      "featureMode": "random",
+      "deterministic": true,
+      "baseDataSource": "local-template",
+      "provider": null
+    },
+    "engine": {
+      "family": "Chrome",
+      "version": "144.0.7559.236",
+      "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/144.0.7559.236 Mobile/15E148 Safari/604.1",
+      "userAgentMetadata": {
+        "brands": [
+          {
+            "brand": "Chromium",
+            "version": "144"
+          },
+          {
+            "brand": "Google Chrome",
+            "version": "144"
+          },
+          {
+            "brand": "Not/A)Brand",
+            "version": "24"
+          }
+        ],
+        "fullVersionList": [
+          {
+            "brand": "Chromium",
+            "version": "144.0.7559.236"
+          },
+          {
+            "brand": "Google Chrome",
+            "version": "144.0.7559.236"
+          },
+          {
+            "brand": "Not/A)Brand",
+            "version": "24.0.0.0"
+          }
+        ],
+        "platform": "iOS",
+        "mobile": true,
+        "platformVersion": "17.6.0",
+        "architecture": "arm",
+        "model": "iPhone",
+        "bitness": "64",
+        "wow64": false
+      }
+    },
+    "os": {
+      "name": "IOS",
+      "version": "17.6",
+      "architecture": "arm",
+      "model": "iPhone"
+    },
+    "machine": {
+      "computerName": "iPhone-50878E7C",
+      "macAddress": "02:F1:2B:24:91:04"
+    },
+    "locale": {
+      "appLocale": "nl-NL",
+      "acceptLanguage": "nl-NL,nl;q=0.9,en;q=0.7",
+      "timezone": "Europe/Amsterdam"
+    },
+    "navigator": {
+      "platform": "iPhone",
+      "hardwareConcurrency": 6,
+      "deviceMemory": 8,
+      "maxTouchPoints": 5,
+      "mobile": true,
+      "doNotTrack": false,
+      "pluginsEnabled": false,
+      "plugins": []
+    },
+    "screen": {
+      "width": 393,
+      "height": 852,
+      "availWidth": 393,
+      "availHeight": 852,
+      "colorDepth": 24,
+      "pixelDepth": 24,
+      "devicePixelRatio": 3
+    },
+    "graphics": {
+      "webglInfoEnabled": true,
+      "webglVendor": "Apple Inc.",
+      "webglRenderer": "Apple GPU",
+      "webgpu": {
+        "mode": "real",
+        "vendor": "Apple"
+      },
+      "noise": {
+        "enabled": true,
+        "interval": 1,
+        "value": "84T8UT3WMTPTCCXC"
+      }
+    },
+    "canvas": {
+      "enabled": true,
+      "value": "86AF8628AA6866719442991393FBDCDA",
+      "valueV2": 66808
+    },
+    "audioContext": {
+      "enabled": true,
+      "value": 0.3505190990399569,
+      "version": "2",
+      "interval": 100
+    },
+    "clientRects": {
+      "enabled": true,
+      "noiseFactorX": -0.7765087466686964,
+      "noiseFactorY": 0.2894445350393653
+    },
+    "fonts": {
+      "enabled": true,
+      "localCatalog": [
+        "Arial",
+        "Apple Color Emoji",
+        "Courier New",
+        "Georgia",
+        "Helvetica",
+        "Helvetica Neue",
+        "Hiragino Kaku Gothic ProN",
+        "Hiragino Mincho ProN",
+        "Menlo",
+        "New York",
+        "SF Pro Display",
+        "SF Pro Text",
+        "Times New Roman",
+        "Trebuchet MS",
+        "Verdana"
+      ],
+      "disabled": [
+        "Helvetica Neue",
+        "Helvetica",
+        "Times New Roman",
+        "Hiragino Mincho ProN",
+        "SF Pro Display",
+        "Menlo"
+      ],
+      "allowed": [
+        "Serifa BT",
+        "Teletype",
+        "Glegoo",
+        "Freefrm721 Blk BT",
+        "Microsoft JhengHei",
+        "Eczar",
+        "Comic Sans MS",
+        "IBM Plex Sans Condensed",
+        "Belgrano",
+        "Katibeh",
+        "Forum",
+        "Coda Caption",
+        "Asap Condensed",
+        "Convergence",
+        "Londrina Outline",
+        "Freckle Face",
+        "Jacques Francois",
+        "Averia Sans Libre",
+        "Algerian",
+        "Battambang",
+        "Biryani",
+        "GFS Didot",
+        "Edwardian Script ITC",
+        "Chau Philomene One",
+        "Bowlby One",
+        "Bayon",
+        "Berlin Sans FB Demi",
+        "Georgia",
+        "Changa One",
+        "Finger Paint",
+        "Bangla Sangam MN",
+        "Monotype Corsiva",
+        "Rockwell Extra Bold",
+        "Baloo Chettan",
+        "Times New Roman",
+        "Electrolize",
+        "Codystar",
+        "Donegal One",
+        "Thonburi",
+        "Bellefair",
+        "Baloo Bhai",
+        "Antic Didone",
+        "GOTHAM",
+        "Barlow Semi Condensed",
+        "FrankRuehl",
+        "Berkshire Swash",
+        "Consolas",
+        "Frank Ruhl Libre",
+        "Oriya Sangam MN",
+        "Kosugi Maru",
+        "Arizonia",
+        "Boulder",
+        "Roman",
+        "Century Gothic",
+        "Geostar",
+        "Coustard",
+        "Anonymous Pro",
+        "Aharoni",
+        "Herald",
+        "Gentium Basic",
+        "Modak",
+        "Crete Round",
+        "Nanum Myeongjo",
+        "Humanst521 BT",
+        "Krona One",
+        "Cormorant Infant",
+        "Corbel",
+        "Homemade Apple",
+        "Centaur",
+        "Dosis",
+        "Jomhuria",
+        "B612",
+        "Copperplate Gothic",
+        "Norican",
+        "Darker Grotesque",
+        "Candara",
+        "Mouse Memoirs",
+        "Lemonada",
+        "Lacquer",
+        "Script MT Bold",
+        "Enriqueta",
+        "Copperplate Gothic Light",
+        "Miriam Libre",
+        "Noto Sans TC",
+        "BatangChe",
+        "Karma",
+        "Bree Serif",
+        "Denmark",
+        "Perpetua",
+        "Josefin Sans",
+        "Segoe UI Symbol",
+        "Agency FB",
+        "Nova Oval",
+        "Nokora",
+        "Noto Serif JP",
+        "Wingdings",
+        "Days One",
+        "Noticia Text",
+        "WHITNEY",
+        "Matura MT Script Capitals",
+        "Kanit",
+        "Lucida Calligraphy",
+        "Maiandra GD",
+        "Mrs Eaves",
+        "Comfortaa",
+        "Allan",
+        "Love Ya Like A Sister",
+        "Hind",
+        "Aubrey",
+        "Lexend Exa",
+        "Hind Madurai",
+        "Odor Mean Chey",
+        "EUROSTILE",
+        "Cochin",
+        "Modern Antiqua",
+        "Savoye LET",
+        "DilleniaUPC",
+        "Copse",
+        "Futura Lt BT",
+        "Lucida Sans Unicode",
+        "Karla",
+        "Lithograph Light",
+        "Niagara Engraved",
+        "Montserrat",
+        "Metrophobic",
+        "Asar",
+        "Nova Slim",
+        "Dawning of a New Day",
+        "ZapfEllipt BT",
+        "Nyala",
+        "David Libre",
+        "Didot",
+        "Encode Sans Expanded",
+        "Meddon",
+        "Cutive",
+        "Poster",
+        "Hind Guntur",
+        "Bad Script",
+        "Geometr231 Lt BT",
+        "Lancelot",
+        "Microsoft Tai Le",
+        "LUCIDA GRANDE",
+        "Devonshire",
+        "Kokila",
+        "Clarendon Condensed",
+        "Peralta",
+        "Nanum Brush Script",
+        "McLaren",
+        "Oranienbaum",
+        "Philosopher",
+        "Audiowide",
+        "Jester",
+        "Fanwood Text",
+        "Montaga",
+        "Times New Roman PS",
+        "Macondo Swash Caps",
+        "Adobe Garamond",
+        "Chango",
+        "Podkova",
+        "Poiret One",
+        "Rage Italic",
+        "Poly",
+        "Engravers MT",
+        "Bazooka",
+        "Big Caslon",
+        "Charter Bd BT",
+        "Comic Sans",
+        "Euphemia UCAS",
+        "Blackadder ITC",
+        "Encode Sans",
+        "Holtwood One SC",
+        "Press Start 2P",
+        "Allura",
+        "Cherry Cream Soda",
+        "Miriam Fixed",
+        "Prompt",
+        "Cagliostro",
+        "Charter BT",
+        "Iceberg",
+        "Caveat",
+        "Merienda",
+        "Nova Round",
+        "Britannic Bold",
+        "Amazone BT",
+        "Modern",
+        "Carrois Gothic",
+        "INCONSOLATA",
+        "Pacifico",
+        "Latha",
+        "Neuton",
+        "Santa Fe LET",
+        "Kameron",
+        "Informal011 BT",
+        "Curlz MT",
+        "Mukta Malar",
+        "MS LineDraw",
+        "Big Shoulders Text",
+        "Arial Hebrew",
+        "Rajdhani",
+        "Encode Sans Condensed",
+        "Atomic Age",
+        "Cornerstone",
+        "MUSEO",
+        "Fasthand",
+        "Ravi Prakash",
+        "Offside",
+        "Red Hat Text",
+        "Calligrapher",
+        "Chathura",
+        "Helvetica Neue",
+        "Revalia",
+        "Party LET",
+        "Mali",
+        "Goblin One",
+        "SimHei",
+        "Gudea",
+        "Public Sans",
+        "Cantarell",
+        "Segoe Print",
+        "Elephant",
+        "Narkisim",
+        "Montserrat Alternates",
+        "Kite One",
+        "Romanesco",
+        "Dancing Script",
+        "Expletus Sans",
+        "Rosarivo",
+        "Gurmukhi MN",
+        "Rozha One",
+        "Rubik",
+        "FangSong",
+        "LilyUPC",
+        "Rufina",
+        "Mandali",
+        "Ruluko",
+        "Lalezar",
+        "Perpetua Titling MT",
+        "Russo One",
+        "Lucida Bright",
+        "Raavi",
+        "Kodchasan",
+        "Cairo",
+        "Sail",
+        "Patrick Hand",
+        "Cambay",
+        "Nosifer",
+        "Arial",
+        "Cabin",
+        "Londrina Shadow",
+        "Mona Lisa Solid ITC TT",
+        "Rosario",
+        "Sansita",
+        "Sarabun",
+        "Blinker",
+        "Univers Condensed",
+        "Bungee Inline",
+        "Montez",
+        "Junge",
+        "Ribbon131 Bd BT",
+        "Gugi",
+        "Synchro LET",
+        "Lexend Mega",
+        "Felix Titling",
+        "MT Extra",
+        "Hoefler Text",
+        "Inconsolata",
+        "Sedgwick Ave Display",
+        "Bembo",
+        "Satisfy",
+        "OSAKA",
+        "Nobile",
+        "Baloo Bhaijaan",
+        "SILKSCREEN",
+        "Pangolin",
+        "Lato",
+        "Rye",
+        "AmerType Md BT",
+        "Shrikhand",
+        "Lexend Deca",
+        "Boogaloo",
+        "Aurora Cn BT",
+        "MS PGothic",
+        "IM Fell DW Pica SC",
+        "Single Day",
+        "Quantico",
+        "Material Icons",
+        "Maven Pro",
+        "Asset",
+        "Slabo 13px",
+        "Gill Sans Ultra Bold Condensed",
+        "Snap ITC",
+        "Big Shoulders Display",
+        "ARCHER",
+        "Gaegu",
+        "Albertus Medium",
+        "Economica",
+        "Sofadi One",
+        "ZWAdobeF",
+        "Song Myung",
+        "PMingLiU",
+        "Sorts Mill Goudy",
+        "Source Code Pro",
+        "Lithograph",
+        "Alegreya Sans SC",
+        "Libre Baskerville",
+        "Special Elite",
+        "DFKai-SB",
+        "Spectral SC",
+        "Spicy Rice",
+        "Goudy Stout",
+        "Cabin Condensed",
+        "Kreon",
+        "Sree Krushnadevaraya",
+        "Butcherman",
+        "Baloo Tamma",
+        "GoudyOLSt BT",
+        "Stalemate",
+        "Hepta Slab",
+        "Just Me Again Down Here",
+        "Bodoni MT Condensed",
+        "Stint Ultra Expanded",
+        "Oleo Script Swash Caps",
+        "Bungee Outline",
+        "Saira Condensed",
+        "Overlock SC",
+        "Cambria",
+        "Kirang Haerang",
+        "Marcellus",
+        "Sunshiney",
+        "Vagabond",
+        "Traditional Arabic",
+        "Jolly Lodger",
+        "Suravaram",
+        "Minion Pro",
+        "Swanky and Moo Moo",
+        "Skia",
+        "Tajawal",
+        "Tangerine",
+        "Cabin Sketch",
+        "Lilita One",
+        "Taviraj",
+        "BenchNine",
+        "Telex",
+        "Tenali Ramakrishna",
+        "Informal Roman",
+        "Ruthie",
+        "Thasadith",
+        "Stalinist One",
+        "Homenaje",
+        "Archivo Black",
+        "Literata",
+        "Tinos",
+        "Mukta Mahee",
+        "IM Fell DW Pica",
+        "Verdana",
+        "IBM Plex Serif",
+        "DB LCD Temp",
+        "Bodoni MT Poster Compressed",
+        "East Sea Dokdo",
+        "PTBarnum BT",
+        "Tulpen One",
+        "PT Sans Narrow",
+        "Cormorant SC",
+        "Kantumruy",
+        "Ubuntu Mono",
+        "CordiaUPC",
+        "ShelleyVolante BT",
+        "Lucida Sans Typewriter",
+        "MingLiU",
+        "Delius Swash Caps",
+        "Rambla",
+        "Unkempt",
+        "Sanchez",
+        "Unna",
+        "Permanent Marker",
+        "Vampiro One",
+        "Ranchers",
+        "Varela Round",
+        "Schoolbell",
+        "Saira Stencil One",
+        "Vibes",
+        "Vibur",
+        "Gorditas",
+        "Viga",
+        "Trade Winds",
+        "GungsuhChe",
+        "Vollkorn",
+        "Qwigley",
+        "Voltaire",
+        "Brawler",
+        "Reem Kufi",
+        "Euphemia",
+        "Milonga",
+        "PosterBodoni BT",
+        "Wendy One",
+        "Amarante",
+        "Righteous",
+        "Eater",
+        "Libre Barcode 39 Extended",
+        "Habibi",
+        "Montserrat Subrayada",
+        "Bahiana",
+        "Patua One",
+        "Jenson",
+        "Cormorant Unicase",
+        "ZCOOL KuaiLe",
+        "ZCOOL QingKe HuangYou",
+        "Ranga",
+        "Clarendon",
+        "Zhi Mang Xing",
+        "Oregano",
+        "Francois One",
+        "Dangrek",
+        "Noto Sans Armenian",
+        "Almendra Display",
+        "Barrio",
+        "Signika Negative",
+        "Puritan",
+        "Apple Chancery",
+        "Khula",
+        "Squada One",
+        "Saira Extra Condensed",
+        "Yesteryear",
+        "Noto Sans Hebrew",
+        "Noto Sans JP Regular",
+        "Fugaz One",
+        "Bell MT",
+        "Tw Cen MT Condensed",
+        "Microsoft New Tai Lue",
+        "Tubular",
+        "Snell Roundhand",
+        "Segoe Script",
+        "Noto Sans Oriya",
+        "Noto Sans SC Regular",
+        "Flavors",
+        "Noto Sans TC Regular",
+        "Indie Flower",
+        "Lexend Tera",
+        "Noto Sans Thaana",
+        "Sarala",
+        "MS Reference Specialty",
+        "Fira Mono",
+        "Noto Serif Armenian",
+        "Libre Barcode 39 Extended Text",
+        "Griffy",
+        "Spirax"
+      ]
+    },
+    "speechSynthesis": {
+      "enabled": true,
+      "voices": [
+        {
+          "name": "Google US English",
+          "lang": "en-US",
+          "isLocalService": true
+        },
+        {
+          "name": "Google français",
+          "lang": "fr-FR",
+          "isLocalService": true
+        },
+        {
+          "name": "Google Nederlands",
+          "lang": "nl-NL",
+          "isLocalService": true
+        },
+        {
+          "name": "Google Bahasa Indonesia",
+          "lang": "id-ID",
+          "isLocalService": false
+        },
+        {
+          "name": "Google Deutsch",
+          "lang": "de-DE",
+          "isLocalService": false
+        },
+        {
+          "name": "Google español",
+          "lang": "es-ES",
+          "isLocalService": false
+        },
+        {
+          "name": "Google español de Estados Unidos",
+          "lang": "es-US",
+          "isLocalService": false
+        },
+        {
+          "name": "Google italiano",
+          "lang": "it-IT",
+          "isLocalService": false
+        },
+        {
+          "name": "Google polski",
+          "lang": "pl-PL",
+          "isLocalService": false
+        },
+        {
+          "name": "Google português do Brasil",
+          "lang": "pt-BR",
+          "isLocalService": false
+        },
+        {
+          "name": "Google UK English Female",
+          "lang": "en-GB",
+          "isLocalService": false
+        },
+        {
+          "name": "Google UK English Male",
+          "lang": "en-GB",
+          "isLocalService": false
+        },
+        {
+          "name": "Google русский",
+          "lang": "ru-RU",
+          "isLocalService": false
+        },
+        {
+          "name": "Google हिन्दी",
+          "lang": "hi-IN",
+          "isLocalService": false
+        },
+        {
+          "name": "Google 國語（臺灣）",
+          "lang": "zh-TW",
+          "isLocalService": false
+        },
+        {
+          "name": "Google 한국의",
+          "lang": "ko-KR",
+          "isLocalService": false
+        },
+        {
+          "name": "Google 普通话（中国大陆）",
+          "lang": "zh-CN",
+          "isLocalService": false
+        },
+        {
+          "name": "Google 粤語（香港）",
+          "lang": "zh-HK",
+          "isLocalService": false
+        }
+      ]
+    },
+    "mediaDevices": {
+      "enabled": false,
+      "devices": [
+        {
+          "deviceType": "audioinput",
+          "deviceId": "",
+          "label": "",
+          "groupId": ""
+        }
+      ]
+    },
+    "webrtc": {
+      "mode": "disable",
+      "remoteIp": null
+    },
+    "geolocation": {
+      "mode": "block",
+      "enableFakeLocationData": true,
+      "latitude": null,
+      "longitude": null,
+      "accuracy": null,
+      "altitude": null
+    },
+    "content": {
+      "blockImages": false,
+      "imageSizeLimit": null,
+      "disablePlayVideo": false,
+      "disablePlaySound": false,
+      "disablePasswordSaveTips": false
+    },
+    "security": {
+      "ignoreCertificateErrors": false,
+      "sslCipherSuiteBlacklist": [],
+      "portScanProtection": true,
+      "portScanAllowList": []
+    },
+    "runtime": {
+      "gpuAcceleration": true,
+      "sandboxPermission": false,
+      "colorScheme": "system",
+      "window": {
+        "mode": "maximized",
+        "width": 1280,
+        "height": 720,
+        "position": {
+          "xRatio": 0,
+          "yRatio": 0,
+          "anchor": "tl"
+        }
+      }
+    },
+    "battery": {
+      "enabled": true,
+      "charging": false,
+      "chargingTime": 0,
+      "dischargingTime": 30440,
+      "level": 0.182
+    },
+    "network": {
+      "enabled": false,
+      "type": "",
+      "effectiveType": "",
+      "downlink": "",
+      "downlinkMax": "",
+      "rtt": "",
+      "saveData": false
+    },
+    "bluetooth": {
+      "enabled": true,
+      "adapterAvailable": true
+    }
+  },
+  "roxyConfig": {
+    "computerName": "iPhone-50878E7C",
+    "macAddress": "02:F1:2B:24:91:04",
+    "searchEngine": {
+      "name": "Google"
+    },
+    "appLocale": "nl-NL",
+    "acceptLang": "nl-NL,nl;q=0.9,en;q=0.7",
+    "timeZone": "Europe/Amsterdam",
+    "chromeVersion": "144.0.7559.236",
+    "chromeType": "Google Chrome",
+    "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/144.0.7559.236 Mobile/15E148 Safari/604.1",
+    "audioBuffer": {
+      "version": "2",
+      "enableAudioBufferNoise": true,
+      "audioBufferNoiseValue": 0.3505190990399569,
+      "audioBufferNoiseInterval": 100
+    },
+    "canvasContext": {
+      "enableCanvasContextNoise": true,
+      "canvasContextNoiseValue": "86AF8628AA6866719442991393FBDCDA",
+      "canvasContextNoiseValueV2": 66808
+    },
+    "clientRects": {
+      "enable": true,
+      "clientRectsNoiseFactorX": -0.7765087466686964,
+      "clientRectsNoiseFactorY": 0.2894445350393653
+    },
+    "WebGL": {
+      "webglRenderer": "Apple GPU",
+      "webglVendor": "Apple Inc.",
+      "enableWebGLRendererNoise": true,
+      "webGLRendererNoiseInterval": 1,
+      "webGLRendererNoiseValue": "84T8UT3WMTPTCCXC"
+    },
+    "WebGPU": {
+      "mode": "real",
+      "vendor": "Apple"
+    },
+    "disableFontListV2": "Helvetica Neue;Helvetica;Times New Roman;Hiragino Mincho ProN;SF Pro Display;Menlo",
+    "allowFontList": "Serifa BT;Teletype;Glegoo;Freefrm721 Blk BT;Microsoft JhengHei;Eczar;Comic Sans MS;IBM Plex Sans Condensed;Belgrano;Katibeh;Forum;Coda Caption;Asap Condensed;Convergence;Londrina Outline;Freckle Face;Jacques Francois;Averia Sans Libre;Algerian;Battambang;Biryani;GFS Didot;Edwardian Script ITC;Chau Philomene One;Bowlby One;Bayon;Berlin Sans FB Demi;Georgia;Changa One;Finger Paint;Bangla Sangam MN;Monotype Corsiva;Rockwell Extra Bold;Baloo Chettan;Times New Roman;Electrolize;Codystar;Donegal One;Thonburi;Bellefair;Baloo Bhai;Antic Didone;GOTHAM;Barlow Semi Condensed;FrankRuehl;Berkshire Swash;Consolas;Frank Ruhl Libre;Oriya Sangam MN;Kosugi Maru;Arizonia;Boulder;Roman;Century Gothic;Geostar;Coustard;Anonymous Pro;Aharoni;Herald;Gentium Basic;Modak;Crete Round;Nanum Myeongjo;Humanst521 BT;Krona One;Cormorant Infant;Corbel;Homemade Apple;Centaur;Dosis;Jomhuria;B612;Copperplate Gothic;Norican;Darker Grotesque;Candara;Mouse Memoirs;Lemonada;Lacquer;Script MT Bold;Enriqueta;Copperplate Gothic Light;Miriam Libre;Noto Sans TC;BatangChe;Karma;Bree Serif;Denmark;Perpetua;Josefin Sans;Segoe UI Symbol;Agency FB;Nova Oval;Nokora;Noto Serif JP;Wingdings;Days One;Noticia Text;WHITNEY;Matura MT Script Capitals;Kanit;Lucida Calligraphy;Maiandra GD;Mrs Eaves;Comfortaa;Allan;Love Ya Like A Sister;Hind;Aubrey;Lexend Exa;Hind Madurai;Odor Mean Chey;EUROSTILE;Cochin;Modern Antiqua;Savoye LET;DilleniaUPC;Copse;Futura Lt BT;Lucida Sans Unicode;Karla;Lithograph Light;Niagara Engraved;Montserrat;Metrophobic;Asar;Nova Slim;Dawning of a New Day;ZapfEllipt BT;Nyala;David Libre;Didot;Encode Sans Expanded;Meddon;Cutive;Poster;Hind Guntur;Bad Script;Geometr231 Lt BT;Lancelot;Microsoft Tai Le;LUCIDA GRANDE;Devonshire;Kokila;Clarendon Condensed;Peralta;Nanum Brush Script;McLaren;Oranienbaum;Philosopher;Audiowide;Jester;Fanwood Text;Montaga;Times New Roman PS;Macondo Swash Caps;Adobe Garamond;Chango;Podkova;Poiret One;Rage Italic;Poly;Engravers MT;Bazooka;Big Caslon;Charter Bd BT;Comic Sans;Euphemia UCAS;Blackadder ITC;Encode Sans;Holtwood One SC;Press Start 2P;Allura;Cherry Cream Soda;Miriam Fixed;Prompt;Cagliostro;Charter BT;Iceberg;Caveat;Merienda;Nova Round;Britannic Bold;Amazone BT;Modern;Carrois Gothic;INCONSOLATA;Pacifico;Latha;Neuton;Santa Fe LET;Kameron;Informal011 BT;Curlz MT;Mukta Malar;MS LineDraw;Big Shoulders Text;Arial Hebrew;Rajdhani;Encode Sans Condensed;Atomic Age;Cornerstone;MUSEO;Fasthand;Ravi Prakash;Offside;Red Hat Text;Calligrapher;Chathura;Helvetica Neue;Revalia;Party LET;Mali;Goblin One;SimHei;Gudea;Public Sans;Cantarell;Segoe Print;Elephant;Narkisim;Montserrat Alternates;Kite One;Romanesco;Dancing Script;Expletus Sans;Rosarivo;Gurmukhi MN;Rozha One;Rubik;FangSong;LilyUPC;Rufina;Mandali;Ruluko;Lalezar;Perpetua Titling MT;Russo One;Lucida Bright;Raavi;Kodchasan;Cairo;Sail;Patrick Hand;Cambay;Nosifer;Arial;Cabin;Londrina Shadow;Mona Lisa Solid ITC TT;Rosario;Sansita;Sarabun;Blinker;Univers Condensed;Bungee Inline;Montez;Junge;Ribbon131 Bd BT;Gugi;Synchro LET;Lexend Mega;Felix Titling;MT Extra;Hoefler Text;Inconsolata;Sedgwick Ave Display;Bembo;Satisfy;OSAKA;Nobile;Baloo Bhaijaan;SILKSCREEN;Pangolin;Lato;Rye;AmerType Md BT;Shrikhand;Lexend Deca;Boogaloo;Aurora Cn BT;MS PGothic;IM Fell DW Pica SC;Single Day;Quantico;Material Icons;Maven Pro;Asset;Slabo 13px;Gill Sans Ultra Bold Condensed;Snap ITC;Big Shoulders Display;ARCHER;Gaegu;Albertus Medium;Economica;Sofadi One;ZWAdobeF;Song Myung;PMingLiU;Sorts Mill Goudy;Source Code Pro;Lithograph;Alegreya Sans SC;Libre Baskerville;Special Elite;DFKai-SB;Spectral SC;Spicy Rice;Goudy Stout;Cabin Condensed;Kreon;Sree Krushnadevaraya;Butcherman;Baloo Tamma;GoudyOLSt BT;Stalemate;Hepta Slab;Just Me Again Down Here;Bodoni MT Condensed;Stint Ultra Expanded;Oleo Script Swash Caps;Bungee Outline;Saira Condensed;Overlock SC;Cambria;Kirang Haerang;Marcellus;Sunshiney;Vagabond;Traditional Arabic;Jolly Lodger;Suravaram;Minion Pro;Swanky and Moo Moo;Skia;Tajawal;Tangerine;Cabin Sketch;Lilita One;Taviraj;BenchNine;Telex;Tenali Ramakrishna;Informal Roman;Ruthie;Thasadith;Stalinist One;Homenaje;Archivo Black;Literata;Tinos;Mukta Mahee;IM Fell DW Pica;Verdana;IBM Plex Serif;DB LCD Temp;Bodoni MT Poster Compressed;East Sea Dokdo;PTBarnum BT;Tulpen One;PT Sans Narrow;Cormorant SC;Kantumruy;Ubuntu Mono;CordiaUPC;ShelleyVolante BT;Lucida Sans Typewriter;MingLiU;Delius Swash Caps;Rambla;Unkempt;Sanchez;Unna;Permanent Marker;Vampiro One;Ranchers;Varela Round;Schoolbell;Saira Stencil One;Vibes;Vibur;Gorditas;Viga;Trade Winds;GungsuhChe;Vollkorn;Qwigley;Voltaire;Brawler;Reem Kufi;Euphemia;Milonga;PosterBodoni BT;Wendy One;Amarante;Righteous;Eater;Libre Barcode 39 Extended;Habibi;Montserrat Subrayada;Bahiana;Patua One;Jenson;Cormorant Unicase;ZCOOL KuaiLe;ZCOOL QingKe HuangYou;Ranga;Clarendon;Zhi Mang Xing;Oregano;Francois One;Dangrek;Noto Sans Armenian;Almendra Display;Barrio;Signika Negative;Puritan;Apple Chancery;Khula;Squada One;Saira Extra Condensed;Yesteryear;Noto Sans Hebrew;Noto Sans JP Regular;Fugaz One;Bell MT;Tw Cen MT Condensed;Microsoft New Tai Lue;Tubular;Snell Roundhand;Segoe Script;Noto Sans Oriya;Noto Sans SC Regular;Flavors;Noto Sans TC Regular;Indie Flower;Lexend Tera;Noto Sans Thaana;Sarala;MS Reference Specialty;Fira Mono;Noto Serif Armenian;Libre Barcode 39 Extended Text;Griffy;Spirax",
+    "doNotTrack": false,
+    "geoLocation": {
+      "mode": "block",
+      "enableFakeLocationData": true,
+      "locationLatitude": null,
+      "locationLongitude": null,
+      "locationAccuracy": null,
+      "locationAltitude": null
+    },
+    "blockImages": false,
+    "ignoreCertificateErrors": false,
+    "disablePlayVideo": false,
+    "disablePlaySound": false,
+    "disablePasswordSaveTips": false,
+    "navigator": {
+      "platform": "iPhone",
+      "hardwareConcurrency": 6,
+      "maxTouchPoints": 5,
+      "deviceMemory": 8,
+      "plugins": []
+    },
+    "userAgentMetadata": {
+      "platform": "iOS",
+      "mobile": true,
+      "platformVersion": "17.6.0"
+    },
+    "portScan": {
+      "enablePortScanWhiteList": true,
+      "portScanWhiteList": "0"
+    },
+    "screen": {
+      "pixelDepth": 24,
+      "colorDepth": 24,
+      "width": 393,
+      "height": 852,
+      "availWidth": 393,
+      "availHeight": 852,
+      "devicePixelRatio": 3
+    },
+    "speechSynthesis": {
+      "enable": true,
+      "voices": [
+        {
+          "name": "Google US English",
+          "lang": "en-US",
+          "isLocalService": true
+        },
+        {
+          "name": "Google français",
+          "lang": "fr-FR",
+          "isLocalService": true
+        },
+        {
+          "name": "Google Nederlands",
+          "lang": "nl-NL",
+          "isLocalService": true
+        },
+        {
+          "name": "Google Bahasa Indonesia",
+          "lang": "id-ID",
+          "isLocalService": false
+        },
+        {
+          "name": "Google Deutsch",
+          "lang": "de-DE",
+          "isLocalService": false
+        },
+        {
+          "name": "Google español",
+          "lang": "es-ES",
+          "isLocalService": false
+        },
+        {
+          "name": "Google español de Estados Unidos",
+          "lang": "es-US",
+          "isLocalService": false
+        },
+        {
+          "name": "Google italiano",
+          "lang": "it-IT",
+          "isLocalService": false
+        },
+        {
+          "name": "Google polski",
+          "lang": "pl-PL",
+          "isLocalService": false
+        },
+        {
+          "name": "Google português do Brasil",
+          "lang": "pt-BR",
+          "isLocalService": false
+        },
+        {
+          "name": "Google UK English Female",
+          "lang": "en-GB",
+          "isLocalService": false
+        },
+        {
+          "name": "Google UK English Male",
+          "lang": "en-GB",
+          "isLocalService": false
+        },
+        {
+          "name": "Google русский",
+          "lang": "ru-RU",
+          "isLocalService": false
+        },
+        {
+          "name": "Google हिन्दी",
+          "lang": "hi-IN",
+          "isLocalService": false
+        },
+        {
+          "name": "Google 國語（臺灣）",
+          "lang": "zh-TW",
+          "isLocalService": false
+        },
+        {
+          "name": "Google 한국의",
+          "lang": "ko-KR",
+          "isLocalService": false
+        },
+        {
+          "name": "Google 普通话（中国大陆）",
+          "lang": "zh-CN",
+          "isLocalService": false
+        },
+        {
+          "name": "Google 粤語（香港）",
+          "lang": "zh-HK",
+          "isLocalService": false
+        }
+      ]
+    },
+    "webRtcMode": "disableOk",
+    "ssl": {
+      "cipherSuiteBlacklist": ""
+    },
+    "battery": {
+      "enable": true,
+      "charging": false,
+      "chargingTime": 0,
+      "dischargingTime": 30440,
+      "level": 0.182
+    },
+    "network": {
+      "enable": false,
+      "nettype": "",
+      "effectiveType": "",
+      "downlink": "",
+      "downlinkMax": "",
+      "rtt": "",
+      "saveData": false
+    },
+    "bluetooth": {
+      "enable": true,
+      "bluetoothAdapter": true
+    }
+  },
+  "runtimeConfig": {
+    "engine": "Chrome",
+    "launchArgs": [
+      "--disable-background-mode",
+      "--disable-popup-blocking",
+      "--no-first-run",
+      "--no-default-browser-check",
+      "--remote-debugging-port=0",
+      "--use-mock-keychain",
+      "--user-data-dir=<USER_DATA_DIR>",
+      "--no-sandbox",
+      "--disable-setuid-sandbox",
+      "--password-store=basic",
+      "--disable-backgrounding-occluded-windows",
+      "--start-maximized",
+      "--auto-open-devtools-for-tabs"
+    ],
+    "preferences": {
+      "browser": {
+        "theme": {
+          "color_scheme2": 0,
+          "color_scheme": 0
+        }
+      }
+    },
+    "localState": {
+      "background_mode": {
+        "enabled": false
+      }
+    },
+    "colorSchemeCache": "system",
+    "originalSemantics": {
+      "chromeSandboxAlwaysDisabled": true,
+      "requestedSandboxPermission": false,
+      "arbitraryStartupParametersAccepted": false
+    }
+  }
+}

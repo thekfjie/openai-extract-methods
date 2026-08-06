@@ -1,0 +1,278 @@
+name: automyai
+
+services:
+  extract-api:
+    build:
+      context: .
+      dockerfile: deploy/extract-api/Dockerfile
+    container_name: automyai-extract-api
+    init: true
+    restart: unless-stopped
+    network_mode: host
+    stop_grace_period: 30s
+    environment:
+      EXTRACT_API_HOST: 127.0.0.1
+      EXTRACT_API_PORT: ${EXTRACT_API_PORT:?EXTRACT_API_PORT must be set by config/ports.env}
+      EXTRACT_API_DATA_PATH: /app/data/extract-api/jobs.json
+      EXTRACT_API_GLOBAL_CONCURRENCY: ${EXTRACT_API_GLOBAL_CONCURRENCY:-32}
+      AUTOMYAI_CONFIG_PATH: /app/config.json
+      AUTOMYAI_KAKAO_HELPER: /app/integrations/kakao_curl_transport.py
+      AUTOMYAI_KAKAO_PYTHON: python3
+      AUTOMYAI_ACCOUNT_RUN_LOCK_DIR: /app/data/account-run-locks
+      AUTOMYAI_ACCOUNT_RUN_GUARD: "1"
+    volumes:
+      - ./config.json:/app/config.json:ro
+      - ./data/extract-api:/app/data/extract-api
+      - ./data/fingerprint-api:/app/data/fingerprint-api:ro
+      - ./data/account-run-locks:/app/data/account-run-locks
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          python3 -c 'import os,socket;
+          p=int(os.environ["EXTRACT_API_PORT"]);
+          s=socket.create_connection(("127.0.0.1",p),2);s.close()'
+      interval: 20s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    logging:
+      driver: json-file
+      options:
+        max-size: 20m
+        max-file: "3"
+
+  fingerprint-api:
+    build:
+      context: .
+      dockerfile: deploy/fingerprint-api/Dockerfile
+    container_name: automyai-fingerprint-api
+    init: true
+    restart: unless-stopped
+    network_mode: host
+    stop_grace_period: 10s
+    environment:
+      FINGERPRINT_API_HOST: 127.0.0.1
+      FINGERPRINT_API_PORT: ${FINGERPRINT_API_PORT:?FINGERPRINT_API_PORT must be set by config/ports.env}
+      FINGERPRINT_API_KEY_FILE: /app/data/fingerprint-api/api.key
+      AUTOMYAI_CONFIG: /app/config.json
+      OAI_FINGERPRINT_SDK_DIR: /app/fingerprint/sdk
+      OAI_FINGERPRINT_NODE: node
+    volumes:
+      - ./config.json:/app/config.json:ro
+      - ./data/fingerprint-api:/app/data/fingerprint-api
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          node -e 'const net=require("net");
+          const s=net.createConnection({host:"127.0.0.1",port:Number(process.env.FINGERPRINT_API_PORT)});
+          s.setTimeout(2000);s.on("connect",()=>{s.end();process.exit(0)});
+          s.on("error",()=>process.exit(1));s.on("timeout",()=>process.exit(1))'
+      interval: 20s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    logging:
+      driver: json-file
+      options:
+        max-size: 20m
+        max-file: "3"
+
+  paypal-protocol:
+    build:
+      context: .
+      dockerfile: deploy/paypal-protocol/Dockerfile
+    container_name: automyai-paypal-protocol
+    init: true
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?Set ADMIN_PASSWORD in /opt/automyai/.env}
+      PAYPAL_PROTOCOL_HOST: 127.0.0.1
+      PAYPAL_PROTOCOL_PORT: ${PAYPAL_PROTOCOL_PORT:?PAYPAL_PROTOCOL_PORT must be set by config/ports.env}
+      PAYPAL_PROTOCOL_RESULTS_PATH: /app/data/paypal-protocol/results.jsonl
+      AUTOMYAI_ACCOUNT_RUN_LOCK_DIR: /app/data/account-run-locks
+      AUTOMYAI_ACCOUNT_RUN_GUARD: "1"
+    volumes:
+      - ./data/account-run-locks:/app/data/account-run-locks
+      - ./data/paypal-protocol:/app/data/paypal-protocol
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          python3 -c 'import os,socket;
+          p=int(os.environ["PAYPAL_PROTOCOL_PORT"]);
+          s=socket.create_connection(("127.0.0.1",p),2);s.close()'
+      interval: 20s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    logging:
+      driver: json-file
+      options:
+        max-size: 20m
+        max-file: "3"
+
+  card-payment-portal:
+    build:
+      context: .
+      dockerfile: deploy/card-payment-portal/Dockerfile
+    container_name: automyai-card-payment-portal
+    init: true
+    restart: unless-stopped
+    network_mode: host
+    stop_grace_period: 20s
+    environment:
+      PORT: ${CARD_PAYMENT_PORT:?CARD_PAYMENT_PORT must be set by config/ports.env}
+      CARD_PAYMENT_PORT: ${CARD_PAYMENT_PORT:?CARD_PAYMENT_PORT must be set by config/ports.env}
+      CARD_CDK_DB: /app/data/card_cdk.sqlite3
+      CARD_CDK_SECRET: ${ADMIN_PASSWORD:?Set ADMIN_PASSWORD in /opt/automyai/.env}
+      CARD_CDK_COOKIE: card_payment_cdk
+      CARD_ACCOUNT_API_BASE: ${CARD_ACCOUNT_API_BASE:-}
+      REG_SESSION_SECRET: ${ADMIN_PASSWORD:?Set ADMIN_PASSWORD in /opt/automyai/.env}
+      REG_SESSION_COOKIE: automyai_admin
+      EXTRACT_API_BASE: http://127.0.0.1:${EXTRACT_API_PORT:?EXTRACT_API_PORT must be set by config/ports.env}
+      PAY153_PYTHON: python3
+      PAY153_INTERNAL_BASE: http://127.0.0.1:${AUTOMYAI_PORT:?AUTOMYAI_PORT must be set by config/ports.env}
+      CURRENT_PROTOCOL_BASE: http://127.0.0.1:${PAYPAL_PROTOCOL_PORT:?PAYPAL_PROTOCOL_PORT must be set by config/ports.env}
+      CURRENT_PROTOCOL_PASSWORD: ${ADMIN_PASSWORD:?Set ADMIN_PASSWORD in /opt/automyai/.env}
+      MAIN_API_BASE: http://127.0.0.1:${AUTOMYAI_PORT:?AUTOMYAI_PORT must be set by config/ports.env}
+      AUTOMYAI_ACCOUNT_RUN_LOCK_DIR: /app/data/account-run-locks
+      AUTOMYAI_ACCOUNT_RUN_GUARD: "1"
+    volumes:
+      - ./data/card-payment-portal:/app/data
+      - ./data/account-run-locks:/app/data/account-run-locks
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          python3 -c 'import json,os,urllib.request;
+          p=os.environ["CARD_PAYMENT_PORT"];
+          data=json.load(urllib.request.urlopen(f"http://127.0.0.1:{p}/healthz",timeout=3));
+          raise SystemExit(0 if data.get("ok") else 1)'
+      interval: 20s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    logging:
+      driver: json-file
+      options:
+        max-size: 20m
+        max-file: "3"
+
+  automyai-flaresolverr:
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    container_name: automyai-flaresolverr
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      LOG_LEVEL: info
+      TZ: Asia/Shanghai
+      PORT: ${FLARESOLVERR_PORT:-18191}
+    logging:
+      driver: json-file
+      options:
+        max-size: 20m
+        max-file: "3"
+
+  desktop:
+    build:
+      context: .
+      dockerfile: deploy/desktop/Dockerfile
+    container_name: automyai-desktop
+    init: true
+    restart: unless-stopped
+    network_mode: host
+    ipc: shareable
+    stop_grace_period: 10s
+    environment:
+      TZ: Asia/Shanghai
+      BROWSER_DISPLAY: ${BROWSER_DISPLAY:-:1}
+      VNC_PORT: ${VNC_PORT:?VNC_PORT must be set by config/ports.env}
+      NOVNC_PORT: ${NOVNC_PORT:?NOVNC_PORT must be set by config/ports.env}
+      VNC_RESOLUTION: ${VNC_RESOLUTION:-1280x800x24}
+    volumes:
+      - automyai-x11:/tmp/.X11-unix
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          python3 -c 'import os,socket;
+          p=int(os.environ["NOVNC_PORT"]);
+          s=socket.create_connection(("127.0.0.1",p),2);s.close()'
+      interval: 20s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: json-file
+      options:
+        max-size: 20m
+        max-file: "3"
+
+  automyai:
+    build:
+      context: .
+    container_name: automyai
+    init: true
+    restart: unless-stopped
+    network_mode: host
+    ipc: service:desktop
+    stop_grace_period: 20s
+    command: ["bash", "/app/scripts/start_server.sh"]
+    environment:
+      TZ: Asia/Shanghai
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?Set ADMIN_PASSWORD in /opt/automyai/.env}
+      AUTOMYAI_HOST: ${AUTOMYAI_HOST:-127.0.0.1}
+      AUTOMYAI_PORT: ${AUTOMYAI_PORT:-13030}
+      DISPLAY: ${BROWSER_DISPLAY:-:1}
+      BROWSER_DISPLAY: ${BROWSER_DISPLAY:-:1}
+      VNC_RESOLUTION: ${VNC_RESOLUTION:-1280x800x24}
+      VNC_PORT: ${VNC_PORT:-15901}
+      NOVNC_PORT: ${NOVNC_PORT:-16080}
+      EXTRACT_API_PORT: ${EXTRACT_API_PORT:?EXTRACT_API_PORT must be set by config/ports.env}
+      EXTRACT_API_DATA_PATH: /app/data/extract-api/jobs.json
+      AUTOMYAI_CONFIG_PATH: /app/config.json
+      FINGERPRINT_API_PORT: ${FINGERPRINT_API_PORT:?FINGERPRINT_API_PORT must be set by config/ports.env}
+      FINGERPRINT_API_KEY_FILE: /app/data/fingerprint-api/api.key
+      GROK_TTK_STATE_DIR: /app/data/grok_ttk
+      GROK2API_ADMIN_CREDENTIALS_FILE: /run/secrets/grok2api_admin_credentials
+    volumes:
+      - ./server.py:/app/server.py:ro
+      - ./uc_signup.py:/app/uc_signup.py:ro
+      - ./grok_signup.py:/app/grok_signup.py:ro
+      - ./scripts:/app/scripts:ro
+      - ./extensions_api.py:/app/extensions_api.py:ro
+      - ./integrations:/app/integrations:ro
+      - ./fingerprint:/app/fingerprint:ro
+      - ./converters:/app/converters:ro
+      - ./tools/grok_ttk:/app/tools/grok_ttk
+      - ./tools/traffic_meter:/app/tools/traffic_meter:ro
+      - ./tools/chatgpt_promo_check.py:/app/tools/chatgpt_promo_check.py:ro
+      - ./tools/outlook_register:/app/tools/outlook_register:ro
+      - ./frontend:/app/frontend:ro
+      - ./config.json:/app/config.json
+      - ./data:/app/data
+      - automyai-x11:/tmp/.X11-unix
+      - /opt/grok2api-chenyme/ADMIN_CREDENTIALS:/run/secrets/grok2api_admin_credentials:ro
+      - /opt/grok-register-lite/.env:/run/secrets/grok_register_lite_env:ro
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          python3 -c 'import json,socket;
+          p=int(__import__("os").environ.get("AUTOMYAI_PORT",13030));
+          s=socket.create_connection(("127.0.0.1",p),2);s.close()'
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    logging:
+      driver: json-file
+      options:
+        max-size: 30m
+        max-file: "3"
+
+volumes:
+  automyai-x11:

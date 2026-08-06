@@ -1,0 +1,4 @@
+cloud-headers.json
+*.cloud-headers.json
+authorized-fingerprint-records*.json
+*.base-records.json

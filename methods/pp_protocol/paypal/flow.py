@@ -11,6 +11,7 @@ import re
 import time
 import json
 import urllib.parse
+from typing import Callable
 from loguru import logger
 
 from paypal.models import (
@@ -43,6 +44,8 @@ from paypal.graphql import (
     GRIFFIN_METADATA_QUERY,
     SUPPORTED_FUNDING_SOURCES_QUERY,
     DEFERRED_FEATURE_QUERY,
+    COOKIE_BANNER_QUERY,
+    INITIAL_DATA_QUERY,
     INSTALLMENT_OPTIONS_QUERY,
     ADDRESS_AUTOCOMPLETE_FROM_POSTAL_CODE_QUERY,
     INITIATE_2FA_PHONE_MUTATION,
@@ -50,6 +53,11 @@ from paypal.graphql import (
     SIGNUP_NEW_MEMBER_MUTATION,
     AUTHORIZE_BILLING_MUTATION,
 )
+
+
+# Captured UK Guest -> Member uplift uses the base64-encoded reason R_ERROR.
+# Keep this separate from card/signup error labels; Hermes routes on this value.
+HERMES_GUEST_REASON = "Ul9FUlJPUg=="
 
 
 class PayPalFlow:
@@ -67,6 +75,8 @@ class PayPalFlow:
         locale: str | None = None,
         ec_token: str | None = None,
         prefer_skip_addfi: bool = True,
+        otp_provider: Callable[[dict], str] | None = None,
+        event_callback: Callable[[dict], None] | None = None,
     ):
         self.ba_token = ba_token
         self.user = user
@@ -76,6 +86,20 @@ class PayPalFlow:
         self.address = address
         self.max_card_attempts = max(1, max_card_attempts)
         self.prefer_skip_addfi = prefer_skip_addfi
+        self.otp_provider = otp_provider
+        self.event_callback = event_callback
+        self.buyer_mode = "original"
+        self.identity_elevation = {
+            "buyer_ready": False,
+            "user_id": "",
+            "auth_refreshed": False,
+            "funding_selected": False,
+            "funding_available": False,
+            "funding_available_count": 0,
+            "funding_errors": [],
+            "funding_checkpoints": [],
+            "fatal_contingency": "",
+        }
         self.proxy_config: ProxyConfig = proxy_config or build_proxy_config(
             enabled=proxy_enabled,
             index=proxy_index,
@@ -102,6 +126,15 @@ class PayPalFlow:
             proxy_label=self.proxy_config.label,
         )
 
+    def _emit(self, phase: str, message: str, **details) -> None:
+        if not self.event_callback:
+            return
+        event = {"phase": phase, "message": message, **details}
+        try:
+            self.event_callback(event)
+        except Exception as error:
+            logger.warning("Protocol event callback failed: {}", error)
+
     def close(self):
         self.session.close()
 
@@ -120,10 +153,15 @@ class PayPalFlow:
                 )
             logger.info(f"Proxy: {self.proxy_config.label}")
 
+            self._emit("initial_load", "正在加载协议授权页")
             self._phase0_initial_load()
+            self._emit("risk_controls", "正在同步风控与设备信号")
             self._phase1_risk_controls()
+            self._emit("account", "正在创建 Guest 买家上下文")
             self._phase2_create_account()
+            self._emit("verification", "正在进入短信验证和身份提升")
             self._phase3_signup_and_2fa()
+            self._emit("authorize", "正在提交 Billing Agreement 授权")
             result = self._phase4_authorize()
 
             if result.get("status") == "success":
@@ -300,6 +338,11 @@ class PayPalFlow:
             self.state.user_id,
             sanitize_for_log({"token": self.state.ec_token or self.ba_token})["token"],
         )
+        self.identity_elevation.update(
+            buyer_ready=True,
+            user_id=self.state.user_id,
+            auth_refreshed=bool(self.state.checkout_drop_loaded and self.state.hermes_loaded),
+        )
 
     def _persist_euat_cookie(self):
         if not self.state.euat_token:
@@ -308,6 +351,42 @@ class PayPalFlow:
             "AV894Kt2TSumQQrJwe-8mzmyREO",
             self.state.euat_token,
             domain=".paypal.com",
+        )
+
+    def _load_checkoutweb_drop(self) -> None:
+        """Load the post-signup checkout drop page before entering Hermes.
+
+        The successful UK capture performs this request after
+        SignUpNewMemberMutation.  Besides refreshing the EUAT cookie, it
+        switches the PayPal routing cookie to checkoutuinodeweb and provides
+        the browser context expected by the following Hermes request.
+        """
+        if not self.state.signup_url:
+            raise RuntimeError("checkoutweb/drop requires a signup URL")
+        headers = {
+            "Accept": "*/*",
+            "Referer": self.state.signup_url,
+        }
+        if self.state.euat_token:
+            headers["X-PayPal-Internal-EUAT"] = self.state.euat_token
+        logger.info("Loading checkoutweb/drop post-signup context...")
+        response = self.session.get(
+            "https://www.paypal.com/checkoutweb/drop",
+            headers=headers,
+        )
+        if response.status_code not in (200, 204):
+            raise RuntimeError(
+                f"checkoutweb/drop returned HTTP {response.status_code}"
+            )
+        self.session._sync_state_cookies()
+        if self.state.euat_token:
+            self._persist_euat_cookie()
+        self.state.checkout_drop_loaded = True
+        logger.info(
+            "checkoutweb/drop loaded: status={} bytes={} euat={}",
+            response.status_code,
+            len(response.content),
+            "present" if self.state.euat_token else "missing",
         )
 
     def _extract_user_id_from_text(self, text: str) -> str:
@@ -559,10 +638,10 @@ class PayPalFlow:
             except Exception as e:
                 logger.error("Failed to initiate OTP for {}: {}", self._masked_phone(), e)
                 while True:
-                    value = input(
-                        "\n>>> 发送验证码失败。请输入新的手机号重新发送"
-                        "（如 +4475xxxxxxxx / +5591xxxxxxxx）；输入 q 退出: "
-                    ).strip()
+                    value = self._read_operator_value(
+                        "resend_phone",
+                        "发送验证码失败，请输入新的手机号重新发送",
+                    )
                     if value.lower() in {"q", "quit", "exit"}:
                         raise RuntimeError("OTP confirmation cancelled by user") from e
                     try:
@@ -572,12 +651,18 @@ class PayPalFlow:
                         logger.warning("手机号无效：{}。请重新输入。", phone_error)
                 continue
             logger.info("SMS verification code sent to phone: {}", self._masked_phone())
+            self._emit(
+                "waiting_otp",
+                "短信验证码已发送",
+                phone=self._masked_phone(),
+                accepts_phone=True,
+            )
 
             while True:
-                value = input(
-                    "\n>>> 输入6位短信验证码；如需换号，直接输入新手机号"
-                    "（如 +4475xxxxxxxx 或 phone:+4475xxxxxxxx）；输入 q 退出: "
-                ).strip()
+                value = self._read_operator_value(
+                    "otp",
+                    "输入6位短信验证码；也可输入新手机号重新发送",
+                )
 
                 if value.lower() in {"q", "quit", "exit"}:
                     raise RuntimeError("OTP confirmation cancelled by user")
@@ -594,6 +679,7 @@ class PayPalFlow:
                     logger.warning(
                         "验证码验证失败。可以继续输入新的6位验证码，或输入新手机号重新发送验证码。"
                     )
+                    self._emit("waiting_otp", "验证码校验失败，请重新输入", phone=self._masked_phone())
                     continue
 
                 try:
@@ -605,6 +691,17 @@ class PayPalFlow:
                         "输入既不是6位验证码，也不是有效手机号：{}。请重新输入。",
                         e,
                     )
+
+    def _read_operator_value(self, kind: str, prompt: str) -> str:
+        if self.otp_provider:
+            value = self.otp_provider({
+                "kind": kind,
+                "prompt": prompt,
+                "phone": self._masked_phone(),
+                "country": self._country_code(),
+            })
+            return str(value or "").strip()
+        return input(f"\n>>> {prompt}；输入 q 退出: " ).strip()
 
     def _card_expiration_date(self) -> str:
         exp_parts = self.card.expiry.split("/")
@@ -924,6 +1021,20 @@ class PayPalFlow:
             if self._is_card_related_signup_error(errors):
                 if access_token:
                     self.state.euat_token = access_token
+                    self.buyer_mode = "identity_elevation"
+                    self.identity_elevation.update(
+                        funding_errors=sorted({
+                            str(error.get("message") or "")
+                            for error in errors
+                            if str(error.get("message") or "")
+                        }),
+                        funding_checkpoints=sorted({
+                            str(checkpoint)
+                            for error in errors
+                            for checkpoint in (error.get("checkpoints") or [])
+                            if str(checkpoint)
+                        }),
+                    )
                     logger.warning(
                         "Card/addCard failed but PayPal returned an access token. "
                         "The member account is already created at this point, so "
@@ -1203,14 +1314,36 @@ class PayPalFlow:
         logger.info("Sending checkout session GraphQL queries...")
         try:
             self.session.graphql(
+                "CookieBannerQuery",
+                COOKIE_BANNER_QUERY,
+                {},
+            )
+        except Exception as e:
+            logger.warning(f"CookieBannerQuery failed: {e}")
+
+        try:
+            self.session.graphql(
+                "InitialDataQuery",
+                INITIAL_DATA_QUERY,
+                {
+                    "channel": "WEB",
+                    "countryCode": self._country_code(),
+                    "countryCodeAsString": self._country_code(),
+                    "isBasl": False,
+                    "isBaslAsString": "false",
+                    "languageCode": self._lang_code(),
+                    "token": self.state.ec_token or self.ba_token,
+                },
+            )
+        except Exception as e:
+            logger.warning(f"InitialDataQuery failed: {e}")
+
+        try:
+            self.session.graphql(
                 "DeferredFeature",
                 DEFERRED_FEATURE_QUERY,
                 {
-                    "channel": "WEB",
-                    "countryCodeAsString": self._country_code(),
                     "integrationType": "XoSignupAuth",
-                    "isBaslAsString": "false",
-                    "isForcedGuest": "false",
                     "token": self.state.ec_token or self.ba_token,
                 },
             )
@@ -1311,6 +1444,10 @@ class PayPalFlow:
                 "Cannot proceed to authorization without authentication."
             )
 
+        # The UK capture inserts checkoutweb/drop between signup and Hermes.
+        # Do this only after SignUpNewMember has issued the member EUAT.
+        self._load_checkoutweb_drop()
+
         self._persist_euat_cookie()
         if self.state.user_id:
             logger.info("Post-signup buyer.userId present: {}", self.state.user_id)
@@ -1330,28 +1467,35 @@ class PayPalFlow:
             locale=self._locale_code(),
         )
 
+    def _build_hermes_url(self, *, billing_lite: bool = False) -> str:
+        """Build the captured UK Hermes URL with stable parameter ordering."""
+        params = [
+            ("ssrt", self.state.ssrt),
+            ("ul", "1"),
+            ("modxo_redirect_reason", "guest_user"),
+            ("locale.x", self._locale_code()),
+            ("country.x", self._country_code()),
+            ("ba_token", self.ba_token),
+            ("token", self.state.ec_token),
+            ("rcache", "1"),
+            ("fromSignupLite", "true"),
+            ("addFIContingency", "noretry" if self.prefer_skip_addfi else "retry"),
+            ("redirectToHermes", "true"),
+            ("fallback", "1"),
+            ("reason", HERMES_GUEST_REASON),
+        ]
+        if billing_lite:
+            params.append(("billingLite", "1"))
+        return "https://www.paypal.com/webapps/hermes?" + urllib.parse.urlencode(
+            [(key, value) for key, value in params if value]
+        )
+
     def _phase4_authorize(self) -> dict:
         """Send the final authorize mutation to approve the billing agreement."""
         logger.info("--- Phase 4: Final authorization ---")
 
-        hermes_base_url = (
-            f"https://www.paypal.com/webapps/hermes?"
-            f"ssrt={self.state.ssrt}&ul=1&modxo_redirect_reason=guest_user"
-            f"&locale.x={self._locale_code()}&country.x={self._country_code()}"
-            f"&ba_token={self.ba_token}&token={self.state.ec_token}"
-            f"&rcache=1&cookieBannerVariant=hidden&fromSignupLite=true"
-            f"&fallback=1&reason=Q0FSRF9HRU5FUklDX0VSUk9S"
-        )
-        hermes_contingency_url = (
-            f"https://www.paypal.com/webapps/hermes?"
-            f"ssrt={self.state.ssrt}&ul=1&modxo_redirect_reason=guest_user"
-            f"&locale.x={self._locale_code()}&country.x={self._country_code()}"
-            f"&ba_token={self.ba_token}&token={self.state.ec_token}"
-            f"&rcache=1&cookieBannerVariant=hidden&fromSignupLite=true"
-            f"&addFIContingency={'noretry' if self.prefer_skip_addfi else 'retry'}&redirectToHermes=true"
-            f"&fallback=1&reason=Q0FSRF9HRU5FUklDX0VSUk9S"
-        )
-        review_referer = f"{hermes_base_url}&billingLite=1"
+        hermes_base_url = self._build_hermes_url()
+        review_referer = self._build_hermes_url(billing_lite=True)
         review_url = f"{review_referer}#/billingweb/review"
 
         # Browser trace shows that Hagrid/Hermes is actually loaded before the
@@ -1364,14 +1508,6 @@ class PayPalFlow:
                 "Referer": self.state.signup_url,
                 "Upgrade-Insecure-Requests": "1",
             }
-            first_review = self.session.get(hermes_contingency_url, headers=base_headers)
-            if first_review.status_code in (301, 302, 303, 307, 308):
-                location = first_review.headers.get("Location", "")
-                if location:
-                    location = urllib.parse.urljoin(hermes_contingency_url, location)
-                    logger.info(f"Following Hermes contingency redirect: {location[:140]}...")
-                    self.session.get(location, headers={**base_headers, "Referer": hermes_contingency_url})
-
             review_resp = self.session.get(hermes_base_url, headers=base_headers)
             if review_resp.status_code in (301, 302, 303, 307, 308):
                 location = review_resp.headers.get("Location", "")
@@ -1387,6 +1523,8 @@ class PayPalFlow:
                 review_resp.status_code,
                 len(review_resp.content),
             )
+            self.state.hermes_url = hermes_base_url
+            self.state.hermes_loaded = review_resp.status_code == 200
             # Prefer cookie/page EUAT if Hermes refreshed it.
             self.session._sync_state_cookies()
             if self.state.euat_token:
@@ -1544,6 +1682,9 @@ class PayPalFlow:
                 "return_url": self.state.return_url,
                 "final_redirect_url": final_redirect_url,
                 "payment_action": auth_data["paymentAction"],
+                **self._classify_merchant_result(final_redirect_url),
+                "buyer_mode": self.buyer_mode,
+                "identity_elevation": dict(self.identity_elevation),
             }
         except (KeyError, IndexError, TypeError) as e:
             logger.error(f"Failed to parse authorization response: {e}")
@@ -1552,3 +1693,35 @@ class PayPalFlow:
                 "error": str(e),
                 "raw_response": result,
             }
+
+    @staticmethod
+    def _classify_merchant_result(final_redirect_url: str) -> dict:
+        query = urllib.parse.parse_qs(urllib.parse.urlparse(final_redirect_url or "").query)
+        redirect_status = str((query.get("redirect_status") or [""])[0]).lower()
+        success_values = {"success", "succeeded", "confirmed", "complete", "completed"}
+        # PayPal can authorize the Billing Agreement before the merchant's
+        # checkout/Stripe verification finishes.  Preserve that intermediate
+        # state instead of collapsing it into a generic "authorized" result.
+        # The task layer still exposes ``authorized`` for terminal-state
+        # compatibility, while ``result.settlement_status`` carries the
+        # precise merchant state to the UI and callers.
+        pending_values = {
+            "pending",
+            "processing",
+            "requires_action",
+            "requires_verification",
+            "requires_confirmation",
+        }
+        if redirect_status in success_values:
+            settlement_status = "confirmed"
+        elif redirect_status in pending_values:
+            settlement_status = "pending_verification"
+        else:
+            settlement_status = "authorized"
+        verification_url = str((query.get("return_url") or [""])[0])
+        return {
+            "verification_url": verification_url,
+            "pending_url": "" if settlement_status == "confirmed" else final_redirect_url,
+            "redirect_status": redirect_status,
+            "settlement_status": settlement_status,
+        }

@@ -1,0 +1,22 @@
+[Unit]
+Description=AT Maker WebUI
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/opt/automyai/tools/at-maker
+Environment=NODE_ENV=production
+EnvironmentFile=/opt/automyai/config/ports.env
+EnvironmentFile=-/opt/automyai/.env
+EnvironmentFile=-/opt/automyai/.env
+ExecStart=/usr/bin/env PORT=${AT_MAKER_PORT} /usr/bin/node /opt/automyai/tools/at-maker/bundle/server.cjs
+Restart=on-failure
+RestartSec=3
+TimeoutStopSec=15
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,149 @@
+﻿<!doctype html>
+<html lang="zh-CN" data-api-base="{{ request.script_root }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>直卡绑卡 · 提链 · 协议支付</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='card-flow.css', v='45') }}">
+  <script src="https://js.stripe.com/v3/"></script>
+</head>
+<body>
+<section id="cdkGate" class="cdk-access-panel" aria-live="polite">
+  <div class="cdk-access-head">
+    <span class="cdk-mark">CDK</span>
+    <div><b>&#35775;&#38382;&#20973;&#35777;</b><small id="cdkMessage">&#27491;&#22312;&#26816;&#26597;&#8230;</small></div>
+  </div>
+  <div id="cdkUsageBadge" class="cdk-usage-badge" hidden></div>
+  <div id="cdkCurrentRecord" class="cdk-current-record" hidden></div>
+  <div id="cdkEntryForm" class="cdk-entry-form">
+    <input id="cdkInput" type="text" autocomplete="off" spellcheck="false" placeholder="CDK-XXXX-XXXX-XXXX-XXXX-XXXX">
+    <button id="cdkActivateButton" type="button">&#39564;&#35777;</button>
+  </div>
+  <button id="cdkSwitchButton" class="cdk-switch-button" type="button" hidden>&#26356;&#25442; CDK</button>
+  <button id="cdkMergeToggleButton" class="cdk-switch-button" type="button">&#34701;&#21512; CDK</button>
+  <button id="cdkReleaseTasksButton" class="cdk-switch-button cdk-release-button" type="button" hidden>&#37322;&#25918;&#24403;&#21069; CDK &#20219;&#21153;</button>
+  <button id="cdkTaskQueryButton" class="cdk-switch-button" type="button" hidden>CDK &#20219;&#21153;&#26597;&#35810;</button>
+  <button id="cdkMergeHistoryButton" class="cdk-switch-button" type="button" hidden>CDK &#34701;&#21512;&#35760;&#24405;</button>
+</section>
+<section id="cdkMergeDialog" class="cdk-merge-dialog" hidden>
+  <div class="cdk-merge-card">
+    <div class="cdk-merge-title"><div><b>CDK &#34701;&#21512;</b><small>&#27599;&#34892;&#19968;&#20010;&#23436;&#25972; CDK&#65292;&#33267;&#23569; 2 &#20010;</small></div><button id="cdkMergeClose" type="button">&#20851;&#38381;</button></div>
+    <textarea id="cdkMergeCodes" spellcheck="false" placeholder="CDK-XXXX-XXXX-XXXX-XXXX-XXXX&#10;CDK-YYYY-YYYY-YYYY-YYYY-YYYY"></textarea>
+    <div class="cdk-merge-actions"><button id="cdkMergeSubmit" type="button">&#30830;&#35748;&#34701;&#21512;</button><button id="cdkMergeCopy" type="button" hidden>&#22797;&#21046;&#26032; CDK</button></div>
+    <div id="cdkMergeMessage" class="cdk-merge-message"></div>
+    <textarea id="cdkMergedCode" class="cdk-merged-code" readonly hidden></textarea>
+  </div>
+</section>
+<section id="cdkToolsDialog" class="cdk-merge-dialog" hidden>
+  <div class="cdk-merge-card cdk-tools-card">
+    <div class="cdk-merge-title"><div><b>CDK &#26597;&#35810;</b><small>&#26597;&#30475;&#20219;&#21153;&#29366;&#24577;&#65292;&#25110;&#36890;&#36807;&#23376; CDK &#26597;&#25214;&#34701;&#21512; CDK</small></div><button id="cdkToolsClose" type="button">&#20851;&#38381;</button></div>
+    <div class="cdk-tools-actions"><button id="cdkQueryCurrentTasks" type="button">&#26597;&#35810;&#24403;&#21069; CDK &#20219;&#21153;</button></div>
+    <label class="cdk-tools-input"><span>&#23376; CDK</span><input id="cdkMergeLookupInput" placeholder="CDK-XXXX-XXXX-XXXX-XXXX-XXXX"><button id="cdkMergeLookupSubmit" type="button">&#26597;&#25214;&#34701;&#21512; CDK</button></label>
+    <div id="cdkToolsMessage" class="cdk-merge-message"></div>
+    <div id="cdkToolsResult" class="cdk-tools-result"></div>
+  </div>
+</section>
+<main class="shell batch-shell">
+  <section class="hero">
+    <span class="eyebrow">ONE CARD / MULTI AT / CHECKOUT LINKS</span>
+    <h1>直卡绑卡 · 提链 · 协议支付</h1>
+    <p>填写一次卡片信息并输入多个 AT，系统并发绑卡与提链；链生成后可直接进入原协议支付流程。</p>
+  </section>
+
+  <section class="card batch-card">
+    <div class="steps batch-steps">
+      <span id="stepCard" class="active">1 填写卡片</span>
+      <span id="stepAt">2 输入多个 AT</span>
+      <span id="stepBind">3 批量绑卡</span>
+      <span id="stepLink">4 批量提链</span>
+    </div>
+
+    <div class="setup-grid">
+    <section class="batch-section card-setup-section">
+      <div class="section-title">
+        <div><b>卡片信息</b><small>卡号、有效期和 CVC 仅由 Stripe 安全组件处理</small></div>
+        <span class="tag">CARD FIRST</span>
+      </div>
+      <div class="card-fields-grid">
+        <label class="card-field card-number-field">
+          <span>&#21345;&#21495;</span>
+          <div id="cardNumberElement" class="card-field-box"></div>
+        </label>
+        <label class="card-field">
+          <span>&#26377;&#25928;&#26399;</span>
+          <div id="cardExpiryElement" class="card-field-box"></div>
+        </label>
+        <label class="card-field">
+          <span>CVC</span>
+          <div id="cardCvcElement" class="card-field-box"></div>
+        </label>
+      </div>
+      <div id="cardReady" class="inline-state">&#35831;&#20808;&#22635;&#20889; AT &#21644;&#20195;&#29702;&#27744;&#65292;&#20877;&#21152;&#36733;&#23433;&#20840;&#21345;&#29255;&#36755;&#20837;&#26694;</div>
+      <button id="loadCardButton" class="secondary load-card-button" type="button" disabled>&#21152;&#36733;&#23433;&#20840;&#21345;&#29255;&#36755;&#20837;&#26694;</button>
+    </section>
+
+    <section class="batch-section">
+      <div class="section-title at-section-title">
+        <div><b>AT &#21015;&#34920;</b><small>&#27599;&#34892;&#19968;&#26465; AT&#65292;&#25209;&#37327;&#31896;&#36148;&#20250;&#33258;&#21160;&#25286;&#20998;</small></div>
+        <div class="at-title-actions">
+          <span id="atCount" class="tag">1 AT</span>
+          <button id="addAtButton" class="secondary small add-at-button" type="button">&#65291; &#28155;&#21152; AT</button>
+        </div>
+      </div>
+      <div id="atList" class="at-list"></div>
+    </section>
+    </div>
+
+
+    <section class="batch-section proxy-pool-section">
+      <div class="section-title">
+        <div><b>&#21452;&#20195;&#29702;&#27744;</b><small>&#20004;&#20010;&#27744;&#32844;&#36131;&#20998;&#31163;&#65292;&#19981;&#20877;&#23558;&#32654;&#22269;&#33410;&#28857;&#38169;&#29992;&#20026;&#32;TR&#32;&#20248;&#24800;&#33410;&#28857;</small></div>
+        <span class="tag">US + TR</span>
+      </div>
+      <div class="dual-proxy-grid">
+        <div class="proxy-pool-card">
+          <div class="proxy-pool-head"><b>&#20195;&#29702;&#27744;&#32;1</b><span id="bindProxyCount" class="tag">0 PROXY</span></div>
+          <small>&#32465;&#21345;&#19982;&#21019;&#24314;&#32;Checkout&#65306;&#35831;&#22635;&#32;US&#32;&#33410;&#28857;</small>
+          <textarea id="bindProxyPool" class="proxy-pool-input" spellcheck="false" autocomplete="off" placeholder="US proxy&#10;host:port:username:password&#10;socks5://username:password@host:port"></textarea>
+        </div>
+        <div class="proxy-pool-card">
+          <div class="proxy-pool-head"><b>&#20195;&#29702;&#27744;&#32;2</b><span id="promoProxyCount" class="tag">0 PROXY</span></div>
+          <small>&#24212;&#29992;&#20248;&#24800;&#19982;&#25552;&#38142;&#65306;&#35831;&#22635;&#32;TR&#32;&#33410;&#28857;</small>
+          <textarea id="promoProxyPool" class="proxy-pool-input" spellcheck="false" autocomplete="off" placeholder="TR proxy&#10;host:port:username:password&#10;socks5://username:password@host:port"></textarea>
+        </div>
+      </div>
+      <label class="proxy-protocol-control"><span>代理协议</span><select id="proxyProtocol"><option value="socks5h">SOCKS5H · 粘性 / DNS 走代理</option><option value="socks5">SOCKS5 · 粘性</option><option value="http">HTTP CONNECT</option></select><small>US、TR、绑卡、提链和最终支付统一使用；不带协议前缀的地址按此选项解析。</small></label>
+      <div class="proxy-pool-note">&#20195;&#29702;&#20165;&#20445;&#23384;&#22312;&#24403;&#21069;&#27983;&#35272;&#22120;&#26412;&#22320;&#65307;&#27599;&#20010;&#27744;&#26368;&#22810;&#32;&#53;&#48;&#48;&#32;&#26465;&#12290;</div>
+    </section>
+    <div class="action-row">
+      <label class="concurrency-control"><span>&#25552;&#38142;&#24182;&#21457;</span><input id="batchConcurrency" type="number" min="1" max="10" value="3" inputmode="numeric"></label>
+      <button id="startButton" type="button" disabled>开始批量绑卡并提链</button>
+      <button id="stopButton" class="secondary" type="button" disabled>停止</button>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-meta"><span id="progressText">等待开始</span><span id="progressPercent">0%</span></div>
+      <div class="progress-track"><i id="progressBar"></i></div>
+    </div>
+
+    <section class="batch-section result-section">
+      <div class="section-title">
+        <div><b>&#25552;&#38142;&#32467;&#26524;</b><small>&#36134;&#21495;&#19982; Checkout &#38142;&#25509;&#20998;&#24320;&#26174;&#31034;</small></div>
+        <div class="mini-actions result-actions">
+          <label class="select-all-pay"><input id="selectAllPay" type="checkbox"><span>全选成功任务</span></label>
+          <button id="batchPayButton" class="small batch-pay-button" type="button" disabled>支付已选（0）</button>
+          <button id="copyButton" class="secondary small" type="button">复制全部链接</button>
+          <button id="clearButton" class="secondary small" type="button">清空</button>
+        </div>
+      </div>
+      <div id="taskRows" class="task-rows"></div>
+    </section>
+
+    <div id="status" class="status">请先填写卡片信息，再粘贴 AT 列表。</div>
+  </section>
+</main>
+<script src="{{ url_for('static', filename='cdk-gate.js', v='9') }}"></script>
+<script src="{{ url_for('static', filename='card-flow.js', v='55') }}"></script>
+</body>
+</html>
+

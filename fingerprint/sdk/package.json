@@ -1,0 +1,35 @@
+{
+  "name": "roxybrowser-fingerprint-lab",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "types": "./src/index.d.ts",
+  "description": "Deterministic, internally consistent browser environment profiles for local compatibility testing.",
+  "files": [
+    "src",
+    "schema",
+    "scripts",
+    "probe",
+    "cloud-headers.example.json",
+    "cli.mjs",
+    "README.md",
+    "FIELD-COVERAGE.md",
+    "EXTRACTION-NOTES.md"
+  ],
+  "exports": {
+    ".": "./src/index.mjs",
+    "./base-record-provider": "./src/base-record-provider.mjs",
+    "./catalog": "./src/catalog.mjs",
+    "./generator": "./src/generator.mjs",
+    "./portable": "./src/portable.mjs",
+    "./roxy-config": "./src/roxy-config.mjs",
+    "./runtime": "./src/runtime.mjs",
+    "./validate": "./src/validate.mjs"
+  },
+  "bin": {
+    "roxy-fingerprint": "./cli.mjs"
+  },
+  "scripts": {
+    "test": "node --test"
+  }
+}

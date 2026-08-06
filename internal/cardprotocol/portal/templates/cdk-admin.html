@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="zh-CN" data-api-base="{{ request.script_root }}">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CDK &#31649;&#29702;</title><link rel="stylesheet" href="{{ url_for('static', filename='cdk-admin.css', v='3') }}"></head>
+<body>
+<main class="admin-shell">
+  <header class="admin-hero"><div><span class="eyebrow">ACCESS KEY CONSOLE</span><h1>CDK &#31649;&#29702;</h1><p>&#29983;&#25104;&#12289;&#20572;&#29992;&#21644;&#26597;&#30475;&#35775;&#38382;&#20973;&#35777;&#20351;&#29992;&#24773;&#20917;&#12290;</p></div><a href="{{ request.script_root }}/">&#36820;&#22238;&#25552;&#38142;&#39029;</a></header>
+  <section class="panel generator">
+    <div class="panel-title"><div><b>&#29983;&#25104; CDK</b><small>&#26032;&#29983;&#25104;&#30340;&#23436;&#25972;&#23494;&#38053;&#21482;&#22312;&#26412;&#27425;&#26174;&#31034;</small></div><span>GENERATOR</span></div>
+    <div class="form-grid">
+      <label><span>&#29983;&#25104;&#25968;&#37327;</span><input id="quantity" type="number" min="1" max="100" value="1"></label>
+      <label><span>&#26377;&#25928;&#22825;&#25968;</span><input id="validDays" type="number" min="1" max="3650" value="30"></label>
+      <label><span>&#21487;&#25104;&#21151;&#25903;&#20184;&#27425;&#25968;</span><input id="maxActivations" type="number" min="1" max="10000" value="1"></label>
+      <label class="note-field"><span>&#22791;&#27880;</span><input id="note" type="text" maxlength="120" placeholder="&#29992;&#25143;&#25110;&#29992;&#36884;"></label>
+    </div>
+    <button id="generateButton" class="primary" type="button">&#29983;&#25104; CDK</button>
+    <div id="generatedBox" class="generated-box" hidden><div><b>&#26412;&#27425;&#29983;&#25104;</b><button id="copyGenerated" type="button">&#22797;&#21046;&#20840;&#37096;</button></div><textarea id="generatedCodes" readonly></textarea></div>
+    <div id="adminMessage" class="message"></div>
+  </section>
+  <section class="panel">
+    <div class="panel-title"><div><b>CDK &#21015;&#34920;</b><small>&#23436;&#25972;&#23494;&#38053;&#19981;&#20445;&#23384;&#26126;&#25991;&#65292;&#27492;&#22788;&#20165;&#26174;&#31034;&#25688;&#35201;</small></div><button id="refreshButton" type="button">&#21047;&#26032;</button></div>
+    <div class="table-wrap"><table><thead><tr><th>ID</th><th>CDK</th><th>&#22791;&#27880;</th><th>&#20351;&#29992;&#27425;&#25968;</th><th>&#21040;&#26399;&#26102;&#38388;</th><th>&#29366;&#24577;</th><th>&#25805;&#20316;</th></tr></thead><tbody id="codeRows"></tbody></table></div>
+  </section>
+</main>
+<script src="{{ url_for('static', filename='cdk-admin.js', v='5') }}"></script>
+</body></html>

@@ -1,0 +1,9 @@
+{
+  "x-app-name": "checkoutuinodeweb",
+  "x-paypal-internal-euat": "S23AAP7FLGCrdwBiBstifHOPm2a5ARC97DOz4YHk8oVZtNzIxEJM3yNhfUIOiZGqaH6HCY8WZk3ZVLNjY0y8gjNcENFHpJ8Rw",
+  "paypal-client-metadata-id": "cf0ada1d-8cdb-4b07-a253-19c0ee8978b2",
+  "x-requested-with": "fetch",
+  "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+  "content-type": "application/json",
+  "cookie": "tcs=main%3Abilling%3Ahagrid%7CconsentButton"
+}

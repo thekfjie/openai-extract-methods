@@ -1,0 +1,27 @@
+[Unit]
+Description=AutoMyAI OpenAI 3 runner with Go fingerprint module
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/opt/automyai/tools/openai3
+Environment=OPENAI3_HOST=127.0.0.1
+Environment=OPENAI3_DATA_DIR=/opt/automyai/data/openai3
+Environment=OPENAI3_ENGINE_DIR=/opt/automyai/tools/chatgpt_register
+Environment=OAI_FINGERPRINT_SDK_DIR=/opt/automyai/fingerprint/sdk
+Environment=AUTOMYAI_CONFIG=/opt/automyai/config.json
+Environment=FINGERPRINT_API_KEY_FILE=/opt/automyai/data/fingerprint-api/api.key
+Environment=OPENAI3_FINGERPRINT_API_KEY_FILE=/opt/automyai/data/fingerprint-api/api.key
+Environment=OPENAI3_FINGERPRINT_API_URL=http://127.0.0.1:50001
+EnvironmentFile=/opt/automyai/config/ports.env
+ExecStart=/opt/automyai/tools/openai3/.venv/bin/python -m uvicorn webapp:app --host 127.0.0.1 --port ${OPENAI3_PORT}
+Restart=on-failure
+RestartSec=3
+TimeoutStopSec=15
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target

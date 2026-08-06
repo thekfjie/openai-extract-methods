@@ -1,0 +1,32 @@
+{
+  "generated_at": "2026-08-03T20:39:23",
+  "source": "current deployed protocol-card-payment snapshot",
+  "changed_files": [
+    "README.md",
+    "app.py",
+    "card_bind_session.py",
+    "card_set_default.py",
+    "create_ba_from_short.py",
+    "ph_checkout_protocol.py",
+    "remote_browser.py",
+    "server_confirmation_token.py",
+    "standalone_protocol_pay.py",
+    "static/card-long-flow.js",
+    "templates/index.html",
+    "templates/protocol-pay.html"
+  ],
+  "excluded": [
+    ".env live values",
+    "data/",
+    "venv/",
+    "__pycache__/",
+    "*.bak*",
+    "logs/",
+    "runtime databases",
+    "account/session/token records"
+  ],
+  "included_ui": [
+    "classic",
+    "neo"
+  ]
+}

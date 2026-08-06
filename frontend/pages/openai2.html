@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>OpenAI 注册2 · automyai</title>
+  <link rel="stylesheet" href="../css/nature.css" />
+  <style>
+    .oai2-frame-wrap {
+      margin-top: 14px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: var(--paper);
+      box-shadow: var(--shadow);
+      min-height: calc(100vh - 220px);
+    }
+    .oai2-frame-wrap iframe {
+      width: 100%;
+      height: calc(100vh - 220px);
+      min-height: 720px;
+      border: 0;
+      background: #fff;
+      display: block;
+    }
+    .oai2-meta { display:grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap:10px; margin-top:12px; }
+    @media (max-width: 960px) {
+      .oai2-meta { grid-template-columns: 1fr 1fr; }
+      .oai2-frame-wrap iframe { min-height: 70vh; height: 70vh; }
+    }
+  </style>
+</head>
+<body data-page="openai2">
+  <div class="app">
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-mark"></div>
+    <div>
+      <h1>automyai</h1>
+      <p>控制台</p>
+    </div>
+  </div>
+  <nav class="nav">
+    <a href="/ui/" data-page="overview"><span class="dot"></span>总览</a>
+    <a href="/ui/pages/openai.html" data-page="openai"><span class="dot"></span>OpenAI 注册</a>
+    <a href="/ui/pages/openai2.html" data-page="openai2"><span class="dot"></span>OpenAI 2</a>
+    <a href="/ui/pages/openai3.html" data-page="openai3"><span class="dot"></span>OpenAI 3</a>
+    <a href="/ui/pages/apple_mail.html" data-page="apple-mail"><span class="dot"></span>Apple Mail</a>
+    <a href="/ui/pages/grok.html" data-page="grok"><span class="dot"></span>Grok 注册</a>
+    <a href="/grok2/accounts" target="_blank"><span class="dot"></span>Grok 2</a>
+    <a href="/ui/pages/convert.html" data-page="convert"><span class="dot"></span>OAI 转换</a>
+    <a href="/ui/pages/mail.html" data-page="mail"><span class="dot"></span>邮箱与分组</a>
+    <a href="/ui/pages/settings.html" data-page="settings"><span class="dot"></span>设置</a>
+    <a href="/ui/pages/tools.html" data-page="tools"><span class="dot"></span>工具 / 日志</a>
+  </nav>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div>
+      <h2>OpenAI 注册 2</h2>
+      <div class="hint">独立协议注册（Outlook / CF 邮箱），与旧 UC OpenAI 注册完全隔离</div>
+    </div>
+    <div class="row">
+      <span class="badge" id="svcBadge">检查中</span>
+      <button class="btn ghost" id="refreshBtn">刷新状态</button>
+      <a class="btn secondary" href="#" data-service-link="openai2" data-service-path="/" target="_blank" rel="noreferrer">新窗口打开</a>
+      <a class="btn ghost" href="/ui/pages/openai.html">旧 OpenAI 注册</a>
+    </div>
+  </div>
+
+  <section class="card">
+    <div class="section-head" style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap">
+      <div>
+        <h3>服务状态</h3>
+        <p class="muted" style="margin:6px 0 0;color:var(--muted);font-size:.86rem">进程、健康检查与号池统计。数据目录独立，不会写入 browser_profiles。</p>
+      </div>
+    </div>
+    <div class="oai2-meta" id="metrics">
+      <div class="metric"><b>服务</b><span id="mService">—</span></div>
+      <div class="metric"><b>健康</b><span id="mHealth">—</span></div>
+      <div class="metric"><b>号池</b><span id="mPool">—</span></div>
+      <div class="metric"><b>入口</b><span>/openai2/</span></div>
+    </div>
+  </section>
+
+  <div class="oai2-frame-wrap">
+    <iframe id="oai2Frame" src="about:blank" data-service-frame="openai2" data-service-path="/" title="OpenAI 注册2 面板" loading="lazy" referrerpolicy="same-origin"></iframe>
+  </div>
+
+  <section class="card" style="margin-top:16px">
+    <h3>隔离说明</h3>
+    <div class="grid cols-2" style="gap:12px">
+      <div>
+        <div class="muted" style="color:var(--muted);font-size:.86rem;margin-bottom:6px">OpenAI 2（本页）</div>
+        <ul>
+          <li>代码：<code>/opt/automyai/tools/gpt_outlook2</code></li>
+          <li>数据：<code>/opt/automyai/data/gpt_outlook2</code></li>
+          <li>服务：<code>automyai-openai2.service</code> · <code>127.0.0.1:18790</code></li>
+        </ul>
+      </div>
+      <div>
+        <div class="muted" style="color:var(--muted);font-size:.86rem;margin-bottom:6px">旧 OpenAI 注册</div>
+        <ul>
+          <li>页面：<code>/ui/pages/openai.html</code></li>
+          <li>实现：<code>uc_signup.py</code></li>
+          <li>数据：<code>data/browser_profiles</code></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <div class="footer-note">温暖、平静、亲近自然 · 凭证请妥善保管 · 仅本机管理接口</div>
+</main>
+</div>
+<script src="../js/runtime-config.js"></script>
+<script src="../js/api-client.js"></script>
+<script src="../js/app.js"></script>
+<script>
+(() => {
+  const badge = document.getElementById('svcBadge');
+  const mService = document.getElementById('mService');
+  const mHealth = document.getElementById('mHealth');
+  const mPool = document.getElementById('mPool');
+
+  async function refresh() {
+    try {
+      const data = await AutoMyAIAPI.openai2.get('/health');
+      const s = data.stats || {};
+      badge.textContent = '运行中';
+      badge.className = 'badge ok';
+      mService.textContent = 'automyai-openai2 · :18790';
+      mHealth.textContent = data.ok ? 'ok' : '异常';
+      mPool.textContent = `可用 ${s.available||0} / 总数 ${s.total||0} · 完成 ${s.done||0} · 失败 ${s.failed||0}`;
+    } catch (e) {
+      badge.textContent = '不可用';
+      badge.className = 'badge';
+      mService.textContent = 'automyai-openai2';
+      mHealth.textContent = e.message || 'error';
+      mPool.textContent = '—';
+    }
+  }
+  document.getElementById('refreshBtn').onclick = refresh;
+  refresh();
+  setInterval(refresh, 8000);
+})();
+</script>
+</body>
+</html>

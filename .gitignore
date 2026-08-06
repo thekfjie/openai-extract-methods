@@ -18,3 +18,42 @@ node_modules/
 .DS_Store
 .idea/
 .vscode/
+
+# Runtime state, credentials, generated binaries and dependency trees.
+/config.json
+/bin/
+/data/
+/logs/
+frontend/node_modules/
+tools/**/node_modules/
+tools/**/.venv/
+tools/**/auth/access_tokens.txt
+tools/**/hotmail/tokens.txt
+tools/**/mail_credentials.txt
+
+# Preserve version notes and patches, but keep raw captures and local backup
+# material out of Git. Captures remain available in the workspace/artifacts.
+*.har
+artifacts/har/
+artifacts/icloud-har-comparison/
+artifacts/all-protocols-review/
+*.bak*
+tools/**/config.json
+tools/**/secrets.json
+tools/**/accounts.txt
+tools/**/proxies.txt
+tools/**/input_runtime.json
+tools/**/used-emails.json
+tools/**/names.json
+tools/**/emails.json
+tools/**/status.json
+tools/**/captcharun.token
+tools/**/alias_suffix.txt
+tools/**/config.json.bak*
+tools/**/config.json.*
+
+# Local nested archives are maintained in their own repositories.
+/refs/
+/openai-extract-methods/
+/tools/at-maker/
+/artifacts/

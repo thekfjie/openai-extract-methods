@@ -58,6 +58,9 @@ class SessionState:
     content_hash: str = ""
     content_identifier: str = ""
     signup_url: str = ""
+    checkout_drop_loaded: bool = False
+    hermes_url: str = ""
+    hermes_loaded: bool = False
     show_create_account_action_id: str = ""
     create_user_action_id: str = ""
     country: str = "BR"
@@ -75,6 +78,10 @@ class SessionState:
             self.tltsid = cookies["TLTSID"]
         if "TLTDID" in cookies:
             self.tltdid = cookies["TLTDID"]
+        # Browser checkout uses the persistent fn_dt device id as the
+        # independent Client-Metadata-Id on the final authorize request.
+        if "fn_dt" in cookies and cookies["fn_dt"]:
+            self.paypal_client_metadata_id = cookies["fn_dt"]
         euat_key = "AV894Kt2TSumQQrJwe-8mzmyREO"
         if euat_key in cookies:
             # Prefer freshest cookie EUAT after signup/uplift.

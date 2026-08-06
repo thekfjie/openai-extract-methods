@@ -1,0 +1,6 @@
+session.screen0.toolbar.visible: false
+session.screen0.slit.autoHide: true
+session.screen0.rootCommand: xsetroot -solid #1f3a32
+session.autoRaiseDelay: 250
+session.doubleClickInterval: 250
+session.forcePseudoTransparency: false

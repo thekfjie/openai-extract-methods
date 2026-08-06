@@ -1,0 +1,954 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Grok 注册 · automyai</title>
+  <link rel="stylesheet" href="../css/nature.css" />
+  <style>
+    .page-stack { display: grid; gap: 16px; }
+    .ops-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr);
+      gap: 16px;
+    }
+    .ops-grid .span-all { grid-column: 1 / -1; }
+    .field-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px 14px;
+    }
+    .field-grid label.span-2 { grid-column: 1 / -1; }
+    .field-grid .span-2 { grid-column: 1 / -1; }
+    .inline-check {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0;
+      cursor: pointer;
+      font-size: .9rem;
+    }
+    .inline-check input { width: auto; margin: 0; }
+    .muted { color: var(--muted); font-size: .84rem; line-height: 1.45; }
+    .compact-metrics .metric { min-height: 72px; }
+    .action-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+    }
+    .action-bar .btn { min-width: 110px; }
+    .run-quick {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .run-quick label { margin: 0; }
+    .cfg-block {
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+    }
+    .cfg-block:first-of-type { margin-top: 0; padding-top: 0; border-top: 0; }
+    .cfg-block h4 {
+      margin: 0 0 10px;
+      font-size: .92rem;
+      color: var(--moss-deep);
+      font-weight: 700;
+    }
+    .export-list {
+      max-height: 220px;
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 8px;
+      background: rgba(255,255,255,.28);
+      margin-top: 12px;
+    }
+    .export-item {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      padding: 8px 6px;
+      border-bottom: 1px solid var(--line);
+      font-size: .86rem;
+    }
+    .export-item:last-child { border-bottom: 0; }
+    .export-item button { flex: 0 0 auto; }
+    .log.tall { min-height: 280px; max-height: 420px; }
+    .subpanel {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px;
+      background: rgba(255,255,255,.28);
+      margin-top: 12px;
+    }
+    .subpanel h4 {
+      margin: 0 0 10px;
+      font-size: .9rem;
+      color: var(--moss-deep);
+    }
+    .status-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.42);
+      border: 1px solid var(--line);
+      font-size: .8rem;
+      color: var(--muted);
+    }
+    .status-pill b { color: var(--ink); font-weight: 600; }
+    .traffic-details { margin-top: 10px; }
+    .traffic-details summary { cursor: pointer; color: var(--muted); font-size: .84rem; }
+    details.params-card > summary {
+      list-style: none;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    details.params-card > summary::-webkit-details-marker { display: none; }
+    details.params-card > summary .chev {
+      flex: 0 0 auto;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: .85rem;
+    }
+    details.params-card[open] > summary .chev { transform: rotate(90deg); }
+    details.params-card .params-body { margin-top: 14px; }
+    :root[data-theme="dark"] .export-list,
+    :root[data-theme="dark"] .subpanel,
+    :root[data-theme="dark"] .status-pill {
+      background: rgba(34,48,41,.55);
+    }
+    @media (max-width: 1100px) {
+      .ops-grid, .run-quick, .field-grid { grid-template-columns: minmax(0, 1fr); }
+      .field-grid label.span-2, .field-grid .span-2 { grid-column: auto; }
+      .page-stack, .ops-grid, .ops-grid > *, .run-quick, .field-grid { min-width: 0; }
+    }
+    @media (max-width: 600px) {
+      .topbar .grok-top-actions { width: 100%; display: grid; grid-template-columns: auto 1fr 1fr; }
+      .topbar .grok-top-actions .btn { width: 100%; text-align: center; }
+      .topbar .grok-top-actions #saveCfgBtn { grid-column: 2 / -1; }
+      .action-bar .btn { min-width: 0; }
+    }
+  </style>
+</head>
+<body data-page="grok">
+  <div class="app">
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-mark"></div>
+    <div>
+      <h1>automyai</h1>
+      <p>控制台</p>
+    </div>
+  </div>
+  <nav class="nav">
+    <a href="/ui/" data-page="overview"><span class="dot"></span>总览</a>
+    <a href="/ui/pages/openai.html" data-page="openai"><span class="dot"></span>OpenAI 注册</a>
+    <a href="/ui/pages/openai2.html" data-page="openai2"><span class="dot"></span>OpenAI 2</a>
+    <a href="/ui/pages/openai3.html" data-page="openai3"><span class="dot"></span>OpenAI 3</a>
+    <a href="/ui/pages/apple_mail.html" data-page="apple-mail"><span class="dot"></span>Apple Mail</a>
+    <a href="/ui/pages/grok.html" data-page="grok"><span class="dot"></span>Grok 注册</a>
+    <a href="/grok2/accounts" target="_blank"><span class="dot"></span>Grok 2</a>
+    <a href="/ui/pages/convert.html" data-page="convert"><span class="dot"></span>OAI 转换</a>
+    <a href="/ui/pages/mail.html" data-page="mail"><span class="dot"></span>邮箱与分组</a>
+    <a href="/ui/pages/settings.html" data-page="settings"><span class="dot"></span>设置</a>
+    <a href="/ui/pages/tools.html" data-page="tools"><span class="dot"></span>工具 / 日志</a>
+  </nav>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div>
+      <h2>Grok 注册</h2>
+      <div class="hint">启动注册 · 看进度 · 导出同步到 Grok2API / CPA</div>
+    </div>
+    <div class="row grok-top-actions">
+      <span class="badge ok" id="topBadge">就绪</span>
+      <a class="btn secondary" href="/grok2/accounts" target="_blank" rel="noopener">打开 Grok 2 ↗</a>
+      <button class="btn ghost" id="refreshBtn">刷新</button>
+      <button class="btn ghost" id="saveCfgBtn">保存配置</button>
+    </div>
+  </div>
+
+  <nav class="page-jump" aria-label="Grok 页面快捷导航">
+    <a class="primary-jump" href="#grok-run">任务控制</a>
+    <a href="#grok-log">实时日志</a>
+    <a href="#grok-results">结果导出</a>
+    <a href="#grok-monitor">号池监控</a>
+    <a href="#grok-import">手动导入</a>
+    <a href="#grok-settings">高级参数</a>
+  </nav>
+
+  <div class="page-stack">
+    <!-- 操作区：状态 + 启动 + 日志 + 结果 -->
+    <div class="ops-grid">
+      <section class="card status-card section-anchor" id="grok-run">
+        <div class="section-head">
+          <div>
+            <h3>任务面板</h3>
+            <p>常用参数与启停按钮放一起。</p>
+          </div>
+          <span class="badge" id="runBadge">空闲</span>
+        </div>
+
+        <div class="run-quick" id="ttkFormQuick">
+          <label>邮箱服务商
+            <select id="emailProvider">
+              <option value="outlook">OutlookEmail 已保存邮箱池</option>
+              <option value="cloudflare">自建 Cloudflare Mail（apimail.kfjie.me）</option>
+              <option value="duckmail">DuckMail</option>
+              <option value="yyds">YYDS</option>
+            </select>
+          </label>
+          <label>注册数量
+            <input id="registerCount" type="number" min="1" max="100" value="1" />
+          </label>
+          <label>并发
+            <input id="registerThreads" type="number" min="1" max="10" value="1" />
+          </label>
+          <label>间隔(秒)
+            <input id="threadStartInterval" type="number" min="0" step="0.1" value="0.8" />
+          </label>
+        </div>
+
+        <label style="margin-top:12px">代理
+          <input id="proxy" placeholder="http://user:pass@host:port" />
+        </label>
+        <label style="margin-top:10px">代理预设
+          <select id="proxyPreset">
+            <option value="">自定义 / 当前配置</option>
+            <option value="">cliproxy SG 粘性5分钟（推荐）</option>
+            <option value="">cliproxy SG 粘性5分钟（同账号）</option>
+            <option value="http://172.19.0.1:7904">备用 mihomo SG (7904)</option>
+            <option value="http://172.19.0.1:7905">备用 mihomo TW (7905)</option>
+          </select>
+        </label>
+        <p class="muted" id="proxyHint" style="margin-top:8px">注册用 cliproxy 粘性会话；mihomo 仅备用。CPA 出站代理另配。可直接粘贴上游链接。</p>
+        <label class="inline-check" style="margin-top:8px;display:inline-flex">
+          <input id="trafficMeter" type="checkbox" /> 启用流量统计（可选；仍用上面粘贴的上游代理）
+        </label>
+        <div class="metrics" id="trafficMetrics" style="margin-top:10px"></div>
+        <details class="traffic-details">
+          <summary>查看流量历史</summary>
+          <pre class="log" id="trafficHistory" style="min-height:90px;max-height:22vh;margin-top:8px;white-space:pre-wrap">流量记录：默认关闭</pre>
+        </details>
+
+        <div class="row" style="margin-top:10px; gap:14px; flex-wrap:wrap">
+          <label class="inline-check"><input id="enableNsfw" type="checkbox" checked /> 注册后开 NSFW</label>
+          <label class="inline-check"><input id="grok2apiAutoAddRemote" type="checkbox" checked /> 成功后写 Grok2API</label>
+          <label class="inline-check"><input id="cpaAutoAdd" type="checkbox" checked /> 成功后导 CPA</label>
+        </div>
+
+        <div class="action-bar">
+          <button class="btn" id="startTtkBtn">启动注册</button>
+          <button class="btn secondary" id="stopTtkBtn">停止</button>
+          <button class="btn ghost" id="clearLogBtn">清空日志</button>
+          <a class="btn ghost" id="noVncLink" href="https://automyai.kfjie.me/novnc/vnc.html?autoconnect=1&resize=remote&path=novnc/websockify" target="_blank" rel="noopener">打开 noVNC</a>
+          <button class="btn ghost" id="copyNovncBtn">复制 noVNC</button>
+        </div>
+        <p class="muted" id="ttkInfo" style="margin-top:10px">正在读取工具状态…</p>
+
+        <div class="metrics compact-metrics" id="stateMetrics" style="margin-top:14px"></div>
+      </section>
+
+      <section class="card section-anchor" id="grok-log">
+        <div class="section-head">
+          <div>
+            <h3>进度 / 日志</h3>
+            <p>约每 2 秒刷新。</p>
+          </div>
+        </div>
+        <div class="metrics compact-metrics" id="ttkMetrics"></div>
+        <pre class="log tall" id="ttkLog">等待任务…</pre>
+      </section>
+
+      <section class="card section-anchor" id="grok-results">
+        <div class="section-head">
+          <div>
+            <h3>结果与导出</h3>
+            <p>查看成功账号，同步到池子。</p>
+          </div>
+          <button class="btn ghost" id="refreshResultsBtn">刷新结果</button>
+        </div>
+        <pre class="log" id="resultsOut" style="min-height:140px">暂无结果。</pre>
+        <div class="export-list" id="exportList"><div class="muted">暂无导出文件</div></div>
+        <div class="row" style="margin-top:12px">
+          <button class="btn" id="syncGrok2LatestBtn">最新 → Grok2API</button>
+          <button class="btn ghost" id="syncCpaLatestBtn">最新 → CPA</button>
+        </div>
+      </section>
+
+      <section class="card section-anchor" id="grok-monitor">
+        <div class="section-head">
+          <div>
+            <h3>CPA 号池监控</h3>
+            <p>分开显示管理状态与真实请求状态；仅检查日志，不消耗账号额度。</p>
+          </div>
+          <div class="row">
+            <button type="button" class="btn ghost" id="btnCpaMonitorCheck">立即检测</button>
+            <button type="button" class="btn ghost" id="btnCpaMonitorForce">强制补号</button>
+          </div>
+        </div>
+        <p class="muted" id="cpaMonitorSummary">检测中…</p>
+        <div class="metrics compact-metrics" id="cpaMonitorMetrics"></div>
+      </section>
+
+      <details class="card span-all action-details section-anchor" id="grok-import" data-remember="grok-manual-import">
+        <summary>
+          <div>
+            <h3>手动导入</h3>
+            <p style="margin:0">低频操作：文件导入 Grok2API，或粘贴已有凭证导入 CPA。</p>
+          </div>
+        </summary>
+        <div class="ops-grid details-body" style="margin-top:14px">
+          <div class="subpanel">
+            <h4>TTK token 文件 → Grok2API</h4>
+            <label>选择文件
+              <input id="grokFile" type="file" accept=".txt,text/plain" />
+            </label>
+            <p class="muted" id="grokFileHint" style="margin-top:8px">支持 tokens_eyJ_*.txt，每行一个 SSO。</p>
+            <label style="margin-top:10px">目标池
+              <select id="grokPool">
+                <option value="basic">basic</option>
+                <option value="super">super</option>
+                <option value="auto">auto</option>
+              </select>
+            </label>
+            <label class="inline-check" style="margin-top:10px"><input id="grokAutoNsfw" type="checkbox" /> 导入后开 NSFW</label>
+            <div class="row" style="margin-top:12px">
+              <button class="btn" id="importGrok2Btn">导入 Grok2API</button>
+              <button class="btn ghost" id="clearGrokFileBtn">清空文件</button>
+            </div>
+            <pre class="log" id="grok2Out" style="margin-top:12px; min-height:80px">—</pre>
+          </div>
+          <div class="subpanel">
+            <h4>SSO / auth JSON → CPA</h4>
+            <label>粘贴凭证
+              <textarea class="sensitive" id="ssoText" placeholder="粘贴已有授权凭证"></textarea>
+            </label>
+            <div class="row" style="margin-top:12px">
+              <button class="btn" id="importBtn">导入 CPA</button>
+              <button class="btn ghost" id="clearBtn">清空</button>
+            </div>
+            <pre class="log" id="importOut" style="margin-top:12px; min-height:80px">—</pre>
+          </div>
+        </div>
+      </details>
+    </div>
+
+    <!-- 参数区：后端配置，默认折叠可展开 -->
+    <details class="card params-card section-anchor" id="grok-settings" data-remember="grok-advanced-settings">
+      <summary>
+        <div>
+          <h3 style="margin:0">运行参数</h3>
+          <p class="muted" style="margin:4px 0 0">邮箱商、Cloudflare / DuckMail、Grok2API / CPA 等后端配置。改完点右上角「保存配置」。</p>
+        </div>
+        <span class="chev">▶</span>
+      </summary>
+      <div class="params-body" id="ttkForm">
+        <div class="cfg-block">
+          <h4>邮箱服务</h4>
+          <div class="field-grid">
+            <label class="span-2">DuckMail API Key
+              <input id="duckmailApiKey" class="sensitive" placeholder="duckmail 模式需要" />
+            </label>
+            <label>YYDS API Key
+              <input id="yydsApiKey" class="sensitive" />
+            </label>
+            <label>YYDS JWT
+              <input id="yydsJwt" class="sensitive" />
+            </label>
+            <label class="span-2">Cloudflare API Base
+              <input id="cloudflareApiBase" placeholder="https://your-worker.example" />
+            </label>
+            <label>Cloudflare API Key
+              <input id="cloudflareApiKey" class="sensitive" />
+            </label>
+            <label>鉴权模式
+              <select id="cloudflareAuthMode">
+                <option value="none">none</option>
+                <option value="bearer">bearer</option>
+                <option value="x-api-key">x-api-key</option>
+                <option value="x-admin-auth">x-admin-auth</option>
+                <option value="query-key">query-key</option>
+              </select>
+            </label>
+            <label class="span-2">CF 全局密码 (x-custom-auth)
+              <input id="cloudflareCustomAuth" class="sensitive" />
+            </label>
+            <label class="span-2">CF 路径 domains,accounts,token,messages
+              <input id="cloudflarePaths" placeholder="/api/domains,/api/new_address,/api/token,/api/mails" />
+            </label>
+            <label class="span-2">默认域名（逗号分隔）
+              <input id="defaultDomains" placeholder="mail.example.com" />
+            </label>
+          </div>
+        </div>
+
+        <div class="cfg-block">
+          <h4>Grok2API</h4>
+          <div class="field-grid">
+            <label>池名
+              <select id="grok2apiPoolName">
+                <option value="ssoBasic">ssoBasic</option>
+                <option value="ssoSuper">ssoSuper</option>
+              </select>
+            </label>
+            <label>远端 Base
+              <input id="grok2apiRemoteBase" placeholder="http://127.0.0.1:8000" />
+            </label>
+            <label class="span-2">旧版兼容密钥（v3 已使用服务器托管凭据）
+              <input id="grok2apiRemoteAppKey" class="sensitive" placeholder="新版无需填写" />
+            </label>
+          </div>
+        </div>
+
+        <div class="cfg-block">
+          <h4>CPA</h4>
+          <div class="field-grid">
+            <label>Auth 目录
+              <input id="cpaAuthDir" placeholder="/opt/cliproxyapi/auths" />
+            </label>
+            <label>远程 URL
+              <input id="cpaRemoteUrl" placeholder="http://127.0.0.1:8317" />
+            </label>
+            <label class="span-2">Management Key
+              <input id="cpaManagementKey" class="sensitive" />
+            </label>
+          </div>
+        </div>
+
+        <div class="action-bar" style="border-top:0; padding-top:0">
+          <button class="btn" type="button" id="saveCfgBtnBottom">保存配置</button>
+          <span class="muted">与顶部「保存配置」相同</span>
+        </div>
+      </div>
+    </details>
+  </div>
+
+  <div class="footer-note">Grok 注册 · 容器内 TTK · 凭证请妥善保管</div>
+</main>
+</div>
+  <script src="../js/runtime-config.js"></script>
+  <script src="../js/api-client.js"></script>
+  <script src="../js/app.js"></script>
+<script>
+(() => {
+const { api, toast, fmt, safeJson, withBusy, escapeHtml } = HelpOAI;
+let pollTimer = null;
+let lastLogText = '';
+
+const fields = {
+  emailProvider: 'email_provider',
+  registerCount: 'register_count',
+  registerThreads: 'register_threads',
+  threadStartInterval: 'thread_start_interval',
+  proxy: 'proxy',
+  trafficMeter: 'traffic_meter',
+  enableNsfw: 'enable_nsfw',
+  duckmailApiKey: 'duckmail_api_key',
+  yydsApiKey: 'yyds_api_key',
+  yydsJwt: 'yyds_jwt',
+  cloudflareApiBase: 'cloudflare_api_base',
+  cloudflareApiKey: 'cloudflare_api_key',
+  cloudflareAuthMode: 'cloudflare_auth_mode',
+  cloudflareCustomAuth: 'cloudflare_custom_auth',
+  cloudflarePaths: 'cloudflarePaths',
+  defaultDomains: 'defaultDomains',
+  grok2apiAutoAddRemote: 'grok2api_auto_add_remote',
+  grok2apiPoolName: 'grok2api_pool_name',
+  grok2apiRemoteBase: 'grok2api_remote_base',
+  grok2apiRemoteAppKey: 'grok2api_remote_app_key',
+  cpaAutoAdd: 'cpa_auto_add',
+  cpaAuthDir: 'cpa_auth_dir',
+  cpaRemoteUrl: 'cpa_remote_url',
+  cpaManagementKey: 'cpa_management_key',
+};
+
+function val(id) {
+  const el = document.getElementById(id);
+  if (!el) return '';
+  if (el.type === 'checkbox') return !!el.checked;
+  return el.value;
+}
+
+function setVal(id, value) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (el.type === 'checkbox') el.checked = !!value;
+  else if (value !== undefined && value !== null) el.value = value;
+}
+
+function collectConfig() {
+  const body = {};
+  for (const [id, key] of Object.entries(fields)) {
+    let v = val(id);
+    if (['registerCount','registerThreads'].includes(id)) v = Number(v || 1);
+    if (id === 'threadStartInterval') v = Number(v || 0);
+    if (id === 'trafficMeter') {
+      const el = document.getElementById('trafficMeter');
+      v = !!(el && el.checked);
+    }
+    body[key] = v;
+  }
+  body.emailProvider = body.email_provider;
+  body.registerCount = body.register_count;
+  body.registerThreads = body.register_threads;
+  body.trafficMeter = body.traffic_meter;
+  body.threadStartInterval = body.thread_start_interval;
+  body.enableNsfw = body.enable_nsfw;
+  body.duckmailApiKey = body.duckmail_api_key;
+  body.yydsApiKey = body.yyds_api_key;
+  body.yydsJwt = body.yyds_jwt;
+  body.cloudflareApiBase = body.cloudflare_api_base;
+  body.cloudflareApiKey = body.cloudflare_api_key;
+  body.cloudflareAuthMode = body.cloudflare_auth_mode;
+  body.cloudflareCustomAuth = body.cloudflare_custom_auth;
+  body.defaultDomains = body.defaultDomains;
+  body.grok2apiAutoAddRemote = body.grok2api_auto_add_remote;
+  body.grok2apiPoolName = body.grok2api_pool_name;
+  body.grok2apiRemoteBase = body.grok2api_remote_base;
+  body.grok2apiRemoteAppKey = body.grok2api_remote_app_key;
+  body.cpaAutoAdd = body.cpa_auto_add;
+  body.cpaAuthDir = body.cpa_auth_dir;
+  body.cpaRemoteUrl = body.cpa_remote_url;
+  body.cpaManagementKey = body.cpa_management_key;
+  return body;
+}
+
+function applyConfig(cfg = {}) {
+  // 只使用后端已保存的值；接口未返回时保留用户当前选择，不要擅自改回默认。
+  const currentProvider = document.getElementById('emailProvider')?.value || '';
+  const savedProvider = cfg.email_provider ?? cfg.emailProvider;
+  setVal('emailProvider', savedProvider !== undefined && savedProvider !== null && String(savedProvider) !== '' ? savedProvider : currentProvider);
+  setVal('registerCount', cfg.register_count ?? cfg.registerCount ?? 1);
+  setVal('registerThreads', cfg.register_threads ?? cfg.registerThreads ?? 1);
+  setVal('threadStartInterval', cfg.thread_start_interval ?? cfg.threadStartInterval ?? 0.8);
+  const currentProxy = document.getElementById('proxy')?.value || '';
+  setVal('proxy', cfg.proxy !== undefined && cfg.proxy !== null && String(cfg.proxy) !== '' ? cfg.proxy : currentProxy);
+  const tm = document.getElementById('trafficMeter');
+  if (tm) tm.checked = !!(cfg.traffic_meter ?? cfg.trafficMeter);
+  const proxyValue = document.getElementById('proxy')?.value || '';
+  const preset = document.getElementById('proxyPreset');
+  if (preset) preset.value = Array.from(preset.options).some((o) => o.value === proxyValue) ? proxyValue : '';
+  setVal('enableNsfw', cfg.enable_nsfw ?? cfg.enableNsfw ?? true);
+  setVal('duckmailApiKey', cfg.duckmail_api_key || '');
+  setVal('yydsApiKey', cfg.yyds_api_key || '');
+  setVal('yydsJwt', cfg.yyds_jwt || '');
+  setVal('cloudflareApiBase', cfg.cloudflare_api_base || '');
+  setVal('cloudflareApiKey', cfg.cloudflare_api_key || '');
+  setVal('cloudflareAuthMode', cfg.cloudflare_auth_mode || 'none');
+  setVal('cloudflareCustomAuth', cfg.cloudflare_custom_auth || '');
+  setVal('cloudflarePaths', cfg.cloudflarePaths || [
+    cfg.cloudflare_path_domains || '/api/domains',
+    cfg.cloudflare_path_accounts || '/api/new_address',
+    cfg.cloudflare_path_token || '/api/token',
+    cfg.cloudflare_path_messages || '/api/mails',
+  ].join(','));
+  setVal('defaultDomains', cfg.defaultDomains || '');
+  setVal('grok2apiAutoAddRemote', cfg.grok2api_auto_add_remote ?? true);
+  setVal('grok2apiPoolName', cfg.grok2api_pool_name || 'ssoBasic');
+  setVal('grok2apiRemoteBase', cfg.grok2api_remote_base || '');
+  setVal('grok2apiRemoteAppKey', cfg.grok2api_remote_app_key || '');
+  setVal('cpaAutoAdd', cfg.cpa_auto_add ?? true);
+  setVal('cpaAuthDir', cfg.cpa_auth_dir || '');
+  setVal('cpaRemoteUrl', cfg.cpa_remote_url || '');
+  setVal('cpaManagementKey', cfg.cpa_management_key || '');
+}
+
+function renderMetrics(tool, state) {
+  const s = state || tool?.task || {};
+  document.getElementById('stateMetrics').innerHTML = `
+    <div class="metric"><b>工具</b><span>${tool?.available ? '可用' : '缺失'} · ${tool?.executionEnabled ? '可执行' : '只读'}</span></div>
+    <div class="metric"><b>配置</b><span>${tool?.configured ? '已加载' : '未找到'}</span></div>
+    <div class="metric"><b>任务</b><span>${fmt(s.phase)} · ${s.running ? '运行中' : '空闲'}</span></div>
+    <div class="metric"><b>进度</b><span>${fmt(s.success || 0)} ok / ${fmt(s.failed || 0)} fail · ${fmt(s.completed || 0)}/${fmt(s.total || 0)}</span></div>
+    <div class="metric"><b>Grok2API</b><span id="g2Health">—</span></div>
+    <div class="metric"><b>CPA</b><span id="cpaHealth">—</span></div>`;
+  document.getElementById('ttkMetrics').innerHTML = `
+    <div class="metric"><b>状态</b><span>${fmt(s.phase)} ${s.running ? '●' : '○'}</span></div>
+    <div class="metric"><b>成功</b><span>${fmt(s.success || 0)}</span></div>
+    <div class="metric"><b>失败</b><span>${fmt(s.failed || 0)}</span></div>
+    <div class="metric"><b>PID</b><span>${fmt(s.pid || '—')}</span></div>`;
+  const badge = document.getElementById('runBadge');
+  badge.textContent = s.running ? '运行中' : (s.phase || '空闲');
+  badge.className = 'badge ' + (s.running ? 'warn' : (s.phase === 'completed' ? 'ok' : ''));
+  document.getElementById('topBadge').textContent = tool?.available ? (s.running ? '运行中' : '就绪') : '工具缺失';
+  document.getElementById('topBadge').className = 'badge ' + (tool?.available ? (s.running ? 'warn' : 'ok') : 'err');
+  let info = tool?.message || '';
+  if (tool?.headlessPath) info += (info ? ' · ' : '') + 'headless: ' + tool.headlessPath;
+  document.getElementById('ttkInfo').textContent = info || 'TTK 工具状态正常';
+}
+
+function renderExports(exports = []) {
+  const box = document.getElementById('exportList');
+  if (!exports.length) {
+    box.innerHTML = '<div class="muted">暂无导出文件</div>';
+    return;
+  }
+  box.innerHTML = exports.map((item, idx) => `
+    <div class="export-item">
+      <div>
+        <b>${escapeHtml(item.name)}</b>
+        <div class="muted">${escapeHtml(item.kind)} · ${fmt(item.size)}B · ${escapeHtml(item.mtime || '')}</div>
+      </div>
+      <div class="row">
+        <button class="btn ghost" data-export-view="${idx}">查看</button>
+        <button class="btn ghost" data-export-sync-g2="${idx}">→Grok2API</button>
+        <button class="btn ghost" data-export-sync-cpa="${idx}">→CPA</button>
+      </div>
+    </div>`).join('');
+  box.querySelectorAll('[data-export-view]').forEach((btn) => {
+    btn.onclick = async () => {
+      const item = exports[Number(btn.dataset.exportView)];
+      try {
+        const res = await api('GET', `/grok/ttk/export?name=${encodeURIComponent(item.name)}`);
+        document.getElementById('resultsOut').textContent = res.content || '';
+        toast('已加载导出内容', 'ok');
+      } catch (e) { toast(e.message, 'error'); }
+    };
+  });
+  box.querySelectorAll('[data-export-sync-g2]').forEach((btn) => {
+    btn.onclick = () => syncExport(exports[Number(btn.dataset.exportSyncG2)], ['grok2api']);
+  });
+  box.querySelectorAll('[data-export-sync-cpa]').forEach((btn) => {
+    btn.onclick = () => syncExport(exports[Number(btn.dataset.exportSyncCpa)], ['cpa']);
+  });
+  window.__ttkExports = exports;
+}
+
+async function syncExport(item, targets) {
+  if (!item) return;
+  try {
+    const res = await api('POST', '/grok/ttk/sync', {
+      name: item.name,
+      targets,
+      pool: document.getElementById('grokPool').value,
+      autoNsfw: document.getElementById('grokAutoNsfw').checked,
+    });
+    document.getElementById('resultsOut').textContent = safeJson(res);
+    toast(`已同步 ${targets.join('+')}`, 'ok');
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+
+function renderTraffic(state) {
+  const box = document.getElementById('trafficMetrics');
+  const hist = document.getElementById('trafficHistory');
+  if (!box) return;
+  const t = state && state.traffic;
+  const enabled = !!(state && (state.traffic_meter || t));
+  if (!enabled) {
+    box.innerHTML = '<div class="metric"><b>流量统计</b><span>未启用</span></div>';
+  } else if (t) {
+    box.innerHTML = `
+      <div class="metric"><b>本任务流量</b><span>${t.bytes_total_h || ((t.bytes_total || 0) + ' B')}</span></div>
+      <div class="metric"><b>上行/下行</b><span>${t.bytes_sent || 0} / ${t.bytes_recv || 0} B</span></div>
+      <div class="metric"><b>连接</b><span>${t.connections || 0}</span></div>
+      <div class="metric"><b>会话</b><span>${t.id || '—'}</span></div>`;
+  } else {
+    box.innerHTML = '<div class="metric"><b>流量统计</b><span>已启用</span></div>';
+  }
+}
+
+async function refreshTraffic() {
+  try {
+    const res = await api('GET', '/grok/ttk/traffic?tail=30');
+    const state = res.ttkState || {};
+    if (res.current) state.traffic = res.current;
+    renderTraffic(state);
+    const hist = document.getElementById('trafficHistory');
+    if (hist) {
+      const rows = res.items || [];
+      hist.textContent = rows.length
+        ? rows.map((t) => `${t.started_at || ''} ${t.status || ''} total=${t.bytes_total_h || t.bytes_total || 0} up=${t.bytes_sent || 0} down=${t.bytes_recv || 0}`).join('\n')
+        : '暂无流量记录（开启开关并跑任务后出现）';
+    }
+  } catch (e) {
+    /* optional */
+  }
+}
+
+async function refreshLogs() {
+  try {
+    const res = await api('GET', `/grok/registration/logs?tail=400&_=${Date.now()}`);
+    const lines = (res.logs || []).map((l) => {
+      if (typeof l === 'string') return l;
+      return l.message || (l.time ? `[${l.time}]` : '');
+    });
+    const text = lines.join('\n') || '暂无日志';
+    const el = document.getElementById('ttkLog');
+    const stick = el.scrollTop + el.clientHeight >= el.scrollHeight - 24;
+    if (text !== lastLogText) {
+      el.textContent = text;
+      lastLogText = text;
+      if (stick) el.scrollTop = el.scrollHeight;
+    }
+    const state = res.ttkState || res;
+    renderMetrics(window.__ttkTool || {}, state);
+    // A new automatic registration can start while this page is open, so keep
+    // polling the authenticated native Grok 2 event stream.
+    ensurePoll(true);
+  } catch (e) {
+    /* keep quiet during poll */
+  }
+}
+
+function ensurePoll(on) {
+  if (on && !pollTimer) {
+    pollTimer = setInterval(refreshLogs, 2000);
+  } else if (!on && pollTimer) {
+    clearInterval(pollTimer);
+    pollTimer = null;
+  }
+}
+
+async function refresh() {
+  try {
+    const res = await api('GET', '/grok/ttk/status');
+    const tool = res.tool || {};
+    window.__ttkTool = tool;
+    if (res.config) applyConfig(res.config);
+    renderMetrics(tool, res.ttkState || tool.task || {});
+    renderExports(tool.exports || []);
+    try {
+      const ext = await api('GET', '/extensions/status');
+      const g2 = ext?.services?.grok2api || ext?.grok2api || {};
+      const cpa = ext?.services?.cpa || ext?.cpa || {};
+      const g2El = document.getElementById('g2Health');
+      const cpaEl = document.getElementById('cpaHealth');
+      if (g2El) g2El.textContent = g2.ok ? (g2.authenticated ? '已连通' : `HTTP ${g2.status}`) : (g2.error || '不可用');
+      if (cpaEl) cpaEl.textContent = cpa.enabled === false ? '未启用' : (cpa.ok || cpa.authDir || cpa.remoteUrl ? '已配置' : fmt(cpa));
+    } catch (_) {}
+    await refreshLogs();
+    ensurePoll(true);
+    await refreshResults(false);
+  } catch (e) {
+    toast(e.message, 'error');
+  }
+}
+
+async function refreshResults(showToast = true) {
+  try {
+    const res = await api('GET', '/grok/ttk/results');
+    const rows = res.results || [];
+    document.getElementById('resultsOut').textContent = rows.length
+      ? rows.slice(0, 30).map((r) => `${r.email || ''}  sso=${String(r.sso || '').slice(0, 24)}...`).join('\n')
+      : '暂无结果。';
+    renderExports(res.exports || window.__ttkExports || []);
+    if (showToast) toast('结果已刷新', 'ok');
+  } catch (e) {
+    if (showToast) toast(e.message, 'error');
+  }
+}
+
+async function saveConfig(button) {
+  try {
+    await withBusy(button, async () => {
+      const res = await api('POST', '/grok/ttk/config', collectConfig());
+      applyConfig(res.config || {});
+      toast('配置已保存', 'ok');
+    });
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+document.getElementById('refreshBtn').onclick = refresh;
+document.getElementById('refreshResultsBtn').onclick = () => refreshResults(true);
+document.getElementById('clearLogBtn').onclick = () => {
+  document.getElementById('ttkLog').textContent = '';
+  lastLogText = '';
+};
+document.getElementById('saveCfgBtn').onclick = () => saveConfig(document.getElementById('saveCfgBtn'));
+document.getElementById('saveCfgBtnBottom').onclick = () => saveConfig(document.getElementById('saveCfgBtnBottom'));
+
+document.getElementById('startTtkBtn').onclick = async () => {
+  const button = document.getElementById('startTtkBtn');
+  try {
+    await withBusy(button, async () => {
+      const cfg = collectConfig();
+      // OutlookEmail 由主流程负责领取/回写租约；其余选项走 TTK 直连邮箱商。
+      const startPath = cfg.email_provider === 'outlook' ? '/grok/signup/start' : '/grok/ttk/start';
+      if (cfg.email_provider === 'outlook') cfg.count = cfg.register_count || 1;
+      const res = await api('POST', startPath, cfg);
+      if (res.error) throw new Error(res.error);
+      toast('任务已启动', 'ok');
+      ensurePoll(true);
+      await refresh();
+    });
+  } catch (e) { toast(e.message, 'error'); }
+};
+document.getElementById('stopTtkBtn').onclick = async () => {
+  try {
+    const provider = document.getElementById('emailProvider')?.value;
+    await api('POST', provider === 'outlook' ? '/grok/signup/stop' : '/grok/ttk/stop', {});
+    toast('已请求停止', 'ok');
+    await refreshLogs();
+  } catch (e) { toast(e.message, 'error'); }
+};
+
+document.getElementById('syncGrok2LatestBtn').onclick = async () => {
+  try {
+    const res = await api('POST', '/grok/ttk/sync', {
+      targets: ['grok2api'],
+      pool: document.getElementById('grokPool').value,
+      autoNsfw: document.getElementById('grokAutoNsfw').checked,
+    });
+    document.getElementById('resultsOut').textContent = safeJson(res);
+    toast('已同步 Grok2API', 'ok');
+  } catch (e) { toast(e.message, 'error'); }
+};
+document.getElementById('syncCpaLatestBtn').onclick = async () => {
+  try {
+    const res = await api('POST', '/grok/ttk/sync', { targets: ['cpa'] });
+    document.getElementById('resultsOut').textContent = safeJson(res);
+    toast('已同步 CPA', 'ok');
+  } catch (e) { toast(e.message, 'error'); }
+};
+
+document.getElementById('importBtn').onclick = async () => {
+  const button = document.getElementById('importBtn');
+  const text = document.getElementById('ssoText').value.trim();
+  if (!text) return toast('请先粘贴已有凭证', 'error');
+  try {
+    await withBusy(button, async () => {
+      const res = await api('POST', '/convert/grok/import', { input: text, targets: ['cpa'] });
+      document.getElementById('importOut').textContent = safeJson(res);
+      toast('已完成 CPA 导入', 'ok');
+    });
+  } catch (e) { toast(e.message, 'error'); }
+};
+document.getElementById('clearBtn').onclick = () => {
+  document.getElementById('ssoText').value = '';
+  document.getElementById('importOut').textContent = '—';
+};
+document.getElementById('grokFile').onchange = () => {
+  const file = document.getElementById('grokFile').files?.[0];
+  document.getElementById('grokFileHint').textContent = file ? `已选择：${file.name}` : '支持 tokens_eyJ_*.txt，每行一个 SSO。';
+};
+document.getElementById('clearGrokFileBtn').onclick = () => {
+  document.getElementById('grokFile').value = '';
+  document.getElementById('grokFileHint').textContent = '支持 tokens_eyJ_*.txt，每行一个 SSO。';
+  document.getElementById('grok2Out').textContent = '—';
+};
+document.getElementById('importGrok2Btn').onclick = async () => {
+  const button = document.getElementById('importGrok2Btn');
+  const file = document.getElementById('grokFile').files?.[0];
+  if (!file) return toast('请先选择 token 文件', 'error');
+  try {
+    await withBusy(button, async () => {
+      const text = await file.text();
+      const res = await api('POST', '/grok/import/grok2api', {
+        text,
+        pool: document.getElementById('grokPool').value,
+        autoNsfw: document.getElementById('grokAutoNsfw').checked,
+      });
+      document.getElementById('grok2Out').textContent = safeJson(res);
+      toast('已导入 Grok2API', 'ok');
+      refresh();
+    });
+  } catch (e) { toast(e.message, 'error'); }
+};
+
+document.getElementById('proxyPreset')?.addEventListener('change', (e) => {
+  const v = e.target.value;
+  if (v) document.getElementById('proxy').value = v;
+});
+document.getElementById('copyNovncBtn')?.addEventListener('click', async () => {
+  const url = document.getElementById('noVncLink')?.href || 'https://automyai.kfjie.me/novnc/vnc.html?autoconnect=1&resize=remote&path=novnc/websockify';
+  try { await navigator.clipboard.writeText(url); toast('已复制 noVNC 地址','ok'); }
+  catch { toast(url,'ok'); }
+});
+(() => {
+  const a = document.getElementById('noVncLink');
+  if (!a) return;
+  a.href = 'https://automyai.kfjie.me/novnc/vnc.html?autoconnect=1&resize=remote&path=novnc/websockify';
+})();
+
+async function refreshCpaMonitor() {
+  try {
+    const res = await api('GET', '/cpa/monitor/status');
+    const health = res.health || {};
+    const settings = res.settings || {};
+    const summary = document.getElementById('cpaMonitorSummary');
+    const metrics = document.getElementById('cpaMonitorMetrics');
+    if (summary) {
+      const en = settings.enabled ? '已启用' : '已关闭';
+      const ttk = res.ttkRunning ? '注册中' : '空闲';
+      summary.textContent = `[${en}] ${health.message || res.lastError || '等待检测'} · ${ttk}` +
+        (res.lastTriggerAt ? ` · 上次触发 ${res.lastTriggerAt}` : '');
+    }
+    if (metrics) {
+      const requestLabels = {
+        ok: '最近调用成功',
+        quota_exhausted: '额度耗尽',
+        rate_limited: '上游限流',
+        pool_unavailable: '全池暂不可调度',
+        error: '调用异常',
+        stale: '历史异常已过期',
+        unknown: '尚无调用证据',
+      };
+      const managementLabel = health.managementOk === false ? '读取失败' :
+        (health.managementOk === true ? '接口正常（非额度探测）' : '-');
+      const lastFailure = health.lastFailureAt ? new Date(health.lastFailureAt).toLocaleString() : '-';
+      const last429 = health.lastRateLimitAt ? new Date(health.lastRateLimitAt).toLocaleString() : '-';
+      const cells = [
+        ['可用账号', health.okAccounts ?? '-'],
+        ['总账号', health.totalAccounts ?? '-'],
+        ['阈值', settings.minOkAccounts ?? health.minOkAccounts ?? '-'],
+        ['当前账号标记', health.limitedAccounts ?? 0],
+        ['近30分失败账号', health.recentFailureAccounts ?? 0],
+        ['近30分失败请求', health.recentFailedRequests ?? 0],
+        ['管理接口', managementLabel],
+        ['真实请求', requestLabels[health.requestStatus] || health.requestStatus || '-'],
+        ['最近失败', lastFailure],
+        ['最近429', last429],
+        ['CPA代理', health.proxyUrl || settings.proxy || '-'],
+      ];
+      metrics.innerHTML = cells.map(([k,v]) => `<div class="metric"><b>${k}</b><span>${v}</span></div>`).join('');
+    }
+  } catch (err) {
+    const summary = document.getElementById('cpaMonitorSummary');
+    if (summary) summary.textContent = '监控读取失败: ' + (err.message || err);
+  }
+}
+
+document.getElementById('btnCpaMonitorCheck')?.addEventListener('click', async () => {
+  try {
+    await api('POST', '/cpa/monitor/check', { trigger: false });
+    await refreshCpaMonitor();
+    toast('检测完成（未主动消耗账号额度）', 'ok');
+  } catch (err) { toast(err.message || String(err), 'error'); }
+});
+document.getElementById('btnCpaMonitorForce')?.addEventListener('click', async () => {
+  if (!confirm('确认强制触发补号（若任务未在跑）？')) return;
+  try {
+    const res = await api('POST', '/cpa/monitor/check', { trigger: true, force: true });
+    await refreshCpaMonitor();
+    const tr = res.lastTriggerResult || {};
+    toast(tr.triggered ? ('已触发注册 x' + (tr.registerCount || '')) : ('未触发: ' + (tr.reason || tr.error || '—')), tr.triggered ? 'ok' : 'error');
+  } catch (err) { toast(err.message || String(err), 'error'); }
+});
+
+setInterval(refreshCpaMonitor, 15000);
+refreshCpaMonitor();
+refresh();
+})();
+</script>
+</body>
+</html>

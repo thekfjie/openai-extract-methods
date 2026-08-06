@@ -1,0 +1,923 @@
+{
+  "profile": {
+    "schemaVersion": 2,
+    "purpose": "local-browser-compatibility-testing",
+    "id": "c584687e8c9c600a",
+    "seed": "sample-windows-firefox",
+    "preset": "windows-firefox",
+    "generator": {
+      "algorithm": "roxybrowser-3.9.2-compatible",
+      "featureMode": "random",
+      "deterministic": true,
+      "baseDataSource": "local-template",
+      "provider": null
+    },
+    "engine": {
+      "family": "Firefox",
+      "version": "146.0",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:146.0) Gecko/20100101 Firefox/146.0",
+      "userAgentMetadata": null
+    },
+    "os": {
+      "name": "Windows",
+      "version": "11",
+      "architecture": "x86",
+      "model": ""
+    },
+    "machine": {
+      "computerName": "DESKTOP-AD71472",
+      "macAddress": "02:CD:F8:68:79:59"
+    },
+    "locale": {
+      "appLocale": "ru-RU",
+      "acceptLanguage": "ru-RU,ru;q=0.9,en;q=0.7",
+      "timezone": "Europe/Moscow"
+    },
+    "navigator": {
+      "platform": "Win32",
+      "hardwareConcurrency": 8,
+      "deviceMemory": 16,
+      "maxTouchPoints": 0,
+      "mobile": false,
+      "doNotTrack": false,
+      "pluginsEnabled": false,
+      "plugins": []
+    },
+    "screen": {
+      "width": 1920,
+      "height": 1080,
+      "availWidth": 1920,
+      "availHeight": 1080,
+      "colorDepth": 24,
+      "pixelDepth": 24,
+      "devicePixelRatio": 1
+    },
+    "graphics": {
+      "webglInfoEnabled": true,
+      "webglVendor": "Google Inc. (NVIDIA)",
+      "webglRenderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 Direct3D11 vs_5_0 ps_5_0)",
+      "webgpu": {
+        "mode": "webgl",
+        "vendor": "Google Inc. (NVIDIA)"
+      },
+      "noise": {
+        "enabled": true,
+        "interval": 1,
+        "value": 0.3964144273195416
+      }
+    },
+    "canvas": {
+      "enabled": true,
+      "value": "EDE8950C12850DDF5D361A3AD624F7BD",
+      "valueV2": 0.6764019904658198
+    },
+    "audioContext": {
+      "enabled": true,
+      "value": 0.5637854966334999,
+      "version": "2",
+      "interval": 100
+    },
+    "clientRects": {
+      "enabled": true,
+      "noiseFactorX": -0.7724595069885254,
+      "noiseFactorY": 0.9974963120184839
+    },
+    "fonts": {
+      "enabled": true,
+      "localCatalog": [
+        "Arial",
+        "Calibri",
+        "Cambria",
+        "Cambria Math",
+        "Candara",
+        "Comic Sans MS",
+        "Consolas",
+        "Constantia",
+        "Corbel",
+        "Courier New",
+        "Ebrima",
+        "Georgia",
+        "Impact",
+        "Lucida Console",
+        "Malgun Gothic",
+        "Microsoft JhengHei",
+        "Microsoft Sans Serif",
+        "Microsoft YaHei",
+        "Palatino Linotype",
+        "Segoe UI",
+        "Segoe UI Emoji",
+        "Segoe UI Symbol",
+        "Tahoma",
+        "Times New Roman",
+        "Trebuchet MS",
+        "Verdana",
+        "Yu Gothic"
+      ],
+      "disabled": [
+        "Times New Roman",
+        "Tahoma"
+      ],
+      "allowed": [
+        "Maven Pro",
+        "Encode Sans",
+        "Crafty Girls",
+        "Simplified Arabic",
+        "Sinhala Sangam MN",
+        "Noto Sans TC",
+        "Overlock SC",
+        "Prociono",
+        "Mate",
+        "Quintessential",
+        "Tunga",
+        "Ewert",
+        "Black Han Sans",
+        "Aubrey",
+        "Vagabond",
+        "Kavoon",
+        "Exotc350 Bd BT",
+        "Risque",
+        "Heiti TC",
+        "Harmattan",
+        "Kartika",
+        "Antic Didone",
+        "Kumar One Outline",
+        "Parisienne",
+        "Amita",
+        "Meera Inimai",
+        "Scope One",
+        "Faster One",
+        "SCRIPTINA",
+        "Times New Roman PS",
+        "Buenard",
+        "Rockwell",
+        "Exo",
+        "Arya",
+        "Swis721 BlkEx BT",
+        "Goudy Bookletter 1911",
+        "Orienta",
+        "Papyrus",
+        "Freestyle Script",
+        "Copperplate Gothic Light",
+        "Ceviche One",
+        "Redressed",
+        "Megrim",
+        "Literata",
+        "PetitaBold",
+        "Neucha",
+        "Headland One",
+        "Sintony",
+        "Roboto Condensed",
+        "Odor Mean Chey",
+        "East Sea Dokdo",
+        "Cute Font",
+        "Sanchez",
+        "Khmer",
+        "Cutive Mono",
+        "K2D",
+        "Mistral",
+        "Tamil Sangam MN",
+        "Karma",
+        "Thonburi",
+        "Devonshire",
+        "Mangal",
+        "Rubik",
+        "Pickwick",
+        "MedievalSharp",
+        "Fauna One",
+        "Source Serif Pro",
+        "Korinna BT",
+        "Playfair Display",
+        "Handlee",
+        "Griffy",
+        "Spicy Rice",
+        "Market",
+        "DIN",
+        "Vivaldi",
+        "Oxygen Mono",
+        "Baloo Chettan",
+        "Srisakdi",
+        "Niagara Solid",
+        "Monda",
+        "Pridi",
+        "Ribbon131 Bd BT",
+        "Almendra SC",
+        "Architects Daughter",
+        "EucrosiaUPC",
+        "Cezanne",
+        "Bai Jamjuree",
+        "Gungsuh",
+        "BenchNine",
+        "Martel Sans",
+        "Arial Rounded MT Bold",
+        "Squada One",
+        "Oxygen",
+        "Hiragino Kaku Gothic ProN",
+        "Rationale",
+        "Euphemia UCAS",
+        "Suwannaphum",
+        "Nothing You Could Do",
+        "Syncopate",
+        "Pristina",
+        "Markazi Text",
+        "Mr Dafoe",
+        "GoudyOLSt BT",
+        "Amaranth",
+        "Meiryo UI",
+        "Iskoola Pota",
+        "Strait",
+        "Inder",
+        "FRUTIGER",
+        "Kavivanar",
+        "Rubik Mono One",
+        "Stalemate",
+        "Shruti",
+        "Timmana",
+        "Tinos",
+        "Belleza",
+        "Jaldi",
+        "Sonsie One",
+        "Nova Script",
+        "Perpetua",
+        "Noticia Text",
+        "Lucida Sans",
+        "Alef",
+        "CG Omega",
+        "Cuprum",
+        "Nunito Sans",
+        "Big Shoulders Display",
+        "Nova Round",
+        "Roboto",
+        "Uncial Antiqua",
+        "FONTIN",
+        "Pragati Narrow",
+        "UnifrakturCook",
+        "IrisUPC",
+        "Unkempt",
+        "Lilita One",
+        "Glegoo",
+        "Hammersmith One",
+        "Raavi",
+        "Content",
+        "Lemonada",
+        "Chicle",
+        "Clarendon",
+        "GFS Neohellenic",
+        "Slabo 13px",
+        "Nova Cut",
+        "Bodoni MT Condensed",
+        "Century Gothic",
+        "Cinzel Decorative",
+        "Palatino",
+        "Segoe Print",
+        "KodchiangUPC",
+        "Maiandra GD",
+        "Arapey",
+        "Microsoft Uighur",
+        "Dorsa",
+        "Limelight",
+        "Livvic",
+        "Ubuntu",
+        "Galindo",
+        "Yanone Kaffeesatz",
+        "Bodoni MT Poster Compressed",
+        "Julius Sans One",
+        "Mandali",
+        "Krona One",
+        "Wellfleet",
+        "Yesteryear",
+        "Fredoka One",
+        "Yeon Sung",
+        "Antic Slab",
+        "Script",
+        "News Cycle",
+        "Forum",
+        "Apple Color Emoji",
+        "KaiTi",
+        "Albertus Medium",
+        "Marck Script",
+        "Mukta Vaani",
+        "Sawarabi Mincho",
+        "Vollkorn",
+        "Berlin Sans FB",
+        "Noto Sans Devanagari",
+        "FangSong",
+        "IBM Plex Sans",
+        "Bigshot One",
+        "Ayuthaya",
+        "Gravitas One",
+        "Noto Sans JP Regular",
+        "Roboto Mono",
+        "Happy Monkey",
+        "Jokerman",
+        "Magra",
+        "Pythagoras",
+        "Lucida Bright",
+        "Minion",
+        "Noto Sans Armenian",
+        "HELV",
+        "Noto Sans Lao",
+        "Noto Sans TC Regular",
+        "Antic",
+        "Incised901 BT",
+        "Sawarabi Gothic",
+        "Noto Sans Thai",
+        "Noto Sans Tibetan",
+        "Indie Flower",
+        "Oregano",
+        "Kalinga",
+        "Geostar Fill",
+        "Baloo Tamma"
+      ]
+    },
+    "speechSynthesis": {
+      "enabled": true,
+      "voices": [
+        {
+          "name": "Microsoft Stefan - German (Germany)",
+          "lang": "de-DE",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Kalpana - Hindi (India)",
+          "lang": "hi-IN",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Zira - English (United States)",
+          "lang": "en-US",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft David - English (United States)",
+          "lang": "en-US",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Mark - English (United States)",
+          "lang": "en-US",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Hazel - English (Great Britain)",
+          "lang": "en-GB",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft George - English (Great Britain)",
+          "lang": "en-GB",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Susan - English (Great Britain)",
+          "lang": "en-GB",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Hedda - German (Germany)",
+          "lang": "de-DE",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Helena - Spanish (Spain)",
+          "lang": "es-ES",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Pablo - Spanish (Spain)",
+          "lang": "es-ES",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Laura - Spanish (Mexico)",
+          "lang": "es-MX",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Raul - Spanish (Mexico)",
+          "lang": "es-MX",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Hortense - French (France)",
+          "lang": "fr-FR",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Julie - French (France)",
+          "lang": "fr-FR",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Cosimo - Italian (Italy)",
+          "lang": "it-IT",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Elsa - Italian (Italy)",
+          "lang": "it-IT",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Frank - Dutch (Netherlands)",
+          "lang": "nl-NL",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Lili - Dutch (Netherlands)",
+          "lang": "nl-NL",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Adam - Polish (Poland)",
+          "lang": "pl-PL",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Paulina - Polish (Poland)",
+          "lang": "pl-PL",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Maria - Portuguese (Brazil)",
+          "lang": "pt-BR",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Daniel - Portuguese (Brazil)",
+          "lang": "pt-BR",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Irina - Russian (Russia)",
+          "lang": "ru-RU",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Pavel - Russian (Russia)",
+          "lang": "ru-RU",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Hemant - Hindi (India)",
+          "lang": "hi-IN",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Andika - Indonesian (Indonesia)",
+          "lang": "id-ID",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Tracy - Chinese (Traditional, Taiwan)",
+          "lang": "zh-TW",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Danny - Chinese (Traditional, Taiwan)",
+          "lang": "zh-TW",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Ayumi - Japanese (Japan)",
+          "lang": "ja-JP",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Haruka - Japanese (Japan)",
+          "lang": "ja-JP",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Ichiro - Japanese (Japan)",
+          "lang": "ja-JP",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Heami - Korean (Korea)",
+          "lang": "ko-KR",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Huihui - Chinese (Simplified, PRC)",
+          "lang": "zh-CN",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Kangkang - Chinese (Simplified, PRC)",
+          "lang": "zh-CN",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Yaoyao - Chinese (Simplified, PRC)",
+          "lang": "zh-CN",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Tracy - Chinese (Traditional, Hong Kong S.A.R.)",
+          "lang": "zh-HK",
+          "isLocalService": true
+        }
+      ]
+    },
+    "mediaDevices": {
+      "enabled": true,
+      "devices": [
+        {
+          "deviceType": "audioinput",
+          "deviceId": "c5cad3ed2bb161dbeca5ea1c9efc04cb32614f271604c00797d4a953aa8b89c2",
+          "label": "Default - Microphone",
+          "groupId": "b36956c82487e2db5b8911ce6206c815"
+        },
+        {
+          "deviceType": "audiooutput",
+          "deviceId": "757610c4646a38d8c441c0ee5bae64dc8dcbbaa3aba12b4d8a43da52da96f97b",
+          "label": "Default - Speakers",
+          "groupId": "b36956c82487e2db5b8911ce6206c815"
+        },
+        {
+          "deviceType": "videoinput",
+          "deviceId": "a33cb3f036180a916bba0f1348c03c5fa396058b4a5552e17b5a7f2abd516d67",
+          "label": "Integrated Camera",
+          "groupId": "b36956c82487e2db5b8911ce6206c815"
+        }
+      ]
+    },
+    "webrtc": {
+      "mode": "disable",
+      "remoteIp": null
+    },
+    "geolocation": {
+      "mode": "disable",
+      "enableFakeLocationData": true,
+      "latitude": 0,
+      "longitude": 0,
+      "accuracy": 0,
+      "altitude": 0
+    },
+    "content": {
+      "blockImages": false,
+      "imageSizeLimit": null,
+      "disablePlayVideo": false,
+      "disablePlaySound": false,
+      "disablePasswordSaveTips": false
+    },
+    "security": {
+      "ignoreCertificateErrors": false,
+      "sslCipherSuiteBlacklist": [],
+      "portScanProtection": true,
+      "portScanAllowList": []
+    },
+    "runtime": {
+      "gpuAcceleration": true,
+      "sandboxPermission": false,
+      "colorScheme": "system",
+      "window": {
+        "mode": "maximized",
+        "width": 1280,
+        "height": 720,
+        "position": {
+          "xRatio": 0,
+          "yRatio": 0,
+          "anchor": "tl"
+        }
+      }
+    },
+    "battery": {
+      "enabled": false,
+      "charging": false,
+      "chargingTime": "",
+      "dischargingTime": "",
+      "level": ""
+    },
+    "network": {
+      "enabled": true,
+      "type": "ethernet",
+      "effectiveType": "3g",
+      "downlink": 2.5,
+      "downlinkMax": 10,
+      "rtt": 140,
+      "saveData": false
+    },
+    "bluetooth": {
+      "enabled": false,
+      "adapterAvailable": false
+    }
+  },
+  "roxyConfig": {
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:146.0) Gecko/20100101 Firefox/146.0",
+    "navigator": {
+      "platform": "Win32",
+      "hardwareConcurrency": 8,
+      "maxTouchPoints": 0,
+      "deviceMemory": 16,
+      "mobile": false
+    },
+    "windowNum": 1,
+    "timeZone": "Europe/Moscow",
+    "appLocale": "ru-RU",
+    "acceptLang": "ru-RU,ru;q=0.9,en;q=0.7",
+    "audioBuffer": {
+      "enableAudioBufferNoise": true,
+      "audioBufferNoiseValue": 0.5637854966334999
+    },
+    "canvasContext": {
+      "enableCanvasContextNoise": true,
+      "canvasContextNoiseValue": 0.6764019904658198
+    },
+    "clientRects": {
+      "enable": true,
+      "clientRectsNoiseFactorX": -0.7724595069885254,
+      "clientRectsNoiseFactorY": 0.9974963120184839
+    },
+    "webGL": {
+      "enableWebGLRendererNoise": true,
+      "webglRenderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 Direct3D11 vs_5_0 ps_5_0)",
+      "webglVendor": "Google Inc. (NVIDIA)",
+      "webGLRendererNoiseValue": 0.3964144273195416
+    },
+    "geoLocation": {
+      "mode": "disable",
+      "enableFakeLocationData": true,
+      "locationLatitude": 0,
+      "locationLongitude": 0,
+      "locationAccuracy": 0,
+      "locationAltitude": 0
+    },
+    "doNotTrack": false,
+    "imageSizeLimit": -1,
+    "disablePlayVideo": false,
+    "portScan": {
+      "enablePortScanWhiteList": true,
+      "portScanWhiteList": "0"
+    },
+    "screen": {
+      "pixelDepth": 24,
+      "colorDepth": 24,
+      "width": 1920,
+      "height": 1080,
+      "availWidth": 1920,
+      "availHeight": 1080,
+      "devicePixelRatio": 1
+    },
+    "speechSynthesis": {
+      "enable": true,
+      "voices": [
+        {
+          "name": "Microsoft Stefan - German (Germany)",
+          "lang": "de-DE",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Kalpana - Hindi (India)",
+          "lang": "hi-IN",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Zira - English (United States)",
+          "lang": "en-US",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft David - English (United States)",
+          "lang": "en-US",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Mark - English (United States)",
+          "lang": "en-US",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Hazel - English (Great Britain)",
+          "lang": "en-GB",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft George - English (Great Britain)",
+          "lang": "en-GB",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Susan - English (Great Britain)",
+          "lang": "en-GB",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Hedda - German (Germany)",
+          "lang": "de-DE",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Helena - Spanish (Spain)",
+          "lang": "es-ES",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Pablo - Spanish (Spain)",
+          "lang": "es-ES",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Laura - Spanish (Mexico)",
+          "lang": "es-MX",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Raul - Spanish (Mexico)",
+          "lang": "es-MX",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Hortense - French (France)",
+          "lang": "fr-FR",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Julie - French (France)",
+          "lang": "fr-FR",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Cosimo - Italian (Italy)",
+          "lang": "it-IT",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Elsa - Italian (Italy)",
+          "lang": "it-IT",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Frank - Dutch (Netherlands)",
+          "lang": "nl-NL",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Lili - Dutch (Netherlands)",
+          "lang": "nl-NL",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Adam - Polish (Poland)",
+          "lang": "pl-PL",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Paulina - Polish (Poland)",
+          "lang": "pl-PL",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Maria - Portuguese (Brazil)",
+          "lang": "pt-BR",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Daniel - Portuguese (Brazil)",
+          "lang": "pt-BR",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Irina - Russian (Russia)",
+          "lang": "ru-RU",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Pavel - Russian (Russia)",
+          "lang": "ru-RU",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Hemant - Hindi (India)",
+          "lang": "hi-IN",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Andika - Indonesian (Indonesia)",
+          "lang": "id-ID",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Tracy - Chinese (Traditional, Taiwan)",
+          "lang": "zh-TW",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Danny - Chinese (Traditional, Taiwan)",
+          "lang": "zh-TW",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Ayumi - Japanese (Japan)",
+          "lang": "ja-JP",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Haruka - Japanese (Japan)",
+          "lang": "ja-JP",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Ichiro - Japanese (Japan)",
+          "lang": "ja-JP",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Heami - Korean (Korea)",
+          "lang": "ko-KR",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Huihui - Chinese (Simplified, PRC)",
+          "lang": "zh-CN",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Kangkang - Chinese (Simplified, PRC)",
+          "lang": "zh-CN",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Yaoyao - Chinese (Simplified, PRC)",
+          "lang": "zh-CN",
+          "isLocalService": true
+        },
+        {
+          "name": "Microsoft Tracy - Chinese (Traditional, Hong Kong S.A.R.)",
+          "lang": "zh-HK",
+          "isLocalService": true
+        }
+      ]
+    },
+    "webrtc": {
+      "mode": "disable"
+    },
+    "ssl": {
+      "cipherSuiteBlacklist": ""
+    },
+    "disablePlaySound": false,
+    "disablePasswordSaveTips": false,
+    "allowFontList": "Maven Pro;Encode Sans;Crafty Girls;Simplified Arabic;Sinhala Sangam MN;Noto Sans TC;Overlock SC;Prociono;Mate;Quintessential;Tunga;Ewert;Black Han Sans;Aubrey;Vagabond;Kavoon;Exotc350 Bd BT;Risque;Heiti TC;Harmattan;Kartika;Antic Didone;Kumar One Outline;Parisienne;Amita;Meera Inimai;Scope One;Faster One;SCRIPTINA;Times New Roman PS;Buenard;Rockwell;Exo;Arya;Swis721 BlkEx BT;Goudy Bookletter 1911;Orienta;Papyrus;Freestyle Script;Copperplate Gothic Light;Ceviche One;Redressed;Megrim;Literata;PetitaBold;Neucha;Headland One;Sintony;Roboto Condensed;Odor Mean Chey;East Sea Dokdo;Cute Font;Sanchez;Khmer;Cutive Mono;K2D;Mistral;Tamil Sangam MN;Karma;Thonburi;Devonshire;Mangal;Rubik;Pickwick;MedievalSharp;Fauna One;Source Serif Pro;Korinna BT;Playfair Display;Handlee;Griffy;Spicy Rice;Market;DIN;Vivaldi;Oxygen Mono;Baloo Chettan;Srisakdi;Niagara Solid;Monda;Pridi;Ribbon131 Bd BT;Almendra SC;Architects Daughter;EucrosiaUPC;Cezanne;Bai Jamjuree;Gungsuh;BenchNine;Martel Sans;Arial Rounded MT Bold;Squada One;Oxygen;Hiragino Kaku Gothic ProN;Rationale;Euphemia UCAS;Suwannaphum;Nothing You Could Do;Syncopate;Pristina;Markazi Text;Mr Dafoe;GoudyOLSt BT;Amaranth;Meiryo UI;Iskoola Pota;Strait;Inder;FRUTIGER;Kavivanar;Rubik Mono One;Stalemate;Shruti;Timmana;Tinos;Belleza;Jaldi;Sonsie One;Nova Script;Perpetua;Noticia Text;Lucida Sans;Alef;CG Omega;Cuprum;Nunito Sans;Big Shoulders Display;Nova Round;Roboto;Uncial Antiqua;FONTIN;Pragati Narrow;UnifrakturCook;IrisUPC;Unkempt;Lilita One;Glegoo;Hammersmith One;Raavi;Content;Lemonada;Chicle;Clarendon;GFS Neohellenic;Slabo 13px;Nova Cut;Bodoni MT Condensed;Century Gothic;Cinzel Decorative;Palatino;Segoe Print;KodchiangUPC;Maiandra GD;Arapey;Microsoft Uighur;Dorsa;Limelight;Livvic;Ubuntu;Galindo;Yanone Kaffeesatz;Bodoni MT Poster Compressed;Julius Sans One;Mandali;Krona One;Wellfleet;Yesteryear;Fredoka One;Yeon Sung;Antic Slab;Script;News Cycle;Forum;Apple Color Emoji;KaiTi;Albertus Medium;Marck Script;Mukta Vaani;Sawarabi Mincho;Vollkorn;Berlin Sans FB;Noto Sans Devanagari;FangSong;IBM Plex Sans;Bigshot One;Ayuthaya;Gravitas One;Noto Sans JP Regular;Roboto Mono;Happy Monkey;Jokerman;Magra;Pythagoras;Lucida Bright;Minion;Noto Sans Armenian;HELV;Noto Sans Lao;Noto Sans TC Regular;Antic;Incised901 BT;Sawarabi Gothic;Noto Sans Thai;Noto Sans Tibetan;Indie Flower;Oregano;Kalinga;Geostar Fill;Baloo Tamma"
+  },
+  "runtimeConfig": {
+    "engine": "Firefox",
+    "launchArgs": [
+      "-profile",
+      "<USER_DATA_DIR>",
+      "--marionette",
+      "--remote-debugging-port=0",
+      "-maximized",
+      "-no-remote"
+    ],
+    "userPreferences": {
+      "browser.startup.homepage": "about:home",
+      "browser.newtabpage.enabled": true,
+      "layers.acceleration.disabled": false,
+      "gfx.webrender.disabled": false,
+      "security.sandbox.content.level": -1,
+      "layout.css.prefers-color-scheme.content-override": 2,
+      "extensions.activeThemeID": "default-theme@mozilla.org"
+    },
+    "userJs": "// Roxy Browser managed preferences\nuser_pref(\"browser.startup.homepage\", \"about:home\");\nuser_pref(\"browser.newtabpage.enabled\", true);\nuser_pref(\"layers.acceleration.disabled\", false);\nuser_pref(\"gfx.webrender.disabled\", false);\nuser_pref(\"security.sandbox.content.level\", -1);\nuser_pref(\"layout.css.prefers-color-scheme.content-override\", 2);\nuser_pref(\"extensions.activeThemeID\", \"default-theme@mozilla.org\");\n",
+    "xulstore": {
+      "chrome://browser/content/browser.xhtml": {
+        "main-window": {
+          "sizemode": "maximized"
+        }
+      }
+    },
+    "theme": {
+      "activeThemeId": "default-theme@mozilla.org",
+      "managedThemeIds": [
+        "default-theme@mozilla.org",
+        "firefox-compact-light@mozilla.org",
+        "firefox-compact-dark@mozilla.org"
+      ],
+      "extensionStates": {
+        "default-theme@mozilla.org": {
+          "active": true,
+          "userDisabled": false
+        },
+        "firefox-compact-light@mozilla.org": {
+          "active": false,
+          "userDisabled": true
+        },
+        "firefox-compact-dark@mozilla.org": {
+          "active": false,
+          "userDisabled": true
+        }
+      },
+      "invalidateFilesOnChange": [
+        "addonStartup.json.lz4"
+      ],
+      "removePrefsJsKeysOnSystem": [
+        "ui.systemUsesDarkTheme"
+      ]
+    },
+    "colorSchemeCache": "system",
+    "originalSemantics": {
+      "sandboxContentLevel": -1,
+      "arbitraryStartupParametersAccepted": false
+    }
+  }
+}

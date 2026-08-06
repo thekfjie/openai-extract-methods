@@ -1,0 +1,2360 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>helpoai 控制面板</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f4f6f8;
+      --panel: #ffffff;
+      --line: #d7dde6;
+      --text: #182230;
+      --muted: #667085;
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --danger: #b42318;
+      --ok: #067647;
+      --sidebar: #111827;
+      --sidebar-active: #24324a;
+      --select-option-bg: #ffffff;
+      --select-option-text: #182230;
+      --select-option-selected-bg: #2563eb;
+      --select-option-selected-text: #ffffff;
+      --select-option-disabled-text: #98a2b3;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 14px/1.45 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 248px minmax(0, 1fr);
+    }
+    body.auth-checking .app,
+    body:not(.authenticated) .app {
+      display: none;
+    }
+    .sidebar {
+      background: var(--sidebar);
+      color: #e5e7eb;
+      padding: 16px 12px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 4px 8px 14px;
+      border-bottom: 1px solid rgba(255,255,255,.12);
+      margin-bottom: 12px;
+    }
+    .brand h1 { margin: 0; font-size: 17px; }
+    .nav { display: grid; gap: 6px; }
+    .nav button {
+      width: 100%;
+      text-align: left;
+      color: #d1d5db;
+      background: transparent;
+      border: 0;
+      border-radius: 7px;
+      padding: 10px 11px;
+      cursor: pointer;
+      font: inherit;
+    }
+    .nav button.active,
+    .nav button:hover { background: var(--sidebar-active); color: #fff; }
+    .topbar {
+      min-height: 58px;
+      background: var(--panel);
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 0 18px;
+      position: sticky;
+      top: 0;
+      z-index: 5;
+    }
+    .topbar h2 { margin: 0; font-size: 18px; }
+    .content { min-width: 0; }
+    .page {
+      display: none;
+      padding: 16px;
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+    .page.active { display: grid; gap: 14px; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .mode-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .mode-card {
+      display: grid;
+      gap: 6px;
+      min-height: 96px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px;
+      background: #fbfcfe;
+      cursor: pointer;
+    }
+    .mode-card input { width: auto; margin: 0; }
+    .mode-card strong { color: var(--text); }
+    .mode-card span { color: var(--muted); font-size: 12px; }
+    .mode-card:has(input:checked) {
+      border-color: var(--primary);
+      background: #eff6ff;
+    }
+    section {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+    }
+    section h3 {
+      margin: 0 0 12px;
+      font-size: 15px;
+    }
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+    .metric {
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 9px;
+      min-height: 62px;
+      background: #fbfcfe;
+    }
+    .metric b {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 5px;
+    }
+    .metric span { word-break: break-word; }
+    .field { display: grid; gap: 6px; margin-bottom: 10px; }
+    label { color: var(--muted); font-size: 12px; }
+    .config-key {
+      color: var(--muted);
+      font-size: 11px;
+      margin-top: -4px;
+      word-break: break-all;
+    }
+    input, textarea, select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 9px 10px;
+      background: #fff;
+      color: var(--text);
+      font: inherit;
+    }
+    select option,
+    select optgroup {
+      background-color: var(--select-option-bg);
+      color: var(--select-option-text);
+    }
+    select option:checked {
+      background-color: var(--select-option-selected-bg);
+      color: var(--select-option-selected-text);
+    }
+    select option:disabled,
+    select optgroup:disabled { color: var(--select-option-disabled-text); }
+    textarea {
+      min-height: 160px;
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+      resize: vertical;
+    }
+    .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    button, a.button {
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 8px 11px;
+      background: #fff;
+      color: var(--text);
+      cursor: pointer;
+      text-decoration: none;
+      font: inherit;
+    }
+    button.primary { background: var(--primary); border-color: var(--primary); color: #fff; }
+    button.primary:hover { background: var(--primary-dark); }
+    button.danger { color: var(--danger); border-color: #fecaca; background: #fff7f7; }
+    button:disabled { opacity: .55; cursor: not-allowed; }
+    .ok { color: var(--ok); }
+    .bad { color: var(--danger); }
+    .muted { color: var(--muted); }
+    pre {
+      margin: 0;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #0f172a;
+      color: #dbeafe;
+      min-height: 220px;
+      max-height: 520px;
+      overflow: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    }
+    .settings-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .group-list { display: grid; gap: 12px; }
+    .purchase-group {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      background: #fbfcfe;
+    }
+    .group-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .group-title { font-weight: 650; }
+    .inline-check {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .inline-check input { width: auto; }
+    .checkbox-list {
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #fbfcfe;
+      padding: 6px;
+      max-height: 150px;
+      overflow: auto;
+      display: grid;
+      gap: 3px;
+    }
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 30px;
+      padding: 5px 7px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .checkbox-item:hover { background: #eef4ff; }
+    .checkbox-item input {
+      width: auto;
+      margin: 0;
+    }
+    .checkbox-summary {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .table-wrap {
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #fff;
+    }
+    .data-table {
+      width: 100%;
+      min-width: 880px;
+      border-collapse: collapse;
+    }
+    .data-table th,
+    .data-table td {
+      padding: 8px 9px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+      word-break: break-word;
+    }
+    .data-table th {
+      background: #f8fafc;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .data-table tr:last-child td { border-bottom: 0; }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 2px 7px;
+      font-size: 12px;
+      line-height: 1.4;
+      background: #f8fafc;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .badge.ok {
+      border-color: #abefc6;
+      background: #ecfdf3;
+      color: var(--ok);
+    }
+    .badge.warn {
+      border-color: #fedf89;
+      background: #fffaeb;
+      color: #b54708;
+    }
+    .badge.bad {
+      border-color: #fecaca;
+      background: #fff7f7;
+      color: var(--danger);
+    }
+    .mono { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+    .small { font-size: 12px; color: var(--muted); }
+    .browser-live {
+      display: grid;
+      gap: 10px;
+    }
+    .browser-live-frame {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #111827;
+      aspect-ratio: 16 / 9;
+      min-height: 260px;
+    }
+    .browser-live-frame iframe {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: #111827;
+    }
+    .browser-live-empty {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 16px;
+      color: #cbd5e1;
+      text-align: center;
+      background: #111827;
+    }
+    .browser-live-meta {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px 12px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .browser-live-meta span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    details {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px 12px;
+      background: #fff;
+    }
+    summary {
+      cursor: pointer;
+      font-weight: 700;
+      color: var(--text);
+    }
+    details[open] summary { margin-bottom: 12px; }
+    .country-search-wrap {
+      position: relative;
+      display: grid;
+      gap: 6px;
+    }
+    .country-results {
+      display: none;
+      position: absolute;
+      z-index: 12;
+      top: calc(100% + 4px);
+      left: 0;
+      right: 0;
+      max-height: 260px;
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #fff;
+      box-shadow: 0 12px 30px rgba(15, 23, 42, .16);
+    }
+    .country-results.active { display: block; }
+    .country-option {
+      width: 100%;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
+      align-items: center;
+      border: 0;
+      border-radius: 0;
+      border-bottom: 1px solid var(--line);
+      padding: 9px 10px;
+      text-align: left;
+      background: #fff;
+    }
+    .country-option:last-child { border-bottom: 0; }
+    .country-option:hover,
+    .country-option:focus { background: #eef4ff; }
+    .country-option strong {
+      display: block;
+      font-size: 13px;
+      color: var(--text);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .country-option span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .country-option-code {
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+      color: var(--primary);
+      font-size: 12px;
+    }
+    .country-empty {
+      padding: 10px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .login {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      display: grid;
+      place-items: center;
+      background: rgba(17, 24, 39, .72);
+      padding: 16px;
+    }
+    body.authenticated .login,
+    body.auth-checking .login:not(.active) {
+      display: none;
+    }
+    .login.active { display: grid; }
+    .login-box {
+      width: min(420px, 100%);
+      background: #fff;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      padding: 18px;
+    }
+    .login-box h2 { margin: 0 0 14px; font-size: 18px; }
+    .drawer-toggle { display: none; }
+    .overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, .45);
+      z-index: 20;
+    }
+    @media (max-width: 940px) {
+      html, body, .app, .content, .page { width: 100%; max-width: 100%; min-width: 0; }
+      .app { grid-template-columns: minmax(0, 1fr); }
+      .sidebar {
+        position: fixed;
+        z-index: 30;
+        left: 0;
+        top: 0;
+        width: min(280px, 84vw);
+        transform: translateX(-102%);
+        transition: transform .18s ease;
+      }
+      .sidebar.open { transform: translateX(0); }
+      .overlay.active { display: block; }
+      .drawer-toggle { display: inline-flex; }
+      .grid, .grid-3, .mode-grid, .settings-grid, .metrics { grid-template-columns: minmax(0, 1fr); }
+      .page.active > *, .grid > *, section { min-width: 0; max-width: 100%; }
+      .table-wrap { width: 100%; max-width: 100%; }
+      .browser-live-meta { grid-template-columns: minmax(0, 1fr); }
+      .browser-live-meta span { grid-column: 1 !important; }
+      .browser-live-frame { min-height: 180px; }
+      .page { padding: 12px; }
+    }
+  </style>
+</head>
+<body class="auth-checking">
+  <div class="app">
+    <aside id="sidebar" class="sidebar">
+      <div class="brand">
+        <h1>helpoai</h1>
+        <button id="logoutBtn">退出</button>
+      </div>
+      <nav class="nav">
+        <button class="active" data-page="tasks">运行</button>
+        <button data-page="settings">配置</button>
+        <button data-page="outputPage">工具</button>
+      </nav>
+    </aside>
+    <div id="overlay" class="overlay"></div>
+    <div class="content">
+      <header class="topbar">
+        <div class="row">
+          <button id="drawerBtn" class="drawer-toggle">菜单</button>
+          <h2 id="pageTitle">运行</h2>
+        </div>
+        <div class="row">
+          <a class="button" href="/api" target="_blank">API</a>
+          <button id="refreshAll">刷新</button>
+        </div>
+      </header>
+
+      <main id="tasks" class="page active">
+        <section>
+          <h3>运行模式</h3>
+          <div class="mode-grid">
+            <label class="mode-card">
+              <input type="radio" name="taskRunMode" value="auto" checked>
+              <strong>自动补号</strong>
+              <span>从默认来源组取新邮箱，完整走准备、授权和导入。</span>
+            </label>
+            <label class="mode-card">
+              <input type="radio" name="taskRunMode" value="pending">
+              <strong>续跑待授权</strong>
+              <span>从待授权组取半途账号，只继续授权和导入。</span>
+            </label>
+            <label class="mode-card">
+              <input type="radio" name="taskRunMode" value="manual">
+              <strong>手动队列</strong>
+              <span>使用高级队列里手工填写的邮箱列表。</span>
+            </label>
+          </div>
+        </section>
+
+        <section>
+          <h3>运行状态</h3>
+          <div class="metrics">
+            <div class="metric"><b>任务状态</b><span id="ucSignupPhase">空闲</span></div>
+            <div class="metric"><b>进度</b><span id="ucSignupProgress">0/0</span></div>
+            <div class="metric"><b>当前步骤</b><span id="ucSignupCurrentStep">--</span></div>
+            <div class="metric"><b>当前邮箱</b><span id="ucSignupCurrentEmail">--</span></div>
+            <div class="metric"><b>当前号码</b><span id="ucSignupCurrentPhone">--</span></div>
+            <div class="metric"><b>当前代理</b><span id="ucSignupCurrentProxy">--</span></div>
+            <div class="metric"><b>结果</b><span id="ucSignupResultsSummary">成功 0 / 失败 0</span></div>
+          </div>
+          <div class="row" style="margin-top:12px">
+            <label class="inline-check" for="ucSignupStartLimit">数量</label>
+            <input id="ucSignupStartLimit" type="number" min="1" step="1" value="1" style="width:90px">
+            <button id="ucSignupStartBtn" class="primary">跑账号</button>
+            <button id="ucSignupStopBtn" class="danger" disabled>停止</button>
+            <button id="ucSignupRefreshBtn">刷新状态</button>
+          </div>
+        </section>
+
+        <section class="browser-live">
+          <div class="row" style="justify-content:space-between">
+            <div>
+              <h3 style="margin:0">真实 noVNC 桌面</h3>
+              <div class="small">可直接点击和键盘操作，不使用截图轮询</div>
+            </div>
+            <div class="row">
+              <a href="/novnc/vnc.html?autoconnect=1&resize=scale&path=novnc/websockify" target="_blank" rel="noopener">新窗口打开</a>
+            </div>
+          </div>
+          <div class="browser-live-frame">
+            <iframe id="browserLiveVnc" title="真实 noVNC 桌面" src="/novnc/vnc.html?autoconnect=1&resize=scale&path=novnc/websockify" allow="clipboard-read; clipboard-write" referrerpolicy="same-origin"></iframe>
+          </div>
+          <div class="browser-live-meta">
+            <span>状态：<b id="browserLiveState">--</b></span>
+            <span>页面：<b id="browserLiveTitle">--</b></span>
+            <span>Profile：<b id="browserLiveProfile">--</b></span>
+            <span>代理：<b id="browserLiveProxy">--</b></span>
+            <span style="grid-column:1 / -1">URL：<b id="browserLiveUrl">--</b></span>
+          </div>
+        </section>
+
+        <div class="grid">
+          <section>
+            <details>
+              <summary>高级：队列和分组</summary>
+            <div class="field">
+              <h3>队列和分组</h3>
+            </div>
+            <div class="grid-3">
+              <div class="field">
+                <label for="taskMailSourceGroup">邮箱来源分组</label>
+                <select id="taskMailSourceGroup"></select>
+              </div>
+              <div class="field">
+                <label for="taskSub2apiMonitorGroup">监控分组</label>
+                <select id="taskSub2apiMonitorGroup"></select>
+              </div>
+              <div class="field">
+                <label>导入目标分组</label>
+                <div id="taskSub2apiTargetGroups" class="checkbox-list"></div>
+                <p id="taskSub2apiTargetGroupsSummary" class="checkbox-summary">--</p>
+              </div>
+            </div>
+            <div class="row">
+              <button id="saveFlowGroupsBtn">保存分组设置</button>
+            </div>
+            <div class="metrics" style="margin-bottom:10px">
+              <div class="metric"><b>来源组库存</b><span id="taskMailSourceStock">--</span></div>
+              <div class="metric"><b>可导入</b><span id="taskMailEligibleStock">--</span></div>
+              <div class="metric"><b>自动队列</b><span id="taskEmailQueueCount">--</span></div>
+              <div class="metric"><b>已取用/待处理</b><span id="taskMailClaimedStock">--</span></div>
+              <div class="metric"><b>已注册待授权</b><span id="taskMailRegisteredStock">--</span></div>
+              <div class="metric"><b>冷却中</b><span id="taskMailCooldownStock">--</span></div>
+              <div class="metric"><b>不可用</b><span id="taskMailUnusableStock">--</span></div>
+            </div>
+            <div class="table-wrap" style="margin-bottom:10px">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>邮箱</th>
+                    <th>分组</th>
+                    <th>状态</th>
+                    <th>队列判断</th>
+                    <th>最近更新</th>
+                  </tr>
+                </thead>
+                <tbody id="emailSourceAccountsBody">
+                  <tr><td colspan="5" class="muted">--</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="field">
+              <label for="emailSourceAccountsText">可导入邮箱（只读，导入队列会使用这一份）</label>
+              <textarea id="emailSourceAccountsText" readonly spellcheck="false" style="min-height:90px"></textarea>
+            </div>
+            <div class="field">
+              <label for="emailCurrent">当前邮箱</label>
+              <input id="emailCurrent" placeholder="导入后显示">
+            </div>
+            <div class="field">
+              <label for="emailQueueText">待处理邮箱列表，一行一个</label>
+              <textarea id="emailQueueText" spellcheck="false"></textarea>
+            </div>
+            <label class="inline-check"><input id="manualAuthOnly" type="checkbox"> 手动队列只做授权</label>
+            <div class="row">
+              <button id="refreshTaskMailInventoryBtn">刷新来源库存</button>
+              <button id="importOutlookSourceQueueBtn" class="primary">从选中来源导入</button>
+              <button id="saveEmailQueueBtn">保存列表</button>
+              <button id="loadEmailQueueBtn">重新加载</button>
+              <button id="mailCodeBtn">查邮箱验证码</button>
+            </div>
+            <p id="emailQueueState" class="muted">--</p>
+            </details>
+          </section>
+
+          <section>
+            <h3>任务日志</h3>
+            <textarea id="ucSignupResultText" readonly style="min-height:110px"></textarea>
+            <pre id="ucSignupLogOutput" style="margin-top:10px"></pre>
+          </section>
+        </div>
+
+        <section>
+          <div class="row" style="justify-content:space-between; margin-bottom:10px">
+            <h3 style="margin:0">号码池</h3>
+            <button id="phonePoolRefreshBtn">刷新号码池</button>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>号码</th>
+                  <th>状态</th>
+                  <th>配额</th>
+                  <th>绑定</th>
+                  <th>链接</th>
+                  <th>最近更新</th>
+                </tr>
+              </thead>
+              <tbody id="phonePoolBody">
+                <tr><td colspan="6" class="muted">--</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p id="phonePoolState" class="muted">--</p>
+        </section>
+      </main>
+
+      <main id="settings" class="page">
+        <section>
+          <h3>服务状态</h3>
+          <div class="metrics">
+            <div class="metric"><b>API</b><span id="apiState">--</span></div>
+            <div class="metric"><b>HeroSMS</b><span id="heroState">--</span></div>
+            <div class="metric"><b>Tele Auto</b><span id="teleAutoState">--</span></div>
+            <div class="metric"><b>Temp Mail</b><span id="mailState">--</span></div>
+            <div class="metric"><b>OutlookEmail</b><span id="outlookEmailState">--</span></div>
+            <div class="metric"><b>Outlook 管理</b><span id="outlookEmailAdminState">--</span></div>
+            <div class="metric"><b>Sub2API</b><span id="sub2apiState">--</span></div>
+            <div class="metric"><b>Sub2API 监控</b><span id="sub2apiMonitorState">--</span></div>
+          </div>
+        </section>
+        <section>
+          <h3>应用配置</h3>
+          <div id="appSettingsGrid" class="settings-grid"></div>
+          <div class="row">
+            <button id="loadAppSettingsBtn">重新加载</button>
+            <button id="saveAppSettingsBtn" class="primary">保存应用配置</button>
+          </div>
+        </section>
+        <section>
+          <details>
+          <summary>旧版号码购买设置</summary>
+          <div class="row" style="margin-bottom:10px">
+            <button id="addPurchaseGroupBtn" class="primary">新增设置组</button>
+            <button id="loadPurchaseGroupsBtn">加载设置组</button>
+            <button id="savePurchaseGroupsBtn">保存设置组</button>
+            <button id="refreshCountriesBtn">刷新国家缓存</button>
+          </div>
+          <p id="countryCacheState" class="muted">国家列表未加载</p>
+          <div id="purchaseGroupList" class="group-list"></div>
+          </details>
+        </section>
+        <section>
+          <details>
+          <summary>旧版号码购买 JSON</summary>
+          <div class="field">
+            <label for="settingsText">data/purchase_config.json</label>
+            <textarea id="settingsText" spellcheck="false" style="min-height:300px"></textarea>
+          </div>
+          <div class="row">
+            <button id="loadSettingsBtn">重新加载</button>
+            <button id="saveSettingsBtn" class="primary">保存旧版号码购买设置</button>
+          </div>
+          </details>
+        </section>
+      </main>
+
+      <main id="outputPage" class="page">
+        <section>
+          <h3>Mail 库存 / 分组</h3>
+          <div class="metrics" style="margin-bottom:10px">
+            <div class="metric"><b>总账号</b><span id="mailInventoryTotal">--</span></div>
+            <div class="metric"><b>默认剩余</b><span id="mailInventorySource">--</span></div>
+            <div class="metric"><b>待授权分组</b><span id="mailInventoryPending">--</span></div>
+            <div class="metric"><b>成功分组</b><span id="mailInventorySuccess">--</span></div>
+            <div class="metric"><b>坏邮箱分组</b><span id="mailInventoryBad">--</span></div>
+          </div>
+          <div class="row" style="margin-bottom:10px">
+            <button id="mailInventoryBtn" class="primary">刷新 Mail 库存</button>
+            <button id="mailEnsureGroupsBtn">确保分组</button>
+            <button id="importOutlookSourceQueueOutputBtn">导入选中来源到队列</button>
+          </div>
+          <div class="field">
+            <label for="mailMoveText">账号 ID 或邮箱</label>
+            <textarea id="mailMoveText" spellcheck="false" style="min-height:80px"></textarea>
+          </div>
+          <div class="row">
+            <button id="mailMovePendingBtn">移到待授权</button>
+            <button id="mailMoveSuccessBtn">移到 gpt_new_account</button>
+            <button id="mailMoveBadBtn" class="danger">移到 badmail</button>
+          </div>
+        </section>
+        <section>
+          <h3>接口工具</h3>
+          <div class="row">
+            <button id="sub2apiMonitorStatusBtn">查看分组监控</button>
+            <button id="sub2apiMonitorCheckBtn" class="primary">检查监控分组</button>
+            <button id="sub2apiGroupsBtn">列出导入分组</button>
+            <button id="sub2apiStatusBtn">检查授权状态</button>
+            <button id="sub2apiAuthUrlBtn" class="primary">生成授权链接</button>
+            <button id="copyOutputBtn">复制输出</button>
+            <button id="downloadOutputBtn">下载输出</button>
+          </div>
+        </section>
+        <section>
+          <h3>工具输出</h3>
+          <pre id="output"></pre>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script src="../js/runtime-config.js"></script>
+  <script src="../js/api-client.js"></script>
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const output = $("output");
+    const pageTitles = {
+      tasks: "运行",
+      settings: "设置",
+      outputPage: "工具",
+    };
+    const appSettingKeys = [
+      "HOST", "PORT",
+      "HERO_SMS_API_KEY", "HERO_SMS_API_URL",
+      "TELE_AUTO_ENABLED", "TELE_AUTO_API_URL", "TELE_AUTO_USERNAME", "TELE_AUTO_PASSWORD",
+      "TEMP_MAIL_API_URL", "TEMP_MAIL_ADMIN_PASSWORD",
+      "OUTLOOK_EMAIL_API_URL", "OUTLOOK_EMAIL_API_KEY", "OUTLOOK_EMAIL_ADMIN_PASSWORD",
+      "MAIL_SOURCE_GROUP_NAME", "MAIL_PENDING_GROUP_NAME", "MAIL_SUCCESS_GROUP_NAME", "MAIL_BAD_GROUP_NAME",
+      "SUB2API_API_URL", "SUB2API_ADMIN_EMAIL", "SUB2API_ADMIN_PASSWORD", "SUB2API_ADMIN_TOKEN",
+      "SUB2API_MONITOR_ENABLED", "SUB2API_MONITOR_GROUP_NAME", "SUB2API_IMPORT_GROUP_NAMES",
+      "SUB2API_MONITOR_MIN_OK_ACCOUNTS",
+      "SUB2API_MONITOR_BUSY_MIN_OK_ACCOUNTS",
+      "SUB2API_MONITOR_INTERVAL_SECONDS", "SUB2API_MONITOR_BUSY_WINDOW_SECONDS",
+      "SUB2API_MONITOR_TRIGGER_COOLDOWN_SECONDS",
+      "SUB2API_MONITOR_MAX_START_ACCOUNTS", "SUB2API_MONITOR_IMPORT_MAIL_SOURCE",
+      "SIGNUP_PASSWORD", "SIGNUP_NAME", "SIGNUP_AGE",
+      "BROWSER_DISPLAY", "BROWSER_PROXY", "UC_SIGNUP_PROXY",
+      "PROXY_POOL_URLS", "PROXY_RANDOMIZE", "PROXY_USAGE_WINDOW_SECONDS", "PROXY_USAGE_MAX_PER_WINDOW",
+      "PHONE_CODE_WINDOW_SECONDS", "PHONE_CODE_MAX_PER_WINDOW", "PHONE_CODE_MAX_TOTAL",
+      "SUB2API_PROXY_REGION", "SUB2API_PROXY_URL", "SUB2API_PROXY_NAME",
+      "UC_SIGNUP_PHONE_RETRIES", "UC_SIGNUP_SMS_TIMEOUT_SECONDS",
+      "UC_SIGNUP_SMS_POLL_INTERVAL_SECONDS", "UC_SIGNUP_PHONE_PASSWORD_PAGE_TIMEOUT",
+      "UC_SIGNUP_CF_CLEARANCE_ENABLED", "UC_SIGNUP_CF_CLEARANCE_API_URL",
+      "UC_SIGNUP_CF_CLEARANCE_TARGET_URL", "UC_SIGNUP_CF_CLEARANCE_TIMEOUT_SECONDS",
+      "UC_SIGNUP_CF_CLEARANCE_CACHE_SECONDS",
+      "UC_SIGNUP_CHROME_BINARY", "UC_SIGNUP_CHROME_VERSION",
+      "UC_SIGNUP_KEEP_BROWSER_ON_FAILURE", "UC_SIGNUP_KEEP_BROWSER_SECONDS",
+      "UC_SIGNUP_IDLE_TIMEOUT_SECONDS",
+      "UC_SIGNUP_RETRYABLE_EMAIL_COOLDOWN_SECONDS",
+      "UC_SIGNUP_PROFILE_BASE_DIR",
+	  "OAI_FINGERPRINT_CLOUD_ENABLED", "OAI_FINGERPRINT_CLOUD_API_BASE_URL",
+	  "OAI_FINGERPRINT_CLOUD_HEADERS_FILE", "OAI_FINGERPRINT_CLOUD_INCLUDE_MAC",
+	  "ROXY_OPENAPI_ENABLED", "ROXY_OPENAPI_URL", "ROXY_OPENAPI_KEY_FILE", "ROXY_OPENAPI_TIMEOUT_SECONDS",
+      "REQUEST_TIMEOUT_MS", "ENABLE_CORS", "CORS_ALLOWED_ORIGINS",
+      "PUBLIC_STATUS_ENABLED", "PUBLIC_STATUS_ALLOW_ORIGINS", "PUBLIC_STATUS_TOKEN",
+      "STORE_FILE", "PURCHASE_CONFIG_FILE",
+    ];
+    const settingLabels = {
+      HOST: "服务监听地址",
+      PORT: "服务端口",
+      HERO_SMS_API_KEY: "HeroSMS 接口密钥",
+      HERO_SMS_API_URL: "HeroSMS 接口地址",
+      TELE_AUTO_ENABLED: "启用 Tele Auto",
+      TELE_AUTO_API_URL: "Tele Auto API 地址",
+      TELE_AUTO_USERNAME: "Tele Auto 用户名",
+      TELE_AUTO_PASSWORD: "Tele Auto 密码",
+      TEMP_MAIL_API_URL: "临时邮箱接口地址",
+      TEMP_MAIL_ADMIN_PASSWORD: "临时邮箱管理员密码",
+      OUTLOOK_EMAIL_API_URL: "OutlookEmail 接口地址",
+      OUTLOOK_EMAIL_API_KEY: "OutlookEmail 对外 API Key",
+      OUTLOOK_EMAIL_ADMIN_PASSWORD: "OutlookEmail 管理密码",
+      MAIL_SOURCE_GROUP_NAME: "Mail 来源分组",
+      MAIL_PENDING_GROUP_NAME: "半途待授权分组",
+      MAIL_SUCCESS_GROUP_NAME: "成功后分组",
+      MAIL_BAD_GROUP_NAME: "失败后分组",
+      SUB2API_API_URL: "Sub2API API 地址",
+      SUB2API_ADMIN_EMAIL: "Sub2API 管理邮箱",
+      SUB2API_ADMIN_PASSWORD: "Sub2API 管理密码",
+      SUB2API_ADMIN_TOKEN: "Sub2API 管理 Token",
+      SUB2API_MONITOR_ENABLED: "启用 Sub2API 库存监控",
+      SUB2API_MONITOR_GROUP_NAME: "监控 Sub2API 分组",
+      SUB2API_IMPORT_GROUP_NAMES: "导入目标 Sub2API 分组",
+      SUB2API_MONITOR_MIN_OK_ACCOUNTS: "空闲保底 OK 账号数",
+      SUB2API_MONITOR_BUSY_MIN_OK_ACCOUNTS: "忙时保底 OK 账号数",
+      SUB2API_MONITOR_INTERVAL_SECONDS: "监控间隔秒数",
+      SUB2API_MONITOR_BUSY_WINDOW_SECONDS: "忙时判定窗口秒数",
+      SUB2API_MONITOR_TRIGGER_COOLDOWN_SECONDS: "触发冷却秒数",
+      SUB2API_MONITOR_MAX_START_ACCOUNTS: "单次最多注册账号数",
+      SUB2API_MONITOR_IMPORT_MAIL_SOURCE: "触发前导入默认邮箱分组",
+      SIGNUP_PASSWORD: "旧账号备用密码（新账号自动随机）",
+      SIGNUP_NAME: "注册资料姓名（空则按邮箱生成）",
+      SIGNUP_AGE: "注册资料年龄",
+      BROWSER_DISPLAY: "浏览器显示器编号",
+      BROWSER_PROXY: "浏览器代理地址",
+      UC_SIGNUP_PROXY: "自动注册代理地址",
+      PROXY_POOL_URLS: "注册代理池",
+      PROXY_RANDOMIZE: "随机选择代理",
+      PROXY_USAGE_WINDOW_SECONDS: "代理限制窗口秒数",
+      PROXY_USAGE_MAX_PER_WINDOW: "单代理窗口注册上限",
+      PHONE_CODE_WINDOW_SECONDS: "号码窗口秒数",
+      PHONE_CODE_MAX_PER_WINDOW: "单号码窗口上限",
+      PHONE_CODE_MAX_TOTAL: "单号码总上限",
+      SUB2API_PROXY_REGION: "Sub2API 代理地区",
+      SUB2API_PROXY_URL: "Sub2API 代理地址",
+      SUB2API_PROXY_NAME: "Sub2API 代理名称",
+      UC_SIGNUP_PHONE_RETRIES: "同一邮箱换号重试次数",
+      UC_SIGNUP_SMS_TIMEOUT_SECONDS: "短信等待超时秒数",
+      UC_SIGNUP_SMS_POLL_INTERVAL_SECONDS: "短信轮询间隔秒数",
+      UC_SIGNUP_PHONE_PASSWORD_PAGE_TIMEOUT: "号码密码页等待秒数",
+      UC_SIGNUP_CF_CLEARANCE_ENABLED: "启用 Clearance 预检",
+      UC_SIGNUP_CF_CLEARANCE_API_URL: "Clearance API 地址",
+      UC_SIGNUP_CF_CLEARANCE_TARGET_URL: "Clearance 目标地址",
+      UC_SIGNUP_CF_CLEARANCE_TIMEOUT_SECONDS: "Clearance 超时秒数",
+      UC_SIGNUP_CF_CLEARANCE_CACHE_SECONDS: "Clearance 缓存秒数",
+      UC_SIGNUP_CHROME_BINARY: "Chrome 可执行文件路径",
+      UC_SIGNUP_CHROME_VERSION: "Chrome 主版本号",
+      UC_SIGNUP_KEEP_BROWSER_ON_FAILURE: "失败时保留浏览器",
+      UC_SIGNUP_KEEP_BROWSER_SECONDS: "浏览器保留秒数",
+      UC_SIGNUP_IDLE_TIMEOUT_SECONDS: "任务无日志超时秒数",
+      UC_SIGNUP_RETRYABLE_EMAIL_COOLDOWN_SECONDS: "可重试邮箱冷却秒数",
+      UC_SIGNUP_PROFILE_BASE_DIR: "浏览器 Profile 目录",
+	  OAI_FINGERPRINT_CLOUD_ENABLED: "使用云端基础指纹 API",
+	  OAI_FINGERPRINT_CLOUD_API_BASE_URL: "云端基础指纹 API 前缀",
+	  OAI_FINGERPRINT_CLOUD_HEADERS_FILE: "云端授权 Headers 文件（0600）",
+	  OAI_FINGERPRINT_CLOUD_INCLUDE_MAC: "云端同时申请 MAC 记录",
+	  ROXY_OPENAPI_ENABLED: "启用 Roxy 官方本地 OpenAPI",
+	  ROXY_OPENAPI_URL: "Roxy OpenAPI 地址",
+	  ROXY_OPENAPI_KEY_FILE: "Roxy OpenAPI Key 文件（0600）",
+	  ROXY_OPENAPI_TIMEOUT_SECONDS: "Roxy OpenAPI 超时秒数",
+      REQUEST_TIMEOUT_MS: "上游请求超时毫秒",
+      ENABLE_CORS: "启用 CORS",
+      CORS_ALLOWED_ORIGINS: "后台跨域白名单",
+      PUBLIC_STATUS_ENABLED: "启用公开状态接口",
+      PUBLIC_STATUS_ALLOW_ORIGINS: "公开状态来源白名单",
+      PUBLIC_STATUS_TOKEN: "公开状态访问 Token",
+      STORE_FILE: "激活记录文件",
+      PURCHASE_CONFIG_FILE: "购买配置文件",
+    };
+    const secretKeys = new Set([
+      "HERO_SMS_API_KEY", "TEMP_MAIL_ADMIN_PASSWORD", "OUTLOOK_EMAIL_API_KEY", "OUTLOOK_EMAIL_ADMIN_PASSWORD",
+      "TELE_AUTO_PASSWORD", "SUB2API_ADMIN_PASSWORD", "SUB2API_ADMIN_TOKEN", "SIGNUP_PASSWORD", "PUBLIC_STATUS_TOKEN",
+    ]);
+    const booleanSettingKeys = new Set([
+      "TELE_AUTO_ENABLED", "SUB2API_MONITOR_ENABLED", "SUB2API_MONITOR_IMPORT_MAIL_SOURCE",
+      "PROXY_RANDOMIZE", "UC_SIGNUP_CF_CLEARANCE_ENABLED", "UC_SIGNUP_KEEP_BROWSER_ON_FAILURE",
+	  "OAI_FINGERPRINT_CLOUD_ENABLED", "OAI_FINGERPRINT_CLOUD_INCLUDE_MAC", "ROXY_OPENAPI_ENABLED",
+      "ENABLE_CORS", "PUBLIC_STATUS_ENABLED",
+    ]);
+    const booleanSettingLabels = {
+      TELE_AUTO_ENABLED: { true: "true - 启用 Tele Auto", false: "false - 禁用 Tele Auto" },
+      SUB2API_MONITOR_ENABLED: { true: "true - 启用库存监控", false: "false - 关闭库存监控" },
+      SUB2API_MONITOR_IMPORT_MAIL_SOURCE: { true: "true - 触发前导入默认邮箱分组", false: "false - 不自动导入邮箱分组" },
+      PROXY_RANDOMIZE: { true: "true - 随机选择代理", false: "false - 按顺序选择代理" },
+      UC_SIGNUP_CF_CLEARANCE_ENABLED: { true: "true - 启用 Clearance 预检", false: "false - 关闭 Clearance 预检" },
+      UC_SIGNUP_KEEP_BROWSER_ON_FAILURE: { true: "true - 失败后保留浏览器", false: "false - 失败后关闭浏览器" },
+	  OAI_FINGERPRINT_CLOUD_ENABLED: { true: "true - 使用云端基础记录", false: "false - 使用本地提取算法" },
+	  OAI_FINGERPRINT_CLOUD_INCLUDE_MAC: { true: "true - 同时申请 MAC", false: "false - 不申请 MAC" },
+	  ROXY_OPENAPI_ENABLED: { true: "true - 连接 Roxy 本地 OpenAPI", false: "false - 不连接 Roxy" },
+      ENABLE_CORS: { true: "true - 允许跨域", false: "false - 禁用跨域" },
+      PUBLIC_STATUS_ENABLED: { true: "true - 开放脱敏状态", false: "false - 关闭公开状态" },
+    };
+    const mailGroupSettingKeys = new Set(["MAIL_SOURCE_GROUP_NAME", "MAIL_PENDING_GROUP_NAME", "MAIL_SUCCESS_GROUP_NAME", "MAIL_BAD_GROUP_NAME"]);
+    const staticSelectSettings = {
+      SUB2API_PROXY_REGION: [
+        { value: "", label: "空 - 使用手动代理地址" },
+        { value: "US", label: "US - 美国" },
+        { value: "HK", label: "HK - 香港" },
+        { value: "JP", label: "JP - 日本" },
+        { value: "SG", label: "SG - 新加坡" },
+        { value: "TW", label: "TW - 台湾" },
+        { value: "UK", label: "UK - 英国" },
+        { value: "KR", label: "KR - 韩国" },
+        { value: "MY", label: "MY - 马来西亚" },
+        { value: "NL", label: "NL - 荷兰" },
+        { value: "DE", label: "DE - 德国" },
+      ],
+    };
+    let purchaseSettingsState = { serviceName: "OpenAI", serviceCode: "dr", purchaseGroups: [] };
+    let sub2apiGroupOptions = [];
+    let mailGroupOptions = [];
+    let countryOptions = [];
+    let currentAppSettings = {};
+    let countrySearchSeq = 0;
+    let lastOutputText = "";
+    let lastOutputFilename = "output.txt";
+    const zhCountryCharMap = {
+      "國": "国", "爾": "尔", "亞": "亚", "達": "达", "蘭": "兰", "義": "义",
+      "羅": "罗", "馬": "马", "維": "维", "貝": "贝", "麥": "麦", "臘": "腊",
+      "盧": "卢", "門": "门", "臺": "台", "灣": "湾", "烏": "乌", "魯": "鲁",
+      "薩": "萨", "聖": "圣", "幾": "几", "納": "纳", "剛": "刚", "島": "岛",
+      "裡": "里", "蘇": "苏", "聯": "联", "長": "长", "茲": "兹", "團": "团",
+      "圓": "圆", "贊": "赞", "歐": "欧", "愛": "爱", "倫": "伦", "屬": "属",
+      "與": "与", "內": "内", "庫": "库", "錫": "锡",
+    };
+    const countryAliasesByName = {
+      bhutan: ["不丹"],
+      france: ["法国"],
+      italy: ["意大利"],
+      reunion: ["留尼汪"],
+      georgia: ["格鲁吉亚"],
+      england: ["英国", "英格兰"],
+      "united kingdom": ["英国"],
+      "united states": ["美国"],
+      uae: ["阿联酋"],
+      "united arab emirates": ["阿联酋"],
+      "ivory coast": ["科特迪瓦"],
+      laos: ["老挝"],
+      syria: ["叙利亚"],
+      vietnam: ["越南"],
+      "south korea": ["韩国"],
+      "north macedonia": ["北马其顿"],
+      "bosnia and herzegovina": ["波黑", "波斯尼亚和黑塞哥维那"],
+      "democratic republic of the congo": ["刚果金"],
+      "republic of the congo": ["刚果布"],
+    };
+
+    function appendSelectOption(select, value, label) {
+      const option = document.createElement("option");
+      option.value = String(value ?? "");
+      option.textContent = String(label ?? value ?? "");
+      select.appendChild(option);
+      return option;
+    }
+
+    function setSelectOptions(select, options, currentValue = "") {
+      const current = String(currentValue ?? "");
+      select.innerHTML = "";
+      const seen = new Set();
+      for (const item of options) {
+        const value = String(item.value ?? "");
+        if (seen.has(value)) continue;
+        appendSelectOption(select, value, item.label);
+        seen.add(value);
+      }
+      if (current && !seen.has(current)) {
+        appendSelectOption(select, current, `${current} (当前配置)`);
+      }
+      select.value = current;
+    }
+
+    function booleanOptionsForSetting(key) {
+      const labels = booleanSettingLabels[key] || { true: "true - 启用", false: "false - 禁用" };
+      return [
+        { value: "", label: "空 - 使用默认值" },
+        { value: "true", label: labels.true },
+        { value: "false", label: labels.false },
+      ];
+    }
+
+    function currentSettingValue(key) {
+      const control = $(`cfg_${key}`);
+      return control ? control.value : "";
+    }
+
+    function setSettingControlValue(key, value) {
+      const control = $(`cfg_${key}`);
+      if (!control) return;
+      const normalized = String(value ?? "");
+      if (control.tagName === "SELECT" && normalized) {
+        const exists = Array.from(control.options).some((option) => option.value === normalized);
+        if (!exists) appendSelectOption(control, normalized, `${normalized} (当前配置)`);
+      }
+      control.value = normalized;
+    }
+
+    function splitGroupNames(value) {
+      const values = Array.isArray(value) ? value : String(value || "").split(/[\n,;，；]+/);
+      const result = [];
+      const seen = new Set();
+      for (const item of values) {
+        const name = String(item || "").trim();
+        const key = name.toLowerCase();
+        if (!name || seen.has(key)) continue;
+        seen.add(key);
+        result.push(name);
+      }
+      return result;
+    }
+
+    function selectedOptionsValues(select) {
+      return Array.from(select.selectedOptions || [])
+        .map((option) => option.value)
+        .filter(Boolean);
+    }
+
+    function setMultiSelectOptions(select, options, currentValues = []) {
+      const current = splitGroupNames(currentValues);
+      select.innerHTML = "";
+      const seen = new Set();
+      for (const item of options) {
+        const value = String(item.value ?? "");
+        if (!value || seen.has(value)) continue;
+        appendSelectOption(select, value, item.label);
+        seen.add(value);
+      }
+      for (const value of current) {
+        if (!seen.has(value)) appendSelectOption(select, value, `${value} (当前配置)`);
+      }
+      const selected = new Set(current);
+      for (const option of select.options) option.selected = selected.has(option.value);
+    }
+
+    function selectedCheckboxValues(container) {
+      if (!container) return [];
+      return Array.from(container.querySelectorAll("input[type=checkbox]:checked"))
+        .map((input) => input.value)
+        .filter(Boolean);
+    }
+
+    function updateTargetGroupSummary() {
+      const container = $("taskSub2apiTargetGroups");
+      const summary = $("taskSub2apiTargetGroupsSummary");
+      if (!container || !summary) return;
+      const values = selectedCheckboxValues(container);
+      summary.textContent = values.length ? `已选 ${values.length} 个：${values.join(", ")}` : "未选择时默认导入监控分组";
+    }
+
+    function renderTargetGroupCheckboxes(container, options, currentValues = []) {
+      if (!container) return;
+      const current = new Set(splitGroupNames(currentValues));
+      container.innerHTML = "";
+      const seen = new Set();
+      const addItem = (value, labelText) => {
+        const name = String(value || "").trim();
+        const key = name.toLowerCase();
+        if (!name || seen.has(key)) return;
+        seen.add(key);
+        const label = document.createElement("label");
+        label.className = "checkbox-item";
+        const input = document.createElement("input");
+        input.type = "checkbox";
+        input.value = name;
+        input.checked = current.has(name);
+        input.addEventListener("change", updateTargetGroupSummary);
+        const span = document.createElement("span");
+        span.textContent = labelText || name;
+        label.append(input, span);
+        container.appendChild(label);
+      };
+      for (const item of options) addItem(item.value, item.label);
+      for (const value of current) addItem(value, `${value} (当前配置)`);
+      if (!container.children.length) {
+        const empty = document.createElement("div");
+        empty.className = "country-empty";
+        empty.textContent = "暂无可选分组";
+        container.appendChild(empty);
+      }
+      updateTargetGroupSummary();
+    }
+
+    function formatSub2apiGroupOption(group) {
+      const name = String(group.name || "").trim();
+      const details = [group.platform, group.status].map((item) => String(item || "").trim()).filter(Boolean);
+      return {
+        value: name,
+        label: details.length ? `${name} (${details.join(", ")})` : name,
+      };
+    }
+
+    function formatMailGroupOption(group) {
+      const name = String(group.name || "").trim();
+      const total = Number(group.total || group.account_count || 0);
+      const usable = Number(group.usable || 0);
+      const suffix = total || usable ? ` (${usable}/${total})` : "";
+      return { value: name, label: `${name}${suffix}` };
+    }
+
+    function refreshSub2apiGroupSelect(currentValue = currentSettingValue("SUB2API_MONITOR_GROUP_NAME")) {
+      const select = $("cfg_SUB2API_MONITOR_GROUP_NAME");
+      if (!select) return;
+      const options = [
+        { value: "", label: "空 - 使用默认分组" },
+        ...sub2apiGroupOptions,
+      ];
+      setSelectOptions(select, options, currentValue);
+    }
+
+    function refreshMailGroupSelects(currentValues = {}) {
+      for (const key of mailGroupSettingKeys) {
+        const select = $(`cfg_${key}`);
+        if (!select) continue;
+        const value = currentValues[key] ?? currentSettingValue(key);
+        setSelectOptions(select, [{ value: "", label: "空 - 不指定分组" }, ...mailGroupOptions], value);
+      }
+    }
+
+    function refreshTaskGroupControls(settings = currentAppSettings) {
+      const sourceGroup = $("taskMailSourceGroup");
+      if (sourceGroup) {
+        setSelectOptions(
+          sourceGroup,
+          [{ value: "", label: "使用设置中的来源分组" }, ...mailGroupOptions],
+          settings.MAIL_SOURCE_GROUP_NAME || currentSettingValue("MAIL_SOURCE_GROUP_NAME")
+        );
+      }
+
+      const monitorGroup = $("taskSub2apiMonitorGroup");
+      if (monitorGroup) {
+        setSelectOptions(
+          monitorGroup,
+          [{ value: "", label: "使用设置中的监控分组" }, ...sub2apiGroupOptions],
+          settings.SUB2API_MONITOR_GROUP_NAME || currentSettingValue("SUB2API_MONITOR_GROUP_NAME")
+        );
+      }
+
+      const targetGroups = $("taskSub2apiTargetGroups");
+      if (targetGroups) {
+        const configured = settings.SUB2API_IMPORT_GROUP_NAMES || currentSettingValue("SUB2API_IMPORT_GROUP_NAMES") || settings.SUB2API_MONITOR_GROUP_NAME || "";
+        renderTargetGroupCheckboxes(targetGroups, sub2apiGroupOptions, configured);
+      }
+    }
+
+    async function loadSub2apiGroupOptions(currentValue = currentSettingValue("SUB2API_MONITOR_GROUP_NAME")) {
+      try {
+        const payload = await requestJSON("GET", "/api/sub2api/groups");
+        sub2apiGroupOptions = (payload.groups || [])
+          .filter((group) => group && !group.deletedAt && String(group.name || "").trim())
+          .filter((group) => !group.platform || String(group.platform).toLowerCase() === "openai")
+          .map(formatSub2apiGroupOption);
+      } catch (error) {
+        sub2apiGroupOptions = [];
+        log(`Sub2API 分组列表加载失败: ${error.message || error}`);
+      }
+      refreshSub2apiGroupSelect(currentValue);
+      refreshTaskGroupControls();
+    }
+
+    async function loadMailGroupOptions(settings = {}) {
+      const currentValues = {};
+      for (const key of mailGroupSettingKeys) currentValues[key] = settings[key] ?? currentSettingValue(key);
+      try {
+        const payload = await requestJSON("GET", "/api/outlook-email/inventory");
+        mailGroupOptions = (payload.groups || [])
+          .filter((group) => group && String(group.name || "").trim())
+          .map(formatMailGroupOption);
+      } catch (error) {
+        mailGroupOptions = [];
+        log(`Mail 分组列表加载失败: ${error.message || error}`);
+      }
+      refreshMailGroupSelects(currentValues);
+      refreshTaskGroupControls({ ...currentAppSettings, ...currentValues });
+    }
+
+    function createSettingControl(key) {
+      if (booleanSettingKeys.has(key)) {
+        const select = document.createElement("select");
+        select.id = `cfg_${key}`;
+        setSelectOptions(select, booleanOptionsForSetting(key));
+        return select;
+      }
+      if (staticSelectSettings[key]) {
+        const select = document.createElement("select");
+        select.id = `cfg_${key}`;
+        setSelectOptions(select, staticSelectSettings[key]);
+        return select;
+      }
+      if (key === "SUB2API_MONITOR_GROUP_NAME") {
+        const select = document.createElement("select");
+        select.id = `cfg_${key}`;
+        setSelectOptions(select, [{ value: "", label: "空 - 使用默认分组" }]);
+        return select;
+      }
+      if (mailGroupSettingKeys.has(key)) {
+        const select = document.createElement("select");
+        select.id = `cfg_${key}`;
+        setSelectOptions(select, [{ value: "", label: "空 - 不指定分组" }]);
+        return select;
+      }
+      const input = document.createElement("input");
+      input.id = `cfg_${key}`;
+      input.autocomplete = "off";
+      input.type = secretKeys.has(key) ? "password" : "text";
+      return input;
+    }
+
+    function buildSettingsInputs() {
+      const grid = $("appSettingsGrid");
+      grid.innerHTML = "";
+      for (const key of appSettingKeys) {
+        const wrap = document.createElement("div");
+        wrap.className = "field";
+        const label = document.createElement("label");
+        label.htmlFor = `cfg_${key}`;
+        label.textContent = settingLabels[key] || key;
+        const hint = document.createElement("div");
+        hint.className = "config-key";
+        hint.textContent = key;
+        const control = createSettingControl(key);
+        wrap.append(label, hint, control);
+        grid.appendChild(wrap);
+      }
+    }
+
+    function log(value, filename = "output.txt") {
+      const text = typeof value === "string" ? value : JSON.stringify(value, null, 2);
+      lastOutputText = text;
+      lastOutputFilename = filename;
+      output.textContent = `${new Date().toLocaleTimeString()} ${text}\n\n` + output.textContent;
+    }
+
+    async function copyCurrentOutput() {
+      const text = lastOutputText || output.textContent;
+      if (!text) return;
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch (error) {
+        const textarea = document.createElement("textarea");
+        textarea.value = text;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+        document.execCommand("copy");
+        textarea.remove();
+      }
+    }
+
+    function downloadCurrentOutput() {
+      const text = lastOutputText || output.textContent;
+      if (!text) return;
+      const blob = new Blob([text], { type: "application/json;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = lastOutputFilename || "output.json";
+      link.click();
+      URL.revokeObjectURL(url);
+    }
+
+    async function checkSub2apiStatus() {
+      const payload = await requestJSON("GET", "/api/sub2api/compliance");
+      log(payload, `sub2api-compliance-${Date.now()}.json`);
+      switchPage("outputPage");
+    }
+
+    async function listSub2apiGroups() {
+      const payload = await requestJSON("GET", "/api/sub2api/groups");
+      log(payload, `sub2api-groups-${Date.now()}.json`);
+      switchPage("outputPage");
+    }
+
+    async function getSub2apiMonitorStatus() {
+      const payload = await requestJSON("GET", "/api/sub2api/monitor/status");
+      log(payload, `sub2api-monitor-status-${Date.now()}.json`);
+      switchPage("outputPage");
+    }
+
+    async function checkSub2apiMonitor() {
+      const payload = await requestJSON("POST", "/api/sub2api/monitor/check", { trigger: false });
+      log(payload, `sub2api-monitor-check-${Date.now()}.json`);
+      switchPage("outputPage");
+    }
+
+    async function generateSub2apiAuthUrl() {
+      const payload = await requestJSON("GET", "/api/sub2api/openai-auth-url");
+      log(payload, `sub2api-openai-auth-url-${Date.now()}.json`);
+      switchPage("outputPage");
+    }
+
+    function formatGroupCount(group) {
+      if (!group) return "0";
+      const total = Number(group.total || group.account_count || 0);
+      const usable = Number(group.usable || 0);
+      return usable ? `${usable}/${total}` : String(total);
+    }
+
+    function emailSourceBadgeClass(account) {
+      if (account.queueEligible) return "ok";
+      if (account.retryableHold || account.queueSkipReason === "cooldown") return "warn";
+      if (account.registered || account.locallyTouched || account.queueSkipReason === "claimed") return "";
+      return "bad";
+    }
+
+    function renderEmailSourceAccounts(payload) {
+      const body = $("emailSourceAccountsBody");
+      if (!body) return;
+      const accounts = payload.sourceAccountsAll || [];
+      if (!accounts.length) {
+        body.innerHTML = `<tr><td colspan="5" class="muted">来源分组暂无邮箱，或接口没有返回账号</td></tr>`;
+        return;
+      }
+      body.innerHTML = accounts.map((account) => {
+        const details = [];
+        if (account.retryAfter) details.push(`冷却到 ${account.retryAfter}`);
+        if (account.lastRetryableError) details.push(account.lastRetryableError);
+        if (account.lastRefreshError) details.push(account.lastRefreshError);
+        const queueText = account.queueEligible ? "会导入队列" : (account.queueStatusLabel || account.queueSkipReason || "跳过");
+        return `
+          <tr>
+            <td><span class="mono">${escapeHtml(account.email || account.id || "--")}</span></td>
+            <td>${escapeHtml(account.groupName || payload.groupNames?.source || "--")}</td>
+            <td>
+              <span class="badge ${emailSourceBadgeClass(account)}">${escapeHtml(account.queueStatusLabel || "--")}</span>
+              ${details.length ? `<div class="small">${escapeHtml(details.join(" / "))}</div>` : ""}
+            </td>
+            <td>${escapeHtml(queueText)}</td>
+            <td>${escapeHtml(account.updatedAt || "--")}</td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    function updateMailInventoryUI(payload) {
+      $("mailInventoryTotal").textContent = `${payload.usable || 0}/${payload.total || 0}`;
+      const source = payload.sourceGroup || {};
+      const sourceName = source.name ? `${source.name} ` : "";
+      $("mailInventorySource").textContent = `${sourceName}${source.usable || 0}/${source.total || 0}`;
+      $("mailInventoryPending").textContent = formatGroupCount(payload.pendingGroup);
+      $("mailInventorySuccess").textContent = formatGroupCount(payload.successGroup);
+      $("mailInventoryBad").textContent = formatGroupCount(payload.badGroup);
+      const accounts = payload.sourceAccounts || [];
+      const eligibleAccounts = payload.queueEligibleAccounts || accounts;
+      $("mailMoveText").value = eligibleAccounts.map((account) => account.email || account.id).filter(Boolean).join("\n");
+      if ($("taskMailSourceStock")) {
+        $("taskMailSourceStock").textContent = `${sourceName}${source.usable || 0}/${source.total || 0}`;
+      }
+      if ($("taskMailEligibleStock")) {
+        $("taskMailEligibleStock").textContent = `${source.queueEligible || 0} 个`;
+      }
+      if ($("taskMailRegisteredStock")) {
+        $("taskMailRegisteredStock").textContent = `${source.registered || 0} 个`;
+      }
+      if ($("taskMailClaimedStock")) {
+        $("taskMailClaimedStock").textContent = `${source.claimed || 0} 个`;
+      }
+      if ($("taskMailCooldownStock")) {
+        $("taskMailCooldownStock").textContent = `${source.cooldown || 0} 个`;
+      }
+      if ($("taskMailUnusableStock")) {
+        $("taskMailUnusableStock").textContent = `${source.unusable || 0} 个`;
+      }
+      if ($("emailSourceAccountsText")) {
+        $("emailSourceAccountsText").value = eligibleAccounts.map((account) => account.email || account.id).filter(Boolean).join("\n");
+      }
+      renderEmailSourceAccounts(payload);
+    }
+
+    function updateEmailImportSummary(payload) {
+      const skippedRegistered = payload.skippedRegistered || [];
+      const skippedClaimed = payload.skippedClaimed || [];
+      const skippedRetryable = payload.skippedRetryable || [];
+      const parts = [];
+      if (skippedRegistered.length) parts.push(`已注册 ${skippedRegistered.length}`);
+      if (skippedClaimed.length) parts.push(`已取用 ${skippedClaimed.length}`);
+      if (skippedRetryable.length) parts.push(`冷却 ${skippedRetryable.length}`);
+      if (!parts.length) return;
+      const lines = [];
+      if (skippedRegistered.length) {
+        lines.push("已注册跳过:");
+        lines.push(...skippedRegistered.map((email) => `  ${email}`));
+      }
+      if (skippedClaimed.length) {
+        lines.push("已取用/待处理跳过:");
+        lines.push(...skippedClaimed.map((item) => `  ${item.email || item}`));
+      }
+      if (skippedRetryable.length) {
+        lines.push("冷却跳过:");
+        for (const item of skippedRetryable) {
+          lines.push(`  ${item.email || ""} 到 ${item.retryAfter || "--"} ${item.error ? `(${item.error})` : ""}`);
+        }
+      }
+      log(lines.join("\n"), `email-import-skipped-${Date.now()}.txt`);
+    }
+
+    async function refreshMailInventory() {
+      const sourceGroup = $("taskMailSourceGroup") ? $("taskMailSourceGroup").value : "";
+      const suffix = sourceGroup ? `?sourceGroupName=${encodeURIComponent(sourceGroup)}` : "";
+      const payload = await requestJSON("GET", `/api/outlook-email/inventory${suffix}`);
+      updateMailInventoryUI(payload);
+      log(payload, `mail-inventory-${Date.now()}.json`);
+      switchPage("outputPage");
+    }
+
+    async function refreshTaskMailInventory() {
+      const sourceGroup = $("taskMailSourceGroup") ? $("taskMailSourceGroup").value : "";
+      const suffix = sourceGroup ? `?sourceGroupName=${encodeURIComponent(sourceGroup)}` : "";
+      const payload = await requestJSON("GET", `/api/outlook-email/inventory${suffix}`);
+      updateMailInventoryUI(payload);
+      return payload;
+    }
+
+    async function ensureMailGroups() {
+      const payload = await requestJSON("POST", "/api/outlook-email/groups/ensure", {});
+      log(payload, `mail-groups-${Date.now()}.json`);
+      await refreshMailInventory();
+    }
+
+    async function moveMailAccounts(target) {
+      const payload = await requestJSON("POST", "/api/outlook-email/accounts/move", {
+        target,
+        identifiersText: $("mailMoveText").value,
+      });
+      log(payload, `mail-move-${Date.now()}.json`);
+      await refreshMailInventory();
+    }
+
+    async function importOutlookSourceQueue() {
+      const sourceGroup = $("taskMailSourceGroup") ? $("taskMailSourceGroup").value : "";
+      const payload = await requestJSON("POST", "/api/email-queue/import-outlook-source", {
+        sourceGroupName: sourceGroup,
+      });
+      updateEmailQueueUI(payload.emailQueue || {});
+      if (payload.inventory) updateMailInventoryUI(payload.inventory);
+      updateEmailImportSummary(payload);
+      log(payload, `outlook-source-queue-${Date.now()}.json`);
+      return payload;
+    }
+
+    async function saveFlowGroups() {
+      const sourceGroup = $("taskMailSourceGroup").value;
+      const monitorGroup = $("taskSub2apiMonitorGroup").value;
+      let targetGroups = selectedCheckboxValues($("taskSub2apiTargetGroups"));
+      if (!targetGroups.length && monitorGroup) targetGroups = [monitorGroup];
+      const settings = {
+        MAIL_SOURCE_GROUP_NAME: sourceGroup,
+        SUB2API_MONITOR_GROUP_NAME: monitorGroup,
+        SUB2API_IMPORT_GROUP_NAMES: targetGroups.join(","),
+      };
+      const result = await requestJSON("POST", "/api/app-settings", { settings });
+      currentAppSettings = { ...(result.settings || {} ) };
+      setSettingControlValue("MAIL_SOURCE_GROUP_NAME", settings.MAIL_SOURCE_GROUP_NAME);
+      setSettingControlValue("SUB2API_MONITOR_GROUP_NAME", settings.SUB2API_MONITOR_GROUP_NAME);
+      setSettingControlValue("SUB2API_IMPORT_GROUP_NAMES", settings.SUB2API_IMPORT_GROUP_NAMES);
+      refreshTaskGroupControls(currentAppSettings);
+      await refreshHealth();
+      log({ message: "分组设置已保存", settings });
+    }
+
+    function formatDuration(seconds) {
+      const total = Math.max(0, Number(seconds || 0));
+      if (!total) return "0s";
+      const days = Math.floor(total / 86400);
+      const hours = Math.floor((total % 86400) / 3600);
+      const minutes = Math.floor((total % 3600) / 60);
+      const rest = Math.floor(total % 60);
+      const parts = [];
+      if (days) parts.push(`${days}d`);
+      if (hours) parts.push(`${hours}h`);
+      if (minutes) parts.push(`${minutes}m`);
+      if (!parts.length || rest) parts.push(`${rest}s`);
+      return parts.slice(0, 2).join(" ");
+    }
+
+    function quotaBadgeClass(quota) {
+      if (!quota || quota.allowed) return "ok";
+      return quota.reason === "window_limit" ? "warn" : "bad";
+    }
+
+    function phoneQuotaLabel(quota) {
+      if (!quota) return "--";
+      const total = `${quota.total || 0}/${quota.maxTotal || 0}`;
+      const windowCount = `${quota.windowCount || 0}/${quota.maxPerWindow || 0}`;
+      if (!quota.allowed && quota.reason === "window_limit") {
+        return `窗口 ${windowCount}，冷却 ${formatDuration(quota.retryAfterSeconds || 0)}`;
+      }
+      if (!quota.allowed && quota.reason === "total_limit") {
+        return `累计 ${total}，已达上限`;
+      }
+      return `累计 ${total}，窗口 ${windowCount}`;
+    }
+
+    function phoneStatusBadgeClass(item) {
+      const status = String(item.status || "").toLowerCase();
+      if (item.quota && item.quota.allowed === false) return item.quota.reason === "window_limit" ? "warn" : "bad";
+      if (item.reusable) return "ok";
+      if (status.includes("fail") || status.includes("cancel") || status.includes("expired")) return "bad";
+      return "warn";
+    }
+
+    function phoneLinkUrl(item) {
+      if (item.publicUrl) return item.publicUrl;
+      if (item.smsUrl) return item.smsUrl;
+      const links = Array.isArray(item.links) ? item.links : [];
+      const link = links.find((entry) => entry && (entry.publicUrl || entry.smsUrl));
+      return link ? (link.publicUrl || link.smsUrl) : "";
+    }
+
+    function renderPhonePool(payload) {
+      const body = $("phonePoolBody");
+      const state = $("phonePoolState");
+      if (!body || !state) return;
+      const items = payload.items || [];
+      state.textContent = `共 ${payload.total || items.length || 0} 个号码，更新时间 ${(payload.updatedAt || "").slice(0, 19) || "--"}`;
+      if (!items.length) {
+        body.innerHTML = `<tr><td colspan="6" class="muted">暂无号码记录</td></tr>`;
+        return;
+      }
+      body.innerHTML = items.map((item) => {
+        const binding = item.binding || {};
+        const quota = item.quota || {};
+        const statusText = item.statusLabel || item.status || (item.reusable ? "可复用" : "--");
+        const phoneText = item.phoneNumber || item.phoneKey || "--";
+        const link = phoneLinkUrl(item);
+        const bindingText = [
+          binding.email,
+          binding.region,
+          binding.proxyName || binding.proxyUrl,
+        ].filter(Boolean).map(escapeHtml).join("<br>");
+        const linkHtml = link
+          ? `<a href="${escapeHtml(link)}" target="_blank" rel="noopener">链接</a>`
+          : `<span class="muted">--</span>`;
+        const expireText = item.expiresAt ? `<div class="small">到期 ${escapeHtml(item.expiresAt)}</div>` : "";
+        const codesText = item.codesCount ? `<div class="small">已记录 ${escapeHtml(item.codesCount)} 个码</div>` : "";
+        return `
+          <tr>
+            <td><span class="mono">${escapeHtml(phoneText)}</span><div class="small">${escapeHtml(item.recordsCount || 1)} 条记录</div></td>
+            <td><span class="badge ${phoneStatusBadgeClass(item)}">${escapeHtml(statusText)}</span>${codesText}</td>
+            <td><span class="badge ${quotaBadgeClass(quota)}">${escapeHtml(phoneQuotaLabel(quota))}</span></td>
+            <td>${bindingText || '<span class="muted">--</span>'}</td>
+            <td>${linkHtml}${expireText}</td>
+            <td>${escapeHtml(item.updatedAt || item.purchasedAt || "--")}</td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    async function refreshPhonePool() {
+      const payload = await requestJSON("GET", "/api/phones/pool?limit=200");
+      renderPhonePool(payload);
+      return payload;
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;");
+    }
+
+    function showLogin(message = "") {
+      document.body.classList.remove("auth-checking", "authenticated");
+      AutoMyAIAPI.redirectToLogin(message);
+    }
+
+    function hideLogin() {
+      document.body.classList.remove("auth-checking");
+      document.body.classList.add("authenticated");
+      const login = $("login");
+      if (login) login.classList.remove("active");
+    }
+
+    async function requestJSON(method, url, body) {
+      const path = String(url || "").replace(/^\/api/, "") || "/";
+      return AutoMyAIAPI.main.request(method, path, body, { redirectOnUnauthorized: false });
+    }
+
+    async function login() {
+      try {
+        const passwordInput = $("adminPassword");
+        await AutoMyAIAPI.login(passwordInput ? passwordInput.value : "");
+        hideLogin();
+        await initData();
+      } catch (error) {
+        const loginError = $("loginError");
+        if (loginError) loginError.textContent = error.message || String(error);
+      }
+    }
+
+    async function logout() {
+      await AutoMyAIAPI.logout();
+      document.body.classList.remove("authenticated", "auth-checking");
+      window.location.href = AutoMyAIAPI.uiURL("/");
+    }
+
+    function switchPage(page) {
+      for (const node of document.querySelectorAll(".page")) node.classList.toggle("active", node.id === page);
+      for (const node of document.querySelectorAll(".nav button")) node.classList.toggle("active", node.dataset.page === page);
+      $("pageTitle").textContent = pageTitles[page] || page;
+      closeDrawer();
+    }
+
+    function openDrawer() {
+      $("sidebar").classList.add("open");
+      $("overlay").classList.add("active");
+    }
+
+    function closeDrawer() {
+      $("sidebar").classList.remove("open");
+      $("overlay").classList.remove("active");
+    }
+
+    function setState(id, ok, label) {
+      const node = $(id);
+      node.className = ok ? "ok" : "bad";
+      node.textContent = label;
+    }
+
+    async function refreshHealth() {
+      const health = await requestJSON("GET", "/api/health");
+      setState("apiState", health.ok, health.ok ? "运行中" : "异常");
+      setState("heroState", health.configured, health.configured ? "已配置" : "未配置");
+      setState("teleAutoState", health.teleAutoConfigured, health.teleAutoConfigured ? "已配置" : (health.teleAutoEnabled ? "未配置" : "已禁用"));
+      setState("mailState", health.tempMailConfigured, health.tempMailConfigured ? "已配置" : "未配置");
+      setState("outlookEmailState", health.outlookEmailConfigured, health.outlookEmailConfigured ? "已配置" : "未配置");
+      setState("outlookEmailAdminState", health.outlookEmailAdminConfigured, health.outlookEmailAdminConfigured ? "已配置" : "未配置");
+      setState("sub2apiState", health.sub2apiConfigured, health.sub2apiConfigured ? "已配置" : "未配置");
+      const monitor = health.sub2apiMonitor || {};
+      const monitorHealth = monitor.groupHealth || {};
+      const monitorEnabled = monitor.settings && monitor.settings.enabled;
+      const monitorOk = monitorHealth.status === "ok";
+      const monitorLabel = monitorEnabled
+        ? `${monitorHealth.status || "待检查"} ${monitorHealth.okAccounts ?? "--"}/${monitorHealth.minOkAccounts ?? "--"}`
+        : "已禁用";
+      setState("sub2apiMonitorState", monitorEnabled && monitorOk, monitorLabel);
+      return health;
+    }
+
+    async function loadSettings() {
+      const payload = await requestJSON("GET", "/api/purchase-settings");
+      purchaseSettingsState = payload.purchaseSettings || payload;
+      $("settingsText").value = JSON.stringify(purchaseSettingsState, null, 2);
+      try {
+        await ensureCountriesLoaded(false);
+      } catch (error) {
+        $("countryCacheState").textContent = `国家缓存未加载: ${error.message || error}`;
+      }
+      renderPurchaseGroups();
+    }
+
+    function normalizePurchaseGroupForUi(group = {}) {
+      const fixed = String(group.fixedPrice ?? "").toLowerCase() === "true" || group.fixedPrice === true;
+      return {
+        label: group.label || "",
+        enabled: group.enabled !== false,
+        countryName: group.countryName || "",
+        countryCode: group.countryCode || "",
+        operator: group.operator || "any",
+        priceMode: fixed ? "exact" : "max",
+        price: fixed ? (group.exactPrice || "") : (group.maxPrice || ""),
+      };
+    }
+
+    function buildCountryLabel(country) {
+      const name = country.localName || country.name || country.code;
+      const english = country.name && country.name !== name ? ` / ${country.name}` : "";
+      return `${name}${english} (${country.code})`;
+    }
+
+    function simplifyCountryText(value) {
+      return String(value || "").replace(/[^\s]/g, (ch) => zhCountryCharMap[ch] || ch);
+    }
+
+    function normalizeCountryText(value) {
+      return simplifyCountryText(value).toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "");
+    }
+
+    function countrySearchTerms(country) {
+      const terms = [
+        country.localName,
+        country.name,
+        country.code,
+        ...(Array.isArray(country.searchTerms) ? country.searchTerms : []),
+        ...(countryAliasesByName[String(country.name || "").toLowerCase()] || []),
+      ];
+      const result = [];
+      const seen = new Set();
+      for (const raw of terms) {
+        const value = String(raw || "").trim();
+        if (!value) continue;
+        for (const term of [value, simplifyCountryText(value)]) {
+          const normalized = normalizeCountryText(term);
+          if (normalized && !seen.has(normalized)) {
+            seen.add(normalized);
+            result.push(term);
+          }
+        }
+      }
+      return result;
+    }
+
+    function countryMatchesInput(country, input) {
+      const query = normalizeCountryText(input);
+      if (!query) return false;
+      return countrySearchTerms(country).some((term) => {
+        const normalized = normalizeCountryText(term);
+        return normalized === query || normalized.includes(query) || query.includes(normalized);
+      });
+    }
+
+    function mergeCountryOptions(items = []) {
+      const byCode = new Map(countryOptions.map((country) => [String(country.code), country]));
+      for (const item of items) {
+        if (item && item.code !== undefined) byCode.set(String(item.code), item);
+      }
+      countryOptions = [...byCode.values()];
+      return countryOptions;
+    }
+
+    async function ensureCountriesLoaded(refresh) {
+      if (!refresh && countryOptions.length) return;
+      const payload = refresh
+        ? await requestJSON("POST", "/api/purchase-catalog/countries/refresh", {})
+        : await requestJSON("GET", "/api/purchase-catalog/countries?limit=500");
+      countryOptions = payload.items || [];
+      $("countryCacheState").textContent = `国家缓存: ${payload.total || countryOptions.length} 个，更新时间 ${payload.cachedAt || "--"}`;
+    }
+
+    async function searchCountriesForInput(value) {
+      const text = String(value || "").trim();
+      if (!text) return [];
+      const payload = await requestJSON("GET", `/api/purchase-catalog/countries?limit=50&query=${encodeURIComponent(text)}`);
+      const remoteItems = payload.items || [];
+      mergeCountryOptions(remoteItems);
+      const combined = [];
+      const seen = new Set();
+      for (const country of [...remoteItems, ...countryOptions]) {
+        if (!country || country.code === undefined || seen.has(String(country.code))) continue;
+        if (countryMatchesInput(country, text)) {
+          seen.add(String(country.code));
+          combined.push(country);
+        }
+        if (combined.length >= 12) break;
+      }
+      return combined;
+    }
+
+    function findCountryByInput(value) {
+      const text = String(value || "").trim();
+      const codeMatch = text.match(/\(([^()]+)\)\s*$/);
+      const code = codeMatch ? codeMatch[1] : text;
+      const normalized = text.toLowerCase();
+      return countryOptions.find((country) => String(country.code) === code)
+        || countryOptions.find((country) => buildCountryLabel(country).toLowerCase() === normalized)
+        || countryOptions.find((country) => countryMatchesInput(country, text));
+    }
+
+    function hideCountryResults(card) {
+      const results = card.querySelector("[data-field='countryResults']");
+      if (results) {
+        results.classList.remove("active");
+        results.innerHTML = "";
+      }
+    }
+
+    function renderCountryResults(card, items, message = "") {
+      const results = card.querySelector("[data-field='countryResults']");
+      if (!results) return;
+      if (message) {
+        results.innerHTML = `<div class="country-empty">${escapeHtml(message)}</div>`;
+        results.classList.add("active");
+        return;
+      }
+      if (!items.length) {
+        results.innerHTML = `<div class="country-empty">没有匹配的国家/地区</div>`;
+        results.classList.add("active");
+        return;
+      }
+      results.innerHTML = items.map((country, index) => {
+        const localName = country.localName || country.name || country.code || "";
+        const english = country.name && country.name !== localName ? country.name : "";
+        return `
+          <button type="button" class="country-option" data-index="${index}">
+            <span>
+              <strong>${escapeHtml(localName)}</strong>
+              <span>${escapeHtml(english)}</span>
+            </span>
+            <span class="country-option-code">${escapeHtml(country.code)}</span>
+          </button>
+        `;
+      }).join("");
+      results.classList.add("active");
+      for (const button of results.querySelectorAll("[data-index]")) {
+        button.onclick = () => selectCountryForCard(card, items[Number(button.dataset.index)]);
+      }
+    }
+
+    async function selectCountryForCard(card, country) {
+      if (!country) return;
+      card.querySelector("[data-field='countrySearch']").value = buildCountryLabel(country);
+      card.querySelector("[data-field='countryCode']").value = country.code || "";
+      card.querySelector("[data-field='countryName']").value = country.localName || country.name || "";
+      hideCountryResults(card);
+      await loadOperatorsForCard(card, false);
+      syncPurchaseJsonFromDom();
+    }
+
+    function getPurchaseGroupsFromDom() {
+      const groups = [];
+      for (const card of document.querySelectorAll(".purchase-group")) {
+        const priceMode = card.querySelector("[data-field='priceMode']").value;
+        const price = card.querySelector("[data-field='price']").value.trim();
+        const group = {
+          label: card.querySelector("[data-field='label']").value.trim(),
+          enabled: card.querySelector("[data-field='enabled']").checked,
+          countryName: card.querySelector("[data-field='countryName']").value.trim(),
+          countryCode: card.querySelector("[data-field='countryCode']").value.trim(),
+          operator: card.querySelector("[data-field='operator']").value.trim() || "any",
+          fixedPrice: priceMode === "exact",
+          exactPrice: priceMode === "exact" ? price : "",
+          maxPrice: priceMode === "max" ? price : "",
+        };
+        groups.push(group);
+      }
+      return groups;
+    }
+
+    function syncPurchaseJsonFromDom() {
+      purchaseSettingsState = {
+        serviceName: purchaseSettingsState.serviceName || "OpenAI",
+        serviceCode: purchaseSettingsState.serviceCode || "dr",
+        purchaseGroups: getPurchaseGroupsFromDom(),
+      };
+      $("settingsText").value = JSON.stringify(purchaseSettingsState, null, 2);
+    }
+
+    async function loadOperatorsForCard(card, refresh = false) {
+      const countryCode = card.querySelector("[data-field='countryCode']").value.trim();
+      const operatorSelect = card.querySelector("[data-field='operator']");
+      const current = operatorSelect.value || "any";
+      operatorSelect.innerHTML = `<option value="any">任意运营商</option>`;
+      if (!countryCode) return;
+      const serviceCode = encodeURIComponent(purchaseSettingsState.serviceCode || "dr");
+      const url = `/api/purchase-catalog/operators?serviceCode=${serviceCode}&countryCode=${encodeURIComponent(countryCode)}${refresh ? "&refresh=1" : ""}`;
+      const payload = await requestJSON("GET", url);
+      for (const item of payload.items || []) {
+        const value = String(item || "").trim();
+        if (!value || value === "any") continue;
+        const option = document.createElement("option");
+        option.value = value;
+        option.textContent = value;
+        operatorSelect.appendChild(option);
+      }
+      operatorSelect.value = [...operatorSelect.options].some((option) => option.value === current) ? current : "any";
+    }
+
+    function renderPurchaseGroups() {
+      const list = $("purchaseGroupList");
+      const groups = (purchaseSettingsState.purchaseGroups || []).map(normalizePurchaseGroupForUi);
+      list.innerHTML = "";
+      groups.forEach((group, index) => {
+        const country = countryOptions.find((item) => String(item.code) === String(group.countryCode));
+        const card = document.createElement("div");
+        card.className = "purchase-group";
+        card.innerHTML = `
+          <div class="group-head">
+            <div class="group-title">设置组 ${index + 1}</div>
+            <div class="row">
+              <label class="inline-check"><input type="checkbox" data-field="enabled" ${group.enabled ? "checked" : ""}>启用</label>
+              <button data-action="up">上移</button>
+              <button data-action="down">下移</button>
+              <button data-action="delete" class="danger">删除</button>
+            </div>
+          </div>
+          <div class="settings-grid">
+            <div class="field">
+              <label>设置组名称</label>
+              <input data-field="label" value="${String(group.label).replaceAll('"', '&quot;')}">
+            </div>
+            <div class="field">
+              <label>国家/地区搜索</label>
+              <div class="country-search-wrap">
+                <input data-field="countrySearch" autocomplete="off" placeholder="输入中文名、英文名或编号" value="${escapeHtml(country ? buildCountryLabel(country) : String(group.countryName || group.countryCode))}">
+                <div class="country-results" data-field="countryResults"></div>
+              </div>
+            </div>
+            <div class="field">
+              <label>国家/地区编号</label>
+              <input data-field="countryCode" value="${String(group.countryCode).replaceAll('"', '&quot;')}">
+            </div>
+            <div class="field">
+              <label>国家/地区名称</label>
+              <input data-field="countryName" value="${String(group.countryName).replaceAll('"', '&quot;')}">
+            </div>
+            <div class="field">
+              <label>运营商</label>
+              <select data-field="operator"><option value="${String(group.operator).replaceAll('"', '&quot;')}">${group.operator || "any"}</option></select>
+            </div>
+            <div class="field">
+              <label>价格模式</label>
+              <select data-field="priceMode">
+                <option value="max" ${group.priceMode === "max" ? "selected" : ""}>最高价模式</option>
+                <option value="exact" ${group.priceMode === "exact" ? "selected" : ""}>精确价格模式</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>价格</label>
+              <input data-field="price" inputmode="decimal" value="${String(group.price).replaceAll('"', '&quot;')}">
+            </div>
+            <div class="field">
+              <label>运营商列表</label>
+              <button data-action="refreshOperators">刷新运营商</button>
+            </div>
+          </div>
+        `;
+        list.appendChild(card);
+        card.querySelector("[data-action='up']").disabled = index === 0;
+        card.querySelector("[data-action='down']").disabled = index === groups.length - 1;
+        card.querySelector("[data-action='up']").onclick = () => {
+          syncPurchaseJsonFromDom();
+          const next = purchaseSettingsState.purchaseGroups;
+          [next[index - 1], next[index]] = [next[index], next[index - 1]];
+          renderPurchaseGroups();
+          syncPurchaseJsonFromDom();
+        };
+        card.querySelector("[data-action='down']").onclick = () => {
+          syncPurchaseJsonFromDom();
+          const next = purchaseSettingsState.purchaseGroups;
+          [next[index + 1], next[index]] = [next[index], next[index + 1]];
+          renderPurchaseGroups();
+          syncPurchaseJsonFromDom();
+        };
+        card.querySelector("[data-action='delete']").onclick = () => {
+          syncPurchaseJsonFromDom();
+          purchaseSettingsState.purchaseGroups.splice(index, 1);
+          renderPurchaseGroups();
+          syncPurchaseJsonFromDom();
+        };
+        card.querySelector("[data-action='refreshOperators']").onclick = () => run(() => loadOperatorsForCard(card, true));
+        const countrySearch = card.querySelector("[data-field='countrySearch']");
+        const runCountrySearch = async () => {
+          const value = countrySearch.value.trim();
+          const seq = ++countrySearchSeq;
+          if (!value) {
+            hideCountryResults(card);
+            return;
+          }
+          renderCountryResults(card, [], "搜索中...");
+          try {
+            const items = await searchCountriesForInput(value);
+            if (seq !== countrySearchSeq) return;
+            renderCountryResults(card, items);
+          } catch (error) {
+            if (seq !== countrySearchSeq) return;
+            renderCountryResults(card, [], `搜索失败: ${error.message || error}`);
+          }
+        };
+        countrySearch.addEventListener("input", () => {
+          card.querySelector("[data-field='countryCode']").value = "";
+          card.querySelector("[data-field='countryName']").value = "";
+          clearTimeout(countrySearch._countrySearchTimer);
+          countrySearch._countrySearchTimer = setTimeout(runCountrySearch, 180);
+          syncPurchaseJsonFromDom();
+        });
+        countrySearch.addEventListener("focus", () => {
+          if (countrySearch.value.trim()) runCountrySearch();
+        });
+        countrySearch.addEventListener("keydown", async (event) => {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            const selected = findCountryByInput(countrySearch.value);
+            if (selected) await selectCountryForCard(card, selected);
+          } else if (event.key === "Escape") {
+            hideCountryResults(card);
+          }
+        });
+        document.addEventListener("click", (event) => {
+          if (!card.contains(event.target)) hideCountryResults(card);
+        }, { capture: true });
+        for (const input of card.querySelectorAll("input, select")) {
+          input.addEventListener("input", syncPurchaseJsonFromDom);
+          input.addEventListener("change", syncPurchaseJsonFromDom);
+        }
+        loadOperatorsForCard(card, false).catch((error) => log(`ERROR: 加载运营商失败: ${error.message || error}`));
+      });
+      syncPurchaseJsonFromDom();
+    }
+
+    function addPurchaseGroup() {
+      syncPurchaseJsonFromDom();
+      purchaseSettingsState.purchaseGroups.push({
+        label: "",
+        enabled: true,
+        countryName: "",
+        countryCode: "",
+        operator: "any",
+        fixedPrice: false,
+        exactPrice: "",
+        maxPrice: "",
+      });
+      renderPurchaseGroups();
+    }
+
+    async function savePurchaseGroups() {
+      syncPurchaseJsonFromDom();
+      await saveSettings();
+      await loadSettings();
+    }
+
+    async function loadEmailQueue() {
+      const payload = await requestJSON("GET", "/api/email-queue");
+      updateEmailQueueUI(payload.emailQueue || payload);
+    }
+
+    function updateEmailQueueUI(queue) {
+      const emails = queue.emails || [];
+      $("emailQueueText").value = emails.join("\n");
+      $("emailCurrent").value = queue.activeEmail || emails[queue.cursor || 0] || "";
+      const position = emails.length ? `${(queue.cursor || 0) + 1}/${emails.length}` : "0/0";
+      $("emailQueueState").textContent = `队列 ${position} 当前=${$("emailCurrent").value || "--"}`;
+      if ($("taskEmailQueueCount")) {
+        $("taskEmailQueueCount").textContent = `${emails.length} 个`;
+      }
+    }
+
+    function taskRunMode() {
+      return (document.querySelector("input[name='taskRunMode']:checked") || {}).value || "auto";
+    }
+
+    function sourceGroupForMode(mode) {
+      if (mode === "pending") {
+        return currentAppSettings.MAIL_PENDING_GROUP_NAME || currentSettingValue("MAIL_PENDING_GROUP_NAME") || "gpt_pending_account";
+      }
+      if (mode === "auto") {
+        return currentAppSettings.MAIL_SOURCE_GROUP_NAME || currentSettingValue("MAIL_SOURCE_GROUP_NAME") || "";
+      }
+      return $("taskMailSourceGroup") ? $("taskMailSourceGroup").value : "";
+    }
+
+    function applySourceGroupForMode(mode) {
+      const sourceGroup = $("taskMailSourceGroup");
+      if (!sourceGroup || mode === "manual") return;
+      const value = sourceGroupForMode(mode);
+      if (value) {
+        const exists = Array.from(sourceGroup.options).some((option) => option.value === value);
+        if (!exists) appendSelectOption(sourceGroup, value, `${value} (模式使用)`);
+      }
+      sourceGroup.value = value;
+    }
+
+    function updateRunModeUI() {
+      const mode = taskRunMode();
+      applySourceGroupForMode(mode);
+      const startBtn = $("ucSignupStartBtn");
+      if (startBtn) {
+        startBtn.textContent = mode === "pending" ? "续跑一个" : mode === "manual" ? "跑手动队列" : "补一个号";
+      }
+      const manualOnly = $("manualAuthOnly");
+      if (manualOnly) manualOnly.disabled = mode !== "manual";
+    }
+
+    async function loadAppSettings() {
+      const payload = await requestJSON("GET", "/api/app-settings");
+      const settings = payload.settings || {};
+      currentAppSettings = { ...settings };
+      for (const key of appSettingKeys) {
+        setSettingControlValue(key, settings[key] || "");
+      }
+      await Promise.all([
+        loadSub2apiGroupOptions(settings.SUB2API_MONITOR_GROUP_NAME || ""),
+        loadMailGroupOptions(settings),
+      ]);
+      refreshTaskGroupControls(settings);
+    }
+
+    async function saveAppSettings() {
+      const settings = {};
+      for (const key of appSettingKeys) {
+        const input = $(`cfg_${key}`);
+        if (input) settings[key] = input.value;
+      }
+      const result = await requestJSON("POST", "/api/app-settings", { settings });
+      currentAppSettings = { ...(result.settings || settings) };
+      log({ message: "应用配置已保存", configFile: result.configFile });
+      refreshTaskGroupControls(currentAppSettings);
+      await refreshHealth();
+    }
+
+    async function saveSettings() {
+      const payload = JSON.parse($("settingsText").value);
+      const result = await requestJSON("POST", "/api/purchase-settings", payload);
+      purchaseSettingsState = result.purchaseSettings || result;
+      $("settingsText").value = JSON.stringify(purchaseSettingsState, null, 2);
+      renderPurchaseGroups();
+      log("旧版号码购买设置已保存");
+    }
+
+    async function saveEmailQueue() {
+      const payload = await requestJSON("POST", "/api/email-queue", {
+        emailsText: $("emailQueueText").value,
+      });
+      updateEmailQueueUI(payload.emailQueue || payload);
+      log("邮箱列表已保存");
+    }
+
+    async function refreshEmailCode() {
+      const email = $("emailCurrent").value.trim();
+      const url = email ? `/api/email-queue/mail/latest?address=${encodeURIComponent(email)}` : "/api/email-queue/mail/latest";
+      const payload = await requestJSON("GET", url);
+      updateEmailQueueUI(payload.emailQueue || {});
+      log(payload);
+    }
+
+    let ucSignupPollTimer = null;
+    const PHASE_LABELS = { idle: "空闲", running: "运行中", stopping: "停止中", stopped: "已停止", done: "已完成" };
+    const UC_SIGNUP_STEP_LABELS = {
+      starting: "启动脚本",
+      buying_phone: "获取号码/准备邮箱",
+      opening_signup: "打开注册页",
+      accepting_cookie: "处理 Cookie",
+      filling_phone: "填写号码",
+      waiting_sms: "等待短信验证码",
+      filling_sms_code: "填写短信验证码",
+      filling_password: "填写密码",
+      filling_account_details: "填写姓名年龄",
+      oauth: "OAuth 授权流程",
+      filling_email: "绑定邮箱",
+      filling_email_code: "填写邮箱验证码",
+      authorizing: "确认授权",
+      waiting_oauth_callback: "等待 OAuth 回调",
+      sub2api_import: "导入 Sub2API",
+      completed: "完成",
+    };
+
+    function renderUcSignupResults(state) {
+      const results = state.results || [];
+      $("ucSignupResultText").value = results.length
+        ? results.map((item, index) => {
+            const status = item.status === "success" ? "成功" : item.status === "stopped" ? "已停止" : "失败";
+            const suffix = item.error ? ` - ${item.error}` : "";
+            return `${index + 1}. [${status}] ${item.email || "--"}${suffix}`;
+          }).join("\n")
+        : "";
+    }
+
+    async function refreshUcSignupLogs() {
+      const payload = await requestJSON("GET", "/api/uc-signup/logs");
+      const logs = payload.logs || [];
+      $("ucSignupLogOutput").textContent = logs.map((entry) => {
+        const timestamp = (entry.time || "").slice(11, 19) || "--:--:--";
+        const prefix = entry.level === "error" ? "ERROR" : entry.level === "warn" ? "WARN " : "INFO ";
+        return `[${timestamp}] ${prefix} ${entry.message || ""}`;
+      }).join("\n");
+      $("ucSignupLogOutput").scrollTop = $("ucSignupLogOutput").scrollHeight;
+    }
+
+    async function refreshUcSignupStatus() {
+      const payload = await requestJSON("GET", "/api/uc-signup/status");
+      const state = payload.ucSignupState || payload;
+      $("ucSignupPhase").textContent = PHASE_LABELS[state.phase] || state.phase || "空闲";
+      $("ucSignupProgress").textContent = `${state.completed || 0}/${state.total || 0}`;
+      $("ucSignupCurrentEmail").textContent = state.currentEmail || "--";
+      $("ucSignupCurrentPhone").textContent = state.currentPhone || "--";
+      $("ucSignupCurrentProxy").textContent = state.currentProxy || "--";
+      $("ucSignupCurrentStep").textContent = UC_SIGNUP_STEP_LABELS[state.currentStep] || state.currentStep || "--";
+      $("ucSignupResultsSummary").textContent = `成功 ${state.success || 0} / 失败 ${state.failed || 0}`;
+      renderUcSignupResults(state);
+      try { await refreshUcSignupLogs(); } catch (error) {}
+      const running = Boolean(state.running);
+      $("ucSignupStartBtn").disabled = running;
+      $("ucSignupStopBtn").disabled = !running;
+      if (running && !ucSignupPollTimer) {
+        ucSignupPollTimer = setInterval(() => run(refreshUcSignupStatus), 3000);
+      }
+      if (!running && ucSignupPollTimer) {
+        clearInterval(ucSignupPollTimer);
+        ucSignupPollTimer = null;
+      }
+      if (running) {
+        try { await refreshPhonePool(); } catch (error) {}
+      }
+    }
+
+    async function startUcSignup() {
+      const mode = taskRunMode();
+      updateRunModeUI();
+      let queue = {};
+      let emails = [];
+      if (mode === "manual") {
+        const queuePayload = await requestJSON("POST", "/api/email-queue", {
+          emailsText: $("emailQueueText").value,
+        });
+        queue = queuePayload.emailQueue || queuePayload || {};
+        emails = queue.emails || [];
+        updateEmailQueueUI(queue);
+      } else {
+        const imported = await importOutlookSourceQueue();
+        queue = imported.emailQueue || {};
+        emails = queue.emails || [];
+      }
+      const limitInput = $("ucSignupStartLimit");
+      const limit = Math.max(1, Number.parseInt(limitInput ? limitInput.value : "1", 10) || 1);
+      const cursor = Math.max(0, Number(queue.cursor || 0));
+      const selectedEmails = emails.slice(cursor, cursor + limit);
+      if (!selectedEmails.length) {
+        throw new Error("没有可启动的邮箱：来源分组为空、冷却中，或邮箱不可用");
+      }
+      const body = {
+        emails: selectedEmails,
+        name: $("cfg_SIGNUP_NAME") ? $("cfg_SIGNUP_NAME").value.trim() : "",
+        age: $("cfg_SIGNUP_AGE") ? $("cfg_SIGNUP_AGE").value.trim() : "",
+        authOnly: mode === "pending" || (mode === "manual" && $("manualAuthOnly") && $("manualAuthOnly").checked),
+        keepBrowserOnFailure: false,
+        keepBrowserSeconds: 0,
+      };
+      const payload = await requestJSON("POST", "/api/uc-signup/start", body);
+      updateEmailQueueUI(payload.emailQueue || {});
+      log({ message: "任务已启动", mode, emails: selectedEmails, ucSignupState: payload.ucSignupState });
+      await refreshUcSignupStatus();
+    }
+
+    async function stopUcSignup() {
+      const payload = await requestJSON("POST", "/api/uc-signup/stop", {});
+      log({ message: "已请求停止 UC 注册任务", ucSignupState: payload.ucSignupState });
+      await refreshUcSignupStatus();
+    }
+
+    async function run(task) {
+      try { await task(); } catch (error) { log(`ERROR: ${error.message || error}`); }
+    }
+
+    async function initData() {
+      await refreshHealth();
+      await loadAppSettings();
+      await loadEmailQueue();
+      await loadSettings();
+      try { await refreshTaskMailInventory(); } catch (error) {}
+      await refreshUcSignupStatus();
+      try { await refreshPhonePool(); } catch (error) {}
+    }
+
+    for (const node of document.querySelectorAll(".nav button")) {
+      node.onclick = () => switchPage(node.dataset.page);
+    }
+    $("drawerBtn").onclick = openDrawer;
+    $("overlay").onclick = closeDrawer;
+    $("logoutBtn").onclick = () => run(logout);
+    if ($("loginBtn")) $("loginBtn").onclick = login;
+    if ($("adminPassword")) {
+      $("adminPassword").addEventListener("keydown", (event) => {
+        if (event.key === "Enter") login();
+      });
+    }
+    $("refreshAll").onclick = () => run(initData);
+    $("loadSettingsBtn").onclick = () => run(loadSettings);
+    $("saveSettingsBtn").onclick = () => run(saveSettings);
+    $("addPurchaseGroupBtn").onclick = () => run(addPurchaseGroup);
+    $("loadPurchaseGroupsBtn").onclick = () => run(loadSettings);
+    $("savePurchaseGroupsBtn").onclick = () => run(savePurchaseGroups);
+    $("refreshCountriesBtn").onclick = () => run(async () => { await ensureCountriesLoaded(true); renderPurchaseGroups(); });
+    $("saveFlowGroupsBtn").onclick = () => run(saveFlowGroups);
+    $("refreshTaskMailInventoryBtn").onclick = () => run(refreshTaskMailInventory);
+    $("importOutlookSourceQueueBtn").onclick = () => run(importOutlookSourceQueue);
+    $("saveEmailQueueBtn").onclick = () => run(saveEmailQueue);
+    $("loadEmailQueueBtn").onclick = () => run(loadEmailQueue);
+    $("mailCodeBtn").onclick = () => run(refreshEmailCode);
+    $("loadAppSettingsBtn").onclick = () => run(loadAppSettings);
+    $("saveAppSettingsBtn").onclick = () => run(saveAppSettings);
+    $("ucSignupStartBtn").onclick = () => run(startUcSignup);
+    $("ucSignupStopBtn").onclick = () => run(stopUcSignup);
+    $("ucSignupRefreshBtn").onclick = () => run(refreshUcSignupStatus);
+    for (const node of document.querySelectorAll("input[name='taskRunMode']")) {
+      node.addEventListener("change", () => run(async () => {
+        updateRunModeUI();
+        await refreshTaskMailInventory();
+      }));
+    }
+    $("phonePoolRefreshBtn").onclick = () => run(refreshPhonePool);
+    $("sub2apiMonitorStatusBtn").onclick = () => run(getSub2apiMonitorStatus);
+    $("sub2apiMonitorCheckBtn").onclick = () => run(checkSub2apiMonitor);
+    $("sub2apiGroupsBtn").onclick = () => run(listSub2apiGroups);
+    $("sub2apiStatusBtn").onclick = () => run(checkSub2apiStatus);
+    $("sub2apiAuthUrlBtn").onclick = () => run(generateSub2apiAuthUrl);
+    $("mailInventoryBtn").onclick = () => run(refreshMailInventory);
+    $("mailEnsureGroupsBtn").onclick = () => run(ensureMailGroups);
+    $("importOutlookSourceQueueOutputBtn").onclick = () => run(importOutlookSourceQueue);
+    $("mailMovePendingBtn").onclick = () => run(() => moveMailAccounts("pending"));
+    $("mailMoveSuccessBtn").onclick = () => run(() => moveMailAccounts("success"));
+    $("mailMoveBadBtn").onclick = () => run(() => moveMailAccounts("bad"));
+    $("copyOutputBtn").onclick = () => run(copyCurrentOutput);
+    $("downloadOutputBtn").onclick = downloadCurrentOutput;
+
+    buildSettingsInputs();
+    run(async () => {
+      const auth = await requestJSON("GET", "/api/auth/status");
+      if (auth.authRequired && !auth.authenticated) {
+        showLogin();
+        return;
+      }
+      hideLogin();
+      await initData();
+      updateRunModeUI();
+    });
+  </script>
+</body>
+</html>

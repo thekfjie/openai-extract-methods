@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>工具 / 日志 · automyai</title>
+  <link rel="stylesheet" href="../css/nature.css" />
+</head>
+<body data-page="tools">
+  <div class="app">
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-mark"></div>
+    <div>
+      <h1>automyai</h1>
+      <p>控制台</p>
+    </div>
+  </div>
+  <nav class="nav">
+    <a href="/ui/" data-page="overview"><span class="dot"></span>总览</a>
+    <a href="/ui/pages/openai.html" data-page="openai"><span class="dot"></span>OpenAI 注册</a>
+    <a href="/ui/pages/openai2.html" data-page="openai2"><span class="dot"></span>OpenAI 2</a>
+    <a href="/ui/pages/openai3.html" data-page="openai3"><span class="dot"></span>OpenAI 3</a>
+    <a href="/ui/pages/apple_mail.html" data-page="apple-mail"><span class="dot"></span>Apple Mail</a>
+    <a href="/ui/pages/grok.html" data-page="grok"><span class="dot"></span>Grok 注册</a>
+    <a href="/grok2/accounts" target="_blank"><span class="dot"></span>Grok 2</a>
+    <a href="/ui/pages/convert.html" data-page="convert"><span class="dot"></span>OAI 转换</a>
+    <a href="/ui/pages/mail.html" data-page="mail"><span class="dot"></span>邮箱与分组</a>
+    <a href="/ui/pages/settings.html" data-page="settings"><span class="dot"></span>设置</a>
+    <a href="/ui/pages/tools.html" data-page="tools"><span class="dot"></span>工具 / 日志</a>
+  </nav>
+</aside>
+
+<main class="main">
+  <div class="topbar"><div><h2>工具 / 日志</h2><div class="hint">扩展状态、注册工具目录、浏览器画面</div></div></div>
+
+  <div class="grid cols-2">
+    <section class="card">
+      <h3>扩展状态</h3>
+      <div class="row"><button class="btn ghost" id="extBtn">刷新</button></div>
+      <pre class="log" id="extOut">—</pre>
+    </section>
+    <section class="card">
+      <h3>Grok 结果</h3>
+      <div class="row"><button class="btn ghost" id="resBtn">刷新</button></div>
+      <pre class="log" id="resOut">—</pre>
+    </section>
+  </div>
+
+  <div class="grid cols-2" style="margin-top:16px">
+    <section class="card">
+      <h3>OpenAI 3（Go）</h3>
+      <p class="muted" style="color:var(--muted);font-size:.86rem">Go 控制核心管理 Profile 生成、环境验证、日志和持久化任务；Node SDK 保留浏览器语义。</p>
+      <ul>
+        <li>面板：<code>/ui/pages/openai3.html</code></li>
+        <li>服务：<code>automyai-openai3.service</code> · <code>127.0.0.1:18791</code></li>
+        <li>代码：<code>/opt/automyai/cmd/control-api</code></li>
+        <li>数据：<code>/opt/automyai/data/openai3-control</code></li>
+        <li>语义 SDK：<code>/opt/automyai/fingerprint/sdk</code></li>
+        <li>边界：不启动浏览器、不访问外部站点、不连接注册或绕过逻辑</li>
+      </ul>
+      <div class="row" style="margin-top:10px">
+        <a class="btn secondary" href="/ui/pages/openai.html">打开 OpenAI 注册</a>
+        <a class="btn secondary" href="/ui/pages/openai3.html">打开 OpenAI 3</a>
+        <a class="btn ghost" href="/ui/pages/openai2.html">OpenAI 2</a>
+      </div>
+    </section>
+    <section class="card">
+      <h3>CF Cookie 抓取</h3>
+      <p class="muted" style="color:var(--muted);font-size:.86rem">Cloudflare cookie / 挑战自动化（Puppeteer）。代理文件请放独立数据目录，勿与号池混用。</p>
+      <ul>
+        <li>代码：<code>/opt/automyai/tools/cf_cookie</code></li>
+        <li>数据：<code>/opt/automyai/data/cf_cookie</code></li>
+        <li>主入口：<code>cf.unified-attack.js</code> / <code>cf.auto-attack.js</code></li>
+        <li>代理：<code>/opt/automyai/data/cf_cookie/proxies/proxies.txt</code></li>
+      </ul>
+      <pre class="log" style="margin-top:10px;min-height:72px">node cf.auto-attack.js https://target 120 16 1000 --proxy=/opt/automyai/data/cf_cookie/proxies/proxies.txt --headless</pre>
+    </section>
+  </div>
+
+  <section class="card" style="margin-top:16px">
+    <h3>浏览器实时</h3>
+    <p>noVNC 公网入口（容器内 Xvfb 桌面）。无注册任务时桌面几乎为空，不是断线。</p>
+    <div class="row">
+      <a class="btn secondary" href="https://automyai.kfjie.me/novnc/vnc.html?autoconnect=1&resize=scale&path=novnc/websockify" target="_blank" rel="noreferrer">打开 noVNC</a>
+      <a class="btn ghost" href="/ui/">返回总览</a>
+    </div>
+  </section>
+
+  
+    <article class="card">
+      <h3>ChatGPT 月优惠检测</h3>
+      <ul class="list">
+        <li>接口：<code>GET chatgpt.com/backend-api/accounts/check/v4-2023-04-27</code></li>
+        <li>本机 API：<code>POST /api/tools/chatgpt-promo-check</code></li>
+        <li>入口：OAI 转换页可粘贴 session/AT 检测</li>
+      </ul>
+      <div class="row" style="margin-top:10px">
+        <a class="btn secondary" href="/ui/pages/convert.html">打开 OAI 转换 / 优惠检测</a>
+      </div>
+    </article>
+<div class="footer-note">温暖、平静、亲近自然 · 凭证请妥善保管 · 仅本机管理接口</div>
+</main>
+</div>
+  <script src="../js/runtime-config.js"></script>
+  <script src="../js/api-client.js"></script>
+  <script src="../js/app.js"></script>
+<script>
+(() => {
+const { api, toast } = HelpOAI;
+document.getElementById('extBtn').onclick = async ()=>{
+  try{ document.getElementById('extOut').textContent = JSON.stringify(await api('GET','/extensions/status'),null,2); }
+  catch(e){ toast(e.message,'error'); }
+};
+document.getElementById('resBtn').onclick = async ()=>{
+  try{ document.getElementById('resOut').textContent = JSON.stringify(await api('GET','/grok/results'),null,2); }
+  catch(e){ toast(e.message,'error'); }
+};
+document.getElementById('extBtn').click();
+document.getElementById('resBtn').click();
+})();
+</script>
+</body>
+</html>

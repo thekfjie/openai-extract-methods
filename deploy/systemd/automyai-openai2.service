@@ -1,0 +1,25 @@
+[Unit]
+Description=AutoMyAI OpenAI Register 2 (gpt-outlook protocol, isolated)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/opt/automyai/tools/gpt_outlook2
+Environment=GPT_OUTLOOK2_NO_BROWSER=1
+Environment=GPT_OUTLOOK2_ROOT_PATH=/openai2
+Environment=GPT_OUTLOOK2_DB_PATH=/opt/automyai/data/gpt_outlook2/webui/webui.db
+Environment=GPT_OUTLOOK2_LOG_DIR=/opt/automyai/data/gpt_outlook2/logs
+Environment=PYTHONUNBUFFERED=1
+EnvironmentFile=/opt/automyai/config/ports.env
+ExecStart=/opt/automyai/tools/gpt_outlook2/.venv/bin/python /opt/automyai/tools/gpt_outlook2/start_webui.py --host 127.0.0.1 --port ${OPENAI2_PORT} --no-browser
+Restart=on-failure
+RestartSec=3
+TimeoutStopSec=15
+KillMode=mixed
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target

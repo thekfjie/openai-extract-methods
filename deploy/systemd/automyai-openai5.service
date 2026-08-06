@@ -1,0 +1,23 @@
+[Unit]
+Description=AutoMyAI OpenAI5 API-only environment supervisor
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/opt/automyai/tools/openai5
+Environment=OPENAI5_HOST=127.0.0.1
+Environment=OPENAI5_DATA_DIR=/opt/automyai/data/openai5
+Environment=OPENAI5_FINGERPRINT_API_URL=http://127.0.0.1:50001
+Environment=FINGERPRINT_API_KEY_FILE=/opt/automyai/data/fingerprint-api/api.key
+EnvironmentFile=/opt/automyai/config/ports.env
+ExecStart=/opt/automyai/tools/openai4/.venv/bin/python -m uvicorn webapp:app --host 127.0.0.1 --port ${OPENAI5_PORT}
+Restart=on-failure
+RestartSec=3
+TimeoutStopSec=15
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target

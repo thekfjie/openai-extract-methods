@@ -1,0 +1,236 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap');
+
+:root {
+  /* Typography */
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: 'Fira Code', ui-monospace, SFMono-Regular, Consolas, monospace;
+
+  /* Motion */
+  --transition: 300ms cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-bounce: 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  --transition-fast: 180ms cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-slow: 460ms cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Radii */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-pill: 9999px;
+
+  /* Compatibility aliases used by the refreshed workbench. */
+  --surface-raised: var(--surface-strong);
+  --accent-soft: var(--accent-bg);
+  --accent-contrast: var(--text-on-accent);
+
+  /* Native form controls need opaque colors. Translucent glass values are not
+     reliably inherited by the operating-system select popup. */
+  --control-color-scheme: light;
+  --select-option-bg: #ffffff;
+  --select-option-text: #0f172a;
+  --select-option-selected-bg: #4f46e5;
+  --select-option-selected-text: #ffffff;
+  --select-option-disabled-text: #94a3b8;
+}
+
+/* Light mode */
+:root {
+  --bg-primary: #f8fafc;
+  --bg-secondary: #f1f5f9;
+  --bg-gradient: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  --glass-bg: rgba(255, 255, 255, 0.5);
+  --glass-bg-hover: rgba(255, 255, 255, 0.8);
+  --glass-bg-opaque: rgba(255, 255, 255, 0.95);
+  --glass-border: rgba(255, 255, 255, 0.7);
+  --glass-highlight: rgba(255, 255, 255, 0.9);
+  --sidebar-glass-bg: rgba(255, 255, 255, 0.6);
+  --overlay-backdrop: rgba(15, 23, 42, 0.3);
+  --surface-panel: rgba(255, 255, 255, 0.78);
+  --surface-strong: rgba(255, 255, 255, 0.94);
+  --surface-inset: rgba(241, 245, 249, 0.82);
+  --surface-border: rgba(15, 23, 42, 0.12);
+
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+
+  --accent-color: #4f46e5;
+  --accent-gradient: linear-gradient(135deg, #4f46e5 0%, #818cf8 100%);
+  --accent-glow: rgba(79, 70, 229, 0.25);
+  --accent-bg: rgba(79, 70, 229, 0.08);
+  --text-on-accent: #ffffff;
+
+  --shadow-color: rgba(15, 23, 42, 0.06);
+  --border-color: rgba(15, 23, 42, 0.06);
+
+  /* Status colors */
+  --success-color: #059669;
+  --success-bg: rgba(16, 185, 129, 0.1);
+  --success-border: rgba(16, 185, 129, 0.2);
+  --warning-color: #d97706;
+  --warning-bg: rgba(245, 158, 11, 0.1);
+  --warning-border: rgba(245, 158, 11, 0.2);
+  --danger-color: #dc2626;
+  --danger-bg: rgba(239, 68, 68, 0.1);
+  --danger-border: rgba(239, 68, 68, 0.2);
+}
+
+/* Dark mode (Default - Purple) */
+.dark, .dark-purple {
+  --control-color-scheme: dark;
+  --select-option-bg: #17172d;
+  --select-option-text: #f8fafc;
+  --select-option-selected-bg: #4f46e5;
+  --select-option-selected-text: #ffffff;
+  --select-option-disabled-text: #7c89a1;
+
+  --bg-primary: #030712;
+  --bg-secondary: #0f172a;
+  --bg-gradient: radial-gradient(circle at 15% 15%, #1e1b4b 0%, #030712 60%, #030712 100%);
+  --glass-bg: rgba(255, 255, 255, 0.035);
+  --glass-bg-hover: rgba(255, 255, 255, 0.065);
+  --glass-bg-opaque: rgba(15, 23, 42, 0.96);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-highlight: rgba(255, 255, 255, 0.08);
+  --sidebar-glass-bg: rgba(255, 255, 255, 0.03);
+  --overlay-backdrop: rgba(0, 0, 0, 0.6);
+  --surface-panel: rgba(255, 255, 255, 0.055);
+  --surface-strong: rgba(255, 255, 255, 0.075);
+  --surface-inset: rgba(255, 255, 255, 0.025);
+  --surface-border: rgba(255, 255, 255, 0.12);
+
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #b6c2d2;
+
+  --accent-color: #818cf8;
+  --accent-gradient: linear-gradient(135deg, #6366f1 0%, #a5b4fc 100%);
+  --accent-glow: rgba(99, 102, 241, 0.35);
+  --accent-bg: rgba(99, 102, 241, 0.12);
+  --text-on-accent: #ffffff;
+
+  --shadow-color: rgba(0, 0, 0, 0.5);
+  --border-color: rgba(255, 255, 255, 0.05);
+
+  --success-color: #34d399;
+  --success-bg: rgba(16, 185, 129, 0.12);
+  --success-border: rgba(16, 185, 129, 0.2);
+  --warning-color: #fbbf24;
+  --warning-bg: rgba(245, 158, 11, 0.12);
+  --warning-border: rgba(245, 158, 11, 0.2);
+  --danger-color: #f87171;
+  --danger-bg: rgba(239, 68, 68, 0.12);
+  --danger-border: rgba(239, 68, 68, 0.2);
+}
+
+/* Theme Variant 1: Cyberpunk Neon (Deep Blue + Glowing Borders) */
+.dark-cyberpunk {
+  --control-color-scheme: dark;
+  --select-option-bg: #0f172a;
+  --select-option-text: #f8fafc;
+  --select-option-selected-bg: #1d4ed8;
+  --select-option-selected-text: #ffffff;
+  --select-option-disabled-text: #64748b;
+
+  --bg-primary: #020617;
+  --bg-secondary: #0f172a;
+  --bg-gradient: radial-gradient(circle at 20% 30%, #0f172a 0%, #020617 70%, #020617 100%);
+  --glass-bg: rgba(2, 6, 23, 0.55);
+  --glass-bg-hover: rgba(15, 23, 42, 0.75);
+  --glass-bg-opaque: rgba(2, 6, 23, 0.98);
+  --sidebar-glass-bg: rgba(15, 23, 42, 0.42);
+  --surface-panel: rgba(15, 23, 42, 0.78);
+  --surface-strong: rgba(15, 23, 42, 0.94);
+  --surface-inset: rgba(2, 6, 23, 0.68);
+  --surface-border: rgba(96, 165, 250, 0.32);
+
+  /* The trick for emphasized regions: colored glowing borders */
+  --glass-border: rgba(99, 102, 241, 0.45);
+  --glass-highlight: rgba(99, 102, 241, 0.25);
+  --shadow-color: rgba(99, 102, 241, 0.12);
+  --border-color: rgba(99, 102, 241, 0.2);
+
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+
+  --accent-color: #60a5fa;
+  --accent-gradient: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+  --accent-glow: rgba(59, 130, 246, 0.5);
+  --accent-bg: rgba(59, 130, 246, 0.15);
+  --text-on-accent: #ffffff;
+}
+
+/* Theme Variant 2: Hacker Matrix (Emerald Glow) */
+.dark-matrix {
+  --control-color-scheme: dark;
+  --select-option-bg: #063f32;
+  --select-option-text: #ecfdf5;
+  --select-option-selected-bg: #047857;
+  --select-option-selected-text: #ffffff;
+  --select-option-disabled-text: #6fae98;
+
+  --bg-primary: #022c22;
+  --bg-secondary: #064e3b;
+  --bg-gradient: radial-gradient(circle at 15% 15%, #064e3b 0%, #022c22 60%, #022c22 100%);
+  --glass-bg: rgba(2, 44, 34, 0.6);
+  --glass-bg-hover: rgba(6, 78, 59, 0.8);
+  --glass-bg-opaque: rgba(2, 44, 34, 0.96);
+  --sidebar-glass-bg: rgba(6, 78, 59, 0.42);
+  --surface-panel: rgba(6, 78, 59, 0.68);
+  --surface-strong: rgba(6, 78, 59, 0.9);
+  --surface-inset: rgba(2, 44, 34, 0.66);
+  --surface-border: rgba(52, 211, 153, 0.3);
+
+  --glass-border: rgba(52, 211, 153, 0.35);
+  --glass-highlight: rgba(52, 211, 153, 0.15);
+  --shadow-color: rgba(16, 185, 129, 0.15);
+  --border-color: rgba(52, 211, 153, 0.2);
+
+  --text-primary: #ecfdf5;
+  --text-secondary: #d1fae5;
+  --text-muted: #6ee7b7;
+
+  --accent-color: #34d399;
+  --accent-gradient: linear-gradient(135deg, #059669 0%, #34d399 100%);
+  --accent-glow: rgba(16, 185, 129, 0.4);
+  --accent-bg: rgba(16, 185, 129, 0.15);
+  --text-on-accent: #ffffff;
+}
+
+/* Theme Variant 3: Sleek Obsidian (Pure Black + High Contrast White) */
+.dark-obsidian {
+  --control-color-scheme: dark;
+  --select-option-bg: #171717;
+  --select-option-text: #ffffff;
+  --select-option-selected-bg: #404040;
+  --select-option-selected-text: #ffffff;
+  --select-option-disabled-text: #737373;
+
+  --bg-primary: #000000;
+  --bg-secondary: #0a0a0a;
+  --bg-gradient: radial-gradient(circle at 50% 0%, #171717 0%, #000000 60%, #000000 100%);
+  --glass-bg: rgba(10, 10, 10, 0.7);
+  --glass-bg-hover: rgba(23, 23, 23, 0.9);
+  --glass-bg-opaque: rgba(0, 0, 0, 0.98);
+  --sidebar-glass-bg: rgba(255, 255, 255, 0.035);
+  --surface-panel: rgba(23, 23, 23, 0.82);
+  --surface-strong: rgba(10, 10, 10, 0.96);
+  --surface-inset: rgba(0, 0, 0, 0.78);
+  --surface-border: rgba(255, 255, 255, 0.2);
+
+  --glass-border: rgba(255, 255, 255, 0.18);
+  --glass-highlight: rgba(255, 255, 255, 0.08);
+  --shadow-color: rgba(0, 0, 0, 0.8);
+  --border-color: rgba(255, 255, 255, 0.1);
+
+  --text-primary: #ffffff;
+  --text-secondary: #d4d4d4;
+  --text-muted: #c4c4c4;
+
+  --accent-color: #e5e5e5;
+  --accent-gradient: linear-gradient(135deg, #737373 0%, #e5e5e5 100%);
+  --accent-glow: rgba(255, 255, 255, 0.2);
+  --accent-bg: rgba(255, 255, 255, 0.1);
+  --text-on-accent: #000000;
+}

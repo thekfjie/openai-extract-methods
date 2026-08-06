@@ -1,0 +1,6 @@
+selenium
+undetected-chromedriver
+curl_cffi
+DrissionPage==4.1.1.4
+psutil
+requests>=2.31,<3

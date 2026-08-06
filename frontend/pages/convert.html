@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>OAI 转换 · automyai</title>
+  <link rel="stylesheet" href="../css/nature.css" />
+</head>
+<body data-page="convert">
+  <div class="app">
+    
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-mark"></div>
+    <div>
+      <h1>automyai</h1>
+      <p>控制台</p>
+    </div>
+  </div>
+  <nav class="nav">
+    <a href="/ui/" data-page="overview"><span class="dot"></span>总览</a>
+    <a href="/ui/pages/openai.html" data-page="openai"><span class="dot"></span>OpenAI 注册</a>
+    <a href="/ui/pages/openai2.html" data-page="openai2"><span class="dot"></span>OpenAI 2</a>
+    <a href="/ui/pages/openai3.html" data-page="openai3"><span class="dot"></span>OpenAI 3</a>
+    <a href="/ui/pages/apple_mail.html" data-page="apple-mail"><span class="dot"></span>Apple Mail</a>
+    <a href="/ui/pages/grok.html" data-page="grok"><span class="dot"></span>Grok 注册</a>
+    <a href="/grok2/accounts" target="_blank"><span class="dot"></span>Grok 2</a>
+    <a href="/ui/pages/convert.html" data-page="convert"><span class="dot"></span>OAI 转换</a>
+    <a href="/ui/pages/mail.html" data-page="mail"><span class="dot"></span>邮箱与分组</a>
+    <a href="/ui/pages/settings.html" data-page="settings"><span class="dot"></span>设置</a>
+    <a href="/ui/pages/tools.html" data-page="tools"><span class="dot"></span>工具 / 日志</a>
+  </nav>
+</aside>
+
+    <main class="main">
+      
+<div class="topbar"><div><p class="eyebrow">OpenAI only</p><h2>OpenAI 转换与导入</h2><div class="hint">粘贴已有 OpenAI 凭证，先转换预览；确认无误后直接导入 Sub2API。</div></div><span class="badge">本机处理</span></div>
+<div class="grid">
+  <section class="card">
+    <div class="section-head"><div><h3>OpenAI 凭证</h3><p>多格式输出与现有 Sub2API 导入</p></div></div>
+    <div class="pill-row" id="oaiTargets"></div>
+    <label>输入 JSON
+      <textarea id="oaiIn" placeholder="ChatGPT session / sub2api / codex ..."></textarea>
+    </label>
+    <div class="row">
+      <label style="min-width:160px">Name Prefix<input id="namePrefix" value="" placeholder="[testplus]"/></label>
+      <label style="min-width:140px">Plan Type<input id="planType" value="" placeholder="plus"/></label>
+      <button class="btn" id="oaiConvert">转换</button>
+      <button class="btn secondary" id="oaiImport">导入 Sub2API</button>
+    </div>
+    <label>输出
+      <textarea id="oaiOut"></textarea>
+    </label>
+  </section>
+</div>
+<section class="card" style="margin-top:16px">
+  <div class="section-head"><div><h3>OpenAI Auth JSON 快速提取</h3><p>仅在当前浏览器解析 `accessToken`；不会上传、不写入日志或本地存储。</p></div><span class="badge warn">敏感信息</span></div>
+  <div class="notice warn"><strong>完整显示</strong><span>提取结果会完整显示 `eyJ...` token，复制后请妥善保管；离开前可一键清空。</span></div>
+  <label style="margin-top:14px">粘贴 auth JSON
+    <textarea id="tokenExtractIn" class="sensitive" placeholder='{"accessToken":"eyJ..."}'></textarea>
+  </label>
+  <div class="row"><button class="btn" id="tokenExtractBtn">提取 accessToken</button><button class="btn secondary" id="tokenCopyBtn" disabled>复制 token</button><button class="btn ghost" id="tokenClearBtn">清空</button></div>
+  <label style="margin-top:12px">提取结果
+    <textarea id="tokenExtractOut" class="sensitive" readonly placeholder="提取后的 eyJ... token 会显示在这里"></textarea>
+  </label>
+</section>
+
+
+<section class="card" style="margin-top:16px">
+  <div class="section-head">
+    <div>
+      <h3>ChatGPT 月优惠检测</h3>
+      <p>调用 <code>/backend-api/accounts/check/v4-2023-04-27</code>，检查账号是否可能有月付优惠/资格信息</p>
+    </div>
+    <span class="badge">工具</span>
+  </div>
+  <div class="notice"><strong>用法</strong><span>可直接粘贴 session/auth JSON；会自动提取 accessToken、accountId。也可手动填字段。默认走项目代理。</span></div>
+  <label style="margin-top:12px">粘贴 session / auth JSON（可选）
+    <textarea id="promoInput" class="sensitive" placeholder='{"accessToken":"eyJ...","account":{"id":"..."},"deviceId":"..."}'></textarea>
+  </label>
+  <div class="row" style="margin-top:10px;gap:10px;flex-wrap:wrap">
+    <label style="flex:1;min-width:220px">accessToken
+      <input id="promoToken" class="sensitive" placeholder="Bearer 用的 access token / eyJ..." />
+    </label>
+    <label style="flex:1;min-width:180px">accountId
+      <input id="promoAccountId" placeholder="ChatGPT-Account-ID" />
+    </label>
+  </div>
+  <div class="row" style="margin-top:10px;gap:10px;flex-wrap:wrap">
+    <label style="flex:1;min-width:180px">deviceId
+      <input id="promoDeviceId" placeholder="OAI-Device-Id，可空自动生成" />
+    </label>
+    <label style="flex:1;min-width:180px">proxy（可空=项目默认）
+      <input id="promoProxy" placeholder="http://user:pass@host:port 或留空" />
+    </label>
+  </div>
+  <div class="row" style="margin-top:12px">
+    <button class="btn" id="promoCheckBtn">检测月优惠</button>
+    <button class="btn secondary" id="promoFillBtn">从 JSON 提取字段</button>
+    <button class="btn ghost" id="promoClearBtn">清空</button>
+    <label style="display:inline-flex;align-items:center;gap:6px;margin-left:8px;font-size:.9rem;color:var(--muted)">
+      <input type="checkbox" id="promoDirect" /> 直连（不用代理）
+    </label>
+  </div>
+  <div id="promoSummary" class="logbox" style="margin-top:12px;min-height:72px;white-space:pre-wrap">检测结果摘要会显示在这里。</div>
+  <label style="margin-top:12px">原始响应
+    <textarea id="promoOut" readonly placeholder="完整 JSON 响应"></textarea>
+  </label>
+</section>
+
+      <div class="footer-note">温暖、平静、亲近自然 · 凭证请妥善保管 · 仅本机管理接口</div>
+    </main>
+  </div>
+  <script src="../js/runtime-config.js"></script>
+  <script src="../js/api-client.js"></script>
+  <script src="../js/app.js"></script>
+  <script>
+(() => {
+const { api, toast, withBusy } = HelpOAI;
+const oaiFormats = ["sub2api","cpa","codex","cockpit","9router","axonhub","codexmanager"];
+let oaiTarget = "sub2api";
+function pills(el, items, current, onpick){
+  el.innerHTML = items.map(f=>`<button class="pill ${f===current?'active':''}" data-f="${f}">${f}</button>`).join('');
+  el.querySelectorAll('.pill').forEach(btn=>btn.onclick=()=>onpick(btn.dataset.f));
+}
+pills(document.getElementById('oaiTargets'), oaiFormats, oaiTarget, f=>{oaiTarget=f; pills(document.getElementById('oaiTargets'), oaiFormats, oaiTarget, arguments.callee);});
+// rebind carefully
+function bindOai(){ pills(document.getElementById('oaiTargets'), oaiFormats, oaiTarget, f=>{ oaiTarget=f; bindOai(); }); }
+bindOai();
+document.getElementById('oaiConvert').onclick = async ()=>{
+  try{ await withBusy(document.getElementById('oaiConvert'), async ()=>{
+    const res = await api('POST','/convert/openai',{input:document.getElementById('oaiIn').value,target:oaiTarget,namePrefix:document.getElementById('namePrefix').value,planType:document.getElementById('planType').value});
+    document.getElementById('oaiOut').value = JSON.stringify(res.output,null,2);
+    toast('OpenAI 转换完成','ok');
+  }); }catch(e){ toast(e.message,'error'); }
+};
+document.getElementById('oaiImport').onclick = async ()=>{
+  try{
+    const res = await api('POST','/convert/openai/import-sub2api',{input:document.getElementById('oaiIn').value,namePrefix:document.getElementById('namePrefix').value,planType:document.getElementById('planType').value});
+    document.getElementById('oaiOut').value = JSON.stringify(res,null,2);
+    toast('已导入 Sub2API','ok');
+  }catch(e){ toast(e.message,'error'); }
+};
+const tokenInput = document.getElementById('tokenExtractIn');
+const tokenOutput = document.getElementById('tokenExtractOut');
+const tokenCopyButton = document.getElementById('tokenCopyBtn');
+document.getElementById('tokenExtractBtn').onclick = () => {
+  try {
+    const payload = JSON.parse(tokenInput.value);
+    const token = String(payload?.accessToken || payload?.access_token || '');
+    if (!token.startsWith('eyJ')) throw new Error('未找到 eyJ 开头的 accessToken');
+    tokenOutput.value = token;
+    tokenCopyButton.disabled = false;
+    toast('accessToken 已提取；请注意保护敏感信息', 'ok');
+  } catch (error) { toast(error.message || 'JSON 格式无效', 'error'); }
+};
+tokenCopyButton.onclick = async () => {
+  try { await navigator.clipboard.writeText(tokenOutput.value); toast('已复制 accessToken', 'ok'); }
+  catch (error) { toast('复制失败，请手动选择复制', 'error'); }
+};
+document.getElementById('tokenClearBtn').onclick = () => {
+  tokenInput.value = ''; tokenOutput.value = ''; tokenCopyButton.disabled = true;
+  toast('敏感内容已从当前页面清空');
+};
+
+
+const promoInput = document.getElementById('promoInput');
+const promoToken = document.getElementById('promoToken');
+const promoAccountId = document.getElementById('promoAccountId');
+const promoDeviceId = document.getElementById('promoDeviceId');
+const promoProxy = document.getElementById('promoProxy');
+const promoOut = document.getElementById('promoOut');
+const promoSummary = document.getElementById('promoSummary');
+const promoDirect = document.getElementById('promoDirect');
+function fillPromoFromJson(){
+  const text = (promoInput.value || '').trim();
+  if(!text) throw new Error('请先粘贴 session/auth JSON');
+  let obj;
+  try { obj = JSON.parse(text); }
+  catch { throw new Error('JSON 无效'); }
+  const user = obj.user || {};
+  const account = obj.account || {};
+  const tokens = obj.tokens || {};
+  const meta = obj.meta || {};
+  const session = obj.session || {};
+  const token = obj.accessToken || obj.access_token || tokens.access_token || session.accessToken || '';
+  const accountId = (account && account.id) || obj.accountId || obj.account_id || obj.chatgpt_account_id || tokens.account_id || meta.chatgpt_account_id || (session && session.accountId) || '';
+  const deviceId = obj.deviceId || obj.device_id || obj['oai-did'] || meta.device_id || '';
+  if(token) promoToken.value = token;
+  if(accountId) promoAccountId.value = accountId;
+  if(deviceId) promoDeviceId.value = deviceId;
+  // try jwt parse for account id if missing
+  if(!promoAccountId.value && String(token).startsWith('eyJ')){
+    try{
+      const mid = token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');
+      const pad = '='.repeat((4 - mid.length % 4) % 4);
+      const claims = JSON.parse(atob(mid + pad));
+      const auth = claims['https://api.openai.com/auth'] || {};
+      if(auth.chatgpt_account_id) promoAccountId.value = auth.chatgpt_account_id;
+    }catch{}
+  }
+  return {token: promoToken.value, accountId: promoAccountId.value, deviceId: promoDeviceId.value};
+}
+document.getElementById('promoFillBtn').onclick = () => {
+  try{
+    const got = fillPromoFromJson();
+    toast(`已提取 token=${got.token ? '有' : '无'} accountId=${got.accountId || '无'}`, got.token && got.accountId ? 'ok' : 'error');
+  }catch(e){ toast(e.message || String(e), 'error'); }
+};
+document.getElementById('promoClearBtn').onclick = () => {
+  promoInput.value=''; promoToken.value=''; promoAccountId.value=''; promoDeviceId.value=''; promoProxy.value=''; promoOut.value=''; promoDirect.checked=false;
+  promoSummary.textContent='检测结果摘要会显示在这里。';
+  toast('已清空');
+};
+document.getElementById('promoCheckBtn').onclick = async () => {
+  try{
+    await withBusy(document.getElementById('promoCheckBtn'), async () => {
+      if((promoInput.value||'').trim() && (!(promoToken.value||'').trim() || !(promoAccountId.value||'').trim())){
+        try{ fillPromoFromJson(); }catch{}
+      }
+      const body = {
+        input: promoInput.value || '',
+        accessToken: promoToken.value || '',
+        accountId: promoAccountId.value || '',
+        deviceId: promoDeviceId.value || '',
+        proxy: promoProxy.value || '',
+        direct: !!promoDirect.checked,
+      };
+      const res = await api('POST', '/tools/chatgpt-promo-check', body);
+      promoOut.value = JSON.stringify(res, null, 2);
+      const s = res.summary || {};
+      const lines = [
+        `状态: ${res.ok ? 'OK' : 'FAIL'} HTTP ${res.status || '-'}`,
+        `邮箱: ${res.email || '-'}`,
+        `accountId: ${res.accountId || '-'}`,
+        `deviceId: ${res.deviceId || '-'}`,
+        `plan: ${s.planType || '-'}`,
+        `月优惠猜测: ${s.monthlyPromoGuess === true ? '可能有/eligible' : s.monthlyPromoGuess === false ? '看起来没有' : '无法直接判断，看 promoNodes/原始响应'}`,
+        `flags: ${JSON.stringify(s.flags || {})}`,
+        `promoNodes: ${(s.promoNodes || []).length} 条`,
+      ];
+      if(res.error) lines.push(`错误: ${res.error}`);
+      promoSummary.textContent = lines.join('\n');
+      toast(res.ok ? '优惠检测完成' : (`检测失败: ${res.error || res.status}`), res.ok ? 'ok' : 'error');
+    });
+  }catch(e){
+    promoSummary.textContent = '请求失败: ' + (e.message || e);
+    toast(e.message || String(e), 'error');
+  }
+};
+
+})();
+</script>
+</body>
+</html>

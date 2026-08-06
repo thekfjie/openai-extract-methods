@@ -1,0 +1,34 @@
+{
+  "mailBase": "https://apimail.kfjie.me",
+  "importBase": "https://cloud.opus.sryze.cc",
+  "proxyUrl": "http://172.19.0.1:7905",
+  "requireProxy": true,
+  "dryRunDefault": true,
+  "fingerprint": {
+    "preferredBrowser": "firefox",
+    "preferredVersion": "147"
+  },
+  "timeoutMs": 180000,
+  "intervalMs": 2500,
+  "skewMs": 10000,
+  "autoTickMs": 1200,
+  "autoMaxMs": 720000,
+  "billingChannelOverride": "",
+  "manualPlus": false,
+  "senderAllow": [
+    "openai.com",
+    "tm.openai.com",
+    "tm1.openai.com",
+    "noreply@",
+    "privaterelay",
+    "icloud.com"
+  ],
+  "subjectAllow": [
+    "verify",
+    "verification",
+    "code",
+    "confirm",
+    "验证码",
+    "temporary"
+  ]
+}

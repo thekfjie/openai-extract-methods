@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>REG.153 · 菲律宾 Checkout 协议支付</title>
+  <meta name="description" content="菲律宾 OAICS Checkout 协议支付任务工作台">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}?v=20260729-card-retry-5">
+  <link rel="stylesheet" href="{{ url_for('static', filename='ph-short.css') }}?v=20260729-card-retry-5">
+</head>
+<body data-base="{{ request.script_root }}">
+  <div class="paper-noise"></div>
+  <header class="topbar">
+    <a class="brand" href="/"><span class="brand-mark"><i></i>PH</span><span><b>REG.153</b><small>CHECKOUT PROTOCOL</small></span></a>
+    <div class="top-actions"><a class="nav-return" href="/">返回账号工作台</a><span id="serviceState" class="service-dot"><i></i> 服务检测中</span><button id="themeToggle" class="icon-button" type="button">◐</button></div>
+  </header>
+
+  <main class="shell">
+    <section class="hero protocol-hero short-hero">
+      <div class="hero-copy"><div class="eyebrow"><span>PH</span> STRIPE CHECKOUT</div><h1>读取菲律宾短链，<em>按 OAICS 新流程完成支付。</em></h1><p>复用来源账号的 AT、Cookie 和 OAICS 会话，依次创建 Card PaymentMethod、ConfirmationToken、Stripe Intent，并处理验证与最终状态。</p><div class="hero-chips"><span>PH / PHP</span><span>CARD PM</span><span>CHECKOUT APPROVAL</span><span>SETTLEMENT</span></div></div>
+      <div class="hero-board"><div><small>INPUT</small><strong>OA</strong><span>OAICS Checkout</span></div><div><small>PAYMENT</small><strong>CT</strong><span>ConfirmationToken</span></div><div><small>OUTPUT</small><strong>OK</strong><span>到账结果</span></div></div>
+    </section>
+
+    <section class="workspace-grid short-workspace">
+      <form id="shortForm" class="panel form-panel">
+        <div class="panel-heading"><div><span class="section-index">A</span><h2>支付任务</h2></div><span class="quiet">纯协议</span></div>
+        <div class="public-limit-note"><b>运行说明</b><span>每行一张支付卡，按顺序尝试；卡资料仅保存在当前内存任务，不写入任务日志与结果。</span></div>
+
+        <label class="field"><span class="label-row"><b>菲律宾短链来源</b><small id="sourceCount">正在读取</small></span><select id="sourceTask" required><option value="">正在读取可用任务…</option></select></label>
+        <section id="sourceCard" class="source-summary is-empty"><div class="source-summary-head"><span class="section-index">PH</span><div><b id="sourceEmail">尚未选择账号</b><small id="sourceCreated">选择后读取原 Checkout</small></div></div><div class="source-grid"><div><small>账单地区</small><strong>PH</strong><span>Philippines</span></div><div><small>币种</small><strong id="sourceCurrency">PHP</strong><span>Checkout currency</span></div><div><small>金额</small><strong id="sourceAmount">—</strong><span>Current amount</span></div></div><div class="checkout-preview"><small>Checkout Session</small><code id="sourceCheckout">—</code></div></section>
+
+        <label class="field"><span class="label-row"><b>支付卡列表（自动识别）</b><small id="cardCount">0 / 20</small></span><textarea id="cards" class="card-pool-input" required autocomplete="off" spellcheck="false" placeholder="支持直接粘贴卡号、有效期、CVC&#10;也支持：卡号|月|年|CVC"></textarea><span class="field-note">自动识别标签式、多行、空格和常见分隔格式；支持 2 位或 4 位年份。</span></label>
+        <label class="field"><span class="label-row"><b>单卡失败后重试次数</b><small>0 - 10</small></span><input id="cardRetries" type="number" min="0" max="10" step="1" value="2" inputmode="numeric"><span class="field-note">默认重试 2 次，每次间隔 1 秒；耗尽后自动尝试下一张卡。</span></label>
+        <label class="field"><span class="label-row"><b>美国支付代理（选填，默认自动获取）</b><small id="proxyCount">0 / 100</small></span><textarea id="proxies" class="proxy-pool-input" autocomplete="off" spellcheck="false" placeholder="留空时自动获取美国代理&#10;host:port:username:password&#10;http://username:password@host:port"></textarea><span class="field-note">填写后从代理池随机选择；留空时服务器自动获取 US 线路，全流程固定走美国代理。</span></label>
+
+        <div class="auto-fill-list"><div><i>01</i><span><b>解析 OAICS Checkout</b><small>读取金额、币种与支付方式</small></span></div><div><i>02</i><span><b>初始化 Stripe Elements</b><small>deferred intent / snapshot</small></span></div><div><i>03</i><span><b>创建 PM 与 CT</b><small>PaymentMethod / ConfirmationToken</small></span></div><div><i>04</i><span><b>确认 Stripe Intent</b><small>approval / verification / settlement</small></span></div></div>
+        <div class="form-actions"><button id="createJob" class="primary-button" type="submit" disabled><span>开始协议支付</span><i>→</i></button></div><p id="createError" class="form-error" hidden></p>
+      </form>
+
+      <aside class="right-stack"><section class="panel status-panel short-status-panel"><div class="panel-heading"><div><span class="section-index">B</span><h2>实时任务</h2></div><button id="refreshJobs" class="mini-action" type="button">刷新</button></div><div id="taskList" class="task-list"><div class="empty-task"><span class="empty-orbit"><i></i></span><h3>等待任务</h3><p>提交后显示账号、协议阶段、重试错误和最终到账结果。</p></div></div></section></aside>
+    </section>
+  </main>
+  <footer><span>app.example.com / PH CHECKOUT</span><p>直接处理原菲律宾 OAICS Checkout，不重新提链，不转 PayPal BA。</p></footer>
+  <script src="{{ url_for('static', filename='app.js') }}?v=20260729-card-retry-5"></script>
+</body>
+</html>
