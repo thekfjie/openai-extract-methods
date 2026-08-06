@@ -316,7 +316,6 @@ func normalizeOptions(method string, options Options) Options {
 		// carry a stale/foreign currency supplied by an older caller (for
 		// example JP with PHP); the upstream API validates this pair.
 		options.Currency = currencyForCountry(options.Country)
-		options.DirectRoute = normalizeDirectRoute(options.DirectRoute)
 	case MethodPH:
 		options.Country = "PH"
 	case MethodMoMo:
@@ -876,32 +875,11 @@ func (f *flow) runDirect(forcePH bool) (Result, error) {
 	if forcePH {
 		country, currency = "PH", "PHP"
 	}
-	routeHint := normalizeDirectRoute(f.options.DirectRoute)
-	var preboundPaymentMethods []string
-	if routeHint == DirectRouteCSPrepared {
-		var prebindErr error
-		preboundPaymentMethods, prebindErr = f.savedPaymentMethodIDs(f.checkout)
-		if prebindErr != nil {
-			return Result{Country: country, Currency: currency, Decision: "card_prebind_required", ExtractionStatus: "card_prebind_required", PaymentStatus: "not_started", Metadata: map[string]any{
-				"checkoutRoute": DirectRouteCSPrepared, "requiresPrebind": true, "prebindStatus": "query_failed", "preparationError": prebindErr.Error(),
-			}}, prebindErr
-		}
-		if len(preboundPaymentMethods) == 0 {
-			err := errCardPrebindRequired
-			return Result{Country: country, Currency: currency, Decision: "card_prebind_required", ExtractionStatus: "card_prebind_required", PaymentStatus: "not_started", Metadata: map[string]any{
-				"checkoutRoute": DirectRouteCSPrepared, "requiresPrebind": true, "prebindStatus": "required", "preparationError": err.Error(),
-			}}, err
-		}
-		f.addStep("direct.prebind", "success", fmt.Sprintf("已发现 %d 个已保存 PaymentMethod；继续 CS Checkout", len(preboundPaymentMethods)), 0)
-	}
 	checkout, err := f.createCheckout(f.checkout, country, currency, "custom", false, 0)
 	if err != nil {
 		return Result{Country: country, Currency: currency}, err
 	}
-	metadata := checkoutCompatibilityMetadata(checkout, checkoutObservationMetadata(checkout, nil), country, currency, DirectRouteAuto)
-	if err := f.promotion.CopyCookiesFrom(f.checkout, f.engine.Endpoints.ChatGPT); err != nil {
-		return Result{Country: country, Currency: currency, CheckoutID: checkout.ID, CheckoutType: checkoutIDType(checkout.ID), ProcessorEntity: checkout.ProcessorEntity, Metadata: metadata}, fmt.Errorf("同步 Checkout Cookie 到 Promotion: %w", err)
-	}
+	metadata := checkoutCompatibilityMetadata(checkout, checkoutObservationMetadata(checkout, nil), country, currency, checkoutRouteFor(checkout))
 	update, err := f.updatePromotion(f.promotion, checkout)
 	if err != nil {
 		return Result{Country: country, Currency: currency, CheckoutID: checkout.ID, CheckoutType: checkoutIDType(checkout.ID), ProcessorEntity: checkout.ProcessorEntity, Metadata: metadata}, err
@@ -917,45 +895,42 @@ func (f *flow) runDirect(forcePH bool) (Result, error) {
 	if observed := findStripeCheckoutID(update); observed != "" {
 		checkout.StripeID = observed
 	}
-	// Promotion may receive refreshed Checkout cookies. Bring them back to the
-	// primary identity before resolving OAICS context or preparing Stripe init.
-	_ = f.checkout.CopyCookiesFrom(f.promotion, f.engine.Endpoints.ChatGPT)
-	route, routeErr := selectDirectCheckoutRoute(checkout, f.options.DirectRoute)
-	metadata = checkoutCompatibilityMetadata(checkout, checkoutObservationMetadata(checkout, nil), country, currency, route)
-	if routeErr != nil {
-		metadata["preparationError"] = routeErr.Error()
-		return Result{Country: country, Currency: currency, CheckoutID: checkout.ID, CheckoutType: checkoutIDType(checkout.ID), ProcessorEntity: checkout.ProcessorEntity, Decision: "checkout_route_unavailable", ExtractionStatus: "failed", PaymentStatus: "not_started", Metadata: metadata}, routeErr
-	}
-	checkout = checkoutForDirectRoute(checkout, route)
-	metadata = checkoutCompatibilityMetadata(checkout, checkoutObservationMetadata(checkout, metadata), country, currency, route)
-	preparation := f.prepareDirectCheckout(checkout, route, expectedAmount(update), preboundPaymentMethods)
-	applyDirectPreparationMetadata(metadata, preparation)
-	if preparation.Err != nil {
-		decision := "checkout_preparation_failed"
-		extractionStatus := "failed"
-		if errors.Is(preparation.Err, errCardPrebindRequired) {
-			decision = "card_prebind_required"
-			extractionStatus = "card_prebind_required"
+	metadata = checkoutCompatibilityMetadata(checkout, checkoutObservationMetadata(checkout, nil), country, currency, checkoutRouteFor(checkout))
+	amount := expectedAmount(update)
+	if amount == "" {
+		// OAICS is the final OpenAI custom-checkout identity, while Stripe's
+		// payment_pages API only accepts the nested cs_live_/cs_test_ id. Keep
+		// the two identities separate when both were observed in the same
+		// checkout/update response.
+		stripeCheckout := stripeInitCheckout(checkout)
+		init, initErr := f.stripeInit(f.provider, stripeCheckout, true)
+		if initErr != nil {
+			return Result{Country: country, Currency: currency, CheckoutID: checkout.ID, CheckoutType: checkoutIDType(checkout.ID), ProcessorEntity: checkout.ProcessorEntity, Metadata: metadata}, initErr
 		}
-		return Result{
-			Country: country, Currency: currency, CheckoutID: checkout.ID, CheckoutType: checkoutIDType(checkout.ID), ProcessorEntity: checkout.ProcessorEntity,
-			LongURL: preparation.Link, Amount: preparation.Amount, AmountDisplay: displayAmount(preparation.Amount, currency), Decision: decision,
-			ExtractionStatus: extractionStatus, PaymentStatus: "not_started", Metadata: metadata,
-		}, preparation.Err
+		amount = init.Amount
 	}
-	amount := preparation.Amount
 	gate := f.options.amountGateConfig()
 	status := amountGateStatus(amount, currency, gate)
 	if err := requireAmountGate("直卡 checkout", amount, currency, gate); err != nil {
 		return Result{Country: country, Currency: currency, CheckoutID: checkout.ID, CheckoutType: checkoutIDType(checkout.ID), ProcessorEntity: checkout.ProcessorEntity, Amount: amount, AmountStatus: status, Metadata: metadata}, err
 	}
-	link := preparation.Link
-	f.addStep("direct.prepared", "success", fmt.Sprintf("route=%s；link/form barrier ready", route), 0)
+	link := fmt.Sprintf("%s/checkout/%s/%s", f.engine.Endpoints.ChatGPT, checkout.ProcessorEntity, checkout.ID)
+	f.addStep("direct.link", "success", link, 0)
 	return Result{
-		Country: country, Currency: currency, CheckoutID: checkout.ID, CheckoutType: checkoutIDType(checkout.ID), ProcessorEntity: checkout.ProcessorEntity,
+		Country: country, Currency: currency, CheckoutID: checkout.ID, ProcessorEntity: checkout.ProcessorEntity,
 		LongURL: link, Amount: amount, AmountDisplay: displayAmount(amount, currency), AmountStatus: status,
 		ExtractionStatus: "link_ready", PaymentStatus: "awaiting_card_payment", Metadata: metadata,
 	}, nil
+}
+
+func checkoutRouteFor(checkout checkoutData) string {
+	if strings.TrimSpace(checkout.OpenAIID) != "" {
+		return "oaics"
+	}
+	if strings.TrimSpace(checkout.StripeID) != "" {
+		return "stripe"
+	}
+	return "observed"
 }
 
 // runPhilippinesLink only returns a PH/PHP link after its configured amount
@@ -1351,11 +1326,6 @@ func expectedAmount(value any) string {
 			}
 		}
 		for _, key := range []string{"amount_total", "amount", "due"} {
-			if amount := stringValue(mapValue[key]); amount != "" {
-				return amount
-			}
-		}
-		for _, key := range []string{"minorUnitsAmount", "minor_units_amount"} {
 			if amount := stringValue(mapValue[key]); amount != "" {
 				return amount
 			}

@@ -381,9 +381,6 @@ func methodFromLinkType(value string) string {
 }
 
 func mergeLegacyOptions(options *extractmethods.Options, raw map[string]any) {
-	if options.DirectRoute == "" {
-		options.DirectRoute = stringFromMap(raw, "directRoute", "direct_route", "checkoutRoute", "checkout_route")
-	}
 	if options.Country == "" {
 		options.Country = stringFromMap(raw, "country", "billingCountry", "billing_country", "checkoutCountry")
 	}

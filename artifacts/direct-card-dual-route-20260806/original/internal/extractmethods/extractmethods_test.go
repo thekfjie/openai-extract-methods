@@ -108,70 +108,6 @@ func TestDirectCountryCurrencyIsCanonicalized(t *testing.T) {
 	}
 }
 
-func TestDirectBillingDoesNotInheritProxyRegion(t *testing.T) {
-	options := normalizeOptions(MethodDirect, Options{Country: "PH", Currency: "PHP", ProxyRegion: "JP", CheckoutProxyRegion: "JP"})
-	if options.Country != "PH" || options.Currency != "PHP" {
-		t.Fatalf("proxy region rewrote billing pair to %s/%s", options.Country, options.Currency)
-	}
-}
-
-func TestDirectRouteSelectionUsesObservedCheckoutIdentity(t *testing.T) {
-	withBoth := checkoutData{ID: "oaics_outer", OpenAIID: "oaics_outer", StripeID: "cs_live_inner"}
-	if got, err := selectDirectCheckoutRoute(withBoth, ""); err != nil || got != DirectRouteOAICSDirect {
-		t.Fatalf("auto route = %q, err=%v; want OAICS direct", got, err)
-	}
-	if got, err := selectDirectCheckoutRoute(withBoth, DirectRouteCSPrepared); err != nil || got != DirectRouteCSPrepared {
-		t.Fatalf("explicit CS route = %q, err=%v", got, err)
-	}
-	if got, err := selectDirectCheckoutRoute(checkoutData{StripeID: "cs_live_only"}, ""); err != nil || got != DirectRouteCSPrepared {
-		t.Fatalf("CS-only auto route = %q, err=%v", got, err)
-	}
-	if _, err := selectDirectCheckoutRoute(checkoutData{StripeID: "cs_live_only"}, DirectRouteOAICSDirect); err == nil {
-		t.Fatal("explicit OAICS route must fail when no OAICS identity was observed")
-	}
-}
-
-func TestPaymentMethodParsingAndIntersection(t *testing.T) {
-	raw := map[string]any{"data": []any{map[string]any{"id": "pm_b"}, map[string]any{"id": "pm_a"}, map[string]any{"id": "card_ignored"}}}
-	got := savedPaymentMethodIDsFromResponse(raw)
-	if strings.Join(got, ",") != "pm_a,pm_b" {
-		t.Fatalf("saved methods = %#v", got)
-	}
-	if !hasPaymentMethodIntersection([]string{"pm_a"}, []string{"pm_b", "pm_a"}) {
-		t.Fatal("expected saved PaymentMethod intersection")
-	}
-}
-
-func TestExpectedAmountReadsOAICSMinorUnits(t *testing.T) {
-	raw := map[string]any{"checkout_state": map[string]any{"total": map[string]any{"total": map[string]any{"minorUnitsAmount": json.Number("98214")}}}}
-	if got := expectedAmount(raw); got != "98214" {
-		t.Fatalf("OAICS minor-unit amount = %q", got)
-	}
-}
-
-func TestDirectPreparationMetadataKeepsSecretsPrivate(t *testing.T) {
-	metadata := map[string]any{}
-	applyDirectPreparationMetadata(metadata, directPreparation{
-		Route: DirectRouteOAICSDirect, LinkReady: true, FormReady: true,
-		PreparedAt: "2026-08-06T00:00:00Z", FormContext: map[string]any{"customerSessionClientSecret": "cuss_secret_PRIVATE"},
-	})
-	if metadata["requiresPrebind"] != false || metadata["prepared"] != true {
-		t.Fatalf("OAICS metadata = %#v", metadata)
-	}
-	stripPrivateCheckoutMetadata(metadata)
-	if _, ok := metadata["checkoutFormContext"]; ok {
-		t.Fatal("checkout form context leaked through public metadata")
-	}
-}
-
-func TestDirectPreparationBarrierRequiresBothArtifacts(t *testing.T) {
-	metadata := map[string]any{}
-	applyDirectPreparationMetadata(metadata, directPreparation{Route: DirectRouteOAICSDirect, LinkReady: true, FormReady: false})
-	if metadata["prepared"] != false {
-		t.Fatalf("incomplete preparation crossed barrier: %#v", metadata)
-	}
-}
-
 func TestFindCheckoutIDPrefersStripeSessionOverOuterOAICSID(t *testing.T) {
 	value := map[string]any{
 		"id":      "oaics_outer123",
@@ -1441,7 +1377,7 @@ func TestCheckoutCompatibilityMetadataNormalizesObservedRoute(t *testing.T) {
 		ID: "oaics_outer123", OpenAIID: "oaics_outer123", StripeID: "cs_live_inner456",
 		Country: "JP", Currency: "JPY",
 	}, nil, "jp", "php", "oaics")
-	if metadata["checkoutRoute"] != DirectRouteOAICSDirect {
+	if metadata["checkoutRoute"] != "oaics_preferred" {
 		t.Fatalf("route = %#v", metadata["checkoutRoute"])
 	}
 	if metadata["requestedCountry"] != "JP" || metadata["requestedCurrency"] != "PHP" {
@@ -1458,7 +1394,7 @@ func TestCheckoutCompatibilityMetadataNormalizesObservedRoute(t *testing.T) {
 func TestCloneJobPublicHidesPrivateCheckoutDiagnostics(t *testing.T) {
 	job := &Job{Items: []JobItem{{Result: &Result{Metadata: map[string]any{
 		"checkoutRoute": "oaics_preferred", "oaicsCheckoutId": "oaics_private",
-		"observedCheckoutTypes": "oaics+stripe", "checkoutFormContext": map[string]any{"customerSessionClientSecret": "cuss_secret_PRIVATE"}, "publicField": "keep",
+		"observedCheckoutTypes": "oaics+stripe", "publicField": "keep",
 	}}}}}
 	private := cloneJob(job)
 	public := cloneJobPublic(job)
@@ -1467,9 +1403,6 @@ func TestCloneJobPublicHidesPrivateCheckoutDiagnostics(t *testing.T) {
 	}
 	if _, ok := public.Items[0].Result.Metadata["oaicsCheckoutId"]; ok {
 		t.Fatal("public clone exposed OAICS checkout identity")
-	}
-	if _, ok := public.Items[0].Result.Metadata["checkoutFormContext"]; ok {
-		t.Fatal("public clone exposed private checkout form context")
 	}
 	if public.Items[0].Result.Metadata["publicField"] != "keep" {
 		t.Fatal("public clone removed unrelated metadata")

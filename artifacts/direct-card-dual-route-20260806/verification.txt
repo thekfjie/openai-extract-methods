@@ -1,0 +1,72 @@
+Direct Card dual-route verification — 2026-08-06
+Baseline commit: 6d1fdb672de82fe76220105600908ae4a8a04785
+
+$ export PATH=/opt/sub2api-audit/toolchains/go1.26.2/bin:$PATH; go test ./cmd/extract-api ./internal/extractapi ./internal/extractmethods
+?   	automyai/cmd/extract-api	[no test files]
+ok  	automyai/internal/extractapi	(cached)
+ok  	automyai/internal/extractmethods	(cached)
+exit=0
+
+$ curl -fsS http://127.0.0.1:18794/api/health
+{"implementation":"go","ok":true,"service":"automyai-extract-api","time":"2026-08-06T16:15:53Z"}
+exit=0
+
+$ cd '/opt/automyai/artifacts/direct-card-dual-route-20260806/modified' && sha256sum -c ../modified.sha256
+./.gitattributes: OK
+./docs/version-archives/2026-08-06-direct-card-dual-route.md: OK
+./internal/extractapi/server.go: OK
+./internal/extractmethods/checkout_compat.go: OK
+./internal/extractmethods/direct_checkout_routes.go: OK
+./internal/extractmethods/engine.go: OK
+./internal/extractmethods/extractmethods_test.go: OK
+./internal/extractmethods/types.go: OK
+exit=0
+
+$ cd '/tmp/automyai-dual-route-patch.4ccatB' && git apply --check '/opt/automyai/artifacts/direct-card-dual-route-20260806/change.patch' && git apply '/opt/automyai/artifacts/direct-card-dual-route-20260806/change.patch'
+
+exit=0
+
+$ python3 - '/opt/automyai/artifacts/direct-card-dual-route-20260806/modified' '/tmp/automyai-dual-route-patch.4ccatB' <<'PY'
+from pathlib import Path
+import sys
+modified, applied = map(Path, sys.argv[1:])
+for source in sorted(p for p in modified.rglob('*') if p.is_file()):
+    rel = source.relative_to(modified)
+    target = applied / rel
+    if not target.is_file() or target.read_bytes() != source.read_bytes():
+        raise SystemExit(f'mismatch: {rel}')
+print('patch artifact reproduces all modified release files')
+PY
+patch artifact reproduces all modified release files
+exit=0
+
+$ '/tmp/automyai-dual-route-rollback.rvQ9fp/artifacts/direct-card-dual-route-20260806/rollback.sh'
+
+exit=0
+
+$ python3 - '/opt/automyai/artifacts/direct-card-dual-route-20260806/original' '/tmp/automyai-dual-route-rollback.rvQ9fp' <<'PY'
+from pathlib import Path
+import sys
+original, rolled = map(Path, sys.argv[1:])
+for source in sorted(p for p in original.rglob('*') if p.is_file()):
+    rel = source.relative_to(original)
+    target = rolled / rel
+    if not target.is_file() or target.read_bytes() != source.read_bytes():
+        raise SystemExit(f'rollback mismatch: {rel}')
+for rel in ('.gitattributes', 'internal/extractmethods/direct_checkout_routes.go', 'docs/version-archives/2026-08-06-direct-card-dual-route.md'):
+    if (rolled / rel).exists():
+        raise SystemExit(f'rollback did not remove: {rel}')
+print('rollback restored baseline files and removed release-only files')
+PY
+rollback restored baseline files and removed release-only files
+exit=0
+
+Full repository check: ./scripts/check.sh -> exit=1
+Known unrelated failure: tests/test_openai3_sub2api.py::test_imports_directly_and_binds_auto_group; details in verify/full-check.txt
+
+Behavior assertions:
+- OAICS auto/direct route does not require prebind.
+- Explicit/observed CS route requires a saved PaymentMethod and current Checkout customer-context match.
+- Link/form readiness uses one barrier.
+- Route selection is identity-based, not proxy-region based.
+- Public job clones strip form secrets and route diagnostics.

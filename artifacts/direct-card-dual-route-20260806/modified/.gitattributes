@@ -1,0 +1,2 @@
+# Version verification bundles contain literal unified diffs; keep patch payloads byte-exact.
+artifacts/**/*.patch binary

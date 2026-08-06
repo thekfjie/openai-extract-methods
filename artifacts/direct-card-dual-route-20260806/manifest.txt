@@ -1,0 +1,26 @@
+Direct Card dual-route artifact roles
+
+Modified artifact:
+- modified/.gitattributes
+- modified/docs/version-archives/2026-08-06-direct-card-dual-route.md
+- modified/internal/extractapi/server.go
+- modified/internal/extractmethods/checkout_compat.go
+- modified/internal/extractmethods/direct_checkout_routes.go
+- modified/internal/extractmethods/engine.go
+- modified/internal/extractmethods/extractmethods_test.go
+- modified/internal/extractmethods/types.go
+
+Patch/diff:
+- change.patch
+
+Verification record:
+- verification.txt
+- verify/full-check.txt
+- verify/full-check.exit
+
+Rollback:
+- rollback.sh
+
+Hash manifests:
+- baseline.sha256
+- modified.sha256

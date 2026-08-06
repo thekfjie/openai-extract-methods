@@ -1,0 +1,677 @@
+diff --git a/.gitattributes b/.gitattributes
+new file mode 100644
+index 0000000..211ef18
+--- /dev/null
++++ b/.gitattributes
+@@ -0,0 +1,2 @@
++# Version verification bundles contain literal unified diffs; keep patch payloads byte-exact.
++artifacts/**/*.patch binary
+diff --git a/docs/version-archives/2026-08-06-direct-card-dual-route.md b/docs/version-archives/2026-08-06-direct-card-dual-route.md
+new file mode 100644
+index 0000000..920e73a
+--- /dev/null
++++ b/docs/version-archives/2026-08-06-direct-card-dual-route.md
+@@ -0,0 +1,24 @@
++# Version archive — 2026-08-06 Direct Card dual route
++
++Git archive tag:
++
++```text
++archive/direct-card-dual-route-20260806
++```
++
++Release scope:
++
++- **OAICS direct** (`oaics_direct`): a single OAICS Checkout is created, then its hosted link and private payment-form context are prepared together. No saved-card prerequisite is introduced.
++- **CS prepared** (`cs_prepared`): the backend requires an existing saved PaymentMethod before explicit CS extraction, initializes only the observed `cs_live_` / `cs_test_` payment page, and verifies that the saved PaymentMethod is present in the current Checkout customer context.
++- **Auto policy**: routing is selected from the Checkout identity actually returned by the upstream response, never from the proxy region. OAICS is preferred when both identities are observed.
++- Billing country/currency remains independent from the proxy exit. The Checkout billing pair is canonicalized internally; for example, PH/PHP remains PH/PHP even when the proxy exit is JP.
++- The OAICS customer-session secret, CS Elements context, route diagnostics, saved PaymentMethod IDs, and preparation state remain private backend metadata and are removed from public job clones.
++- The preparation barrier marks a result ready only when both the hosted link and its corresponding form context are ready.
++
++Verification and rollback bundle:
++
++```text
++artifacts/direct-card-dual-route-20260806/
++```
++
++The bundle contains the modified source snapshot, source patch, hash manifests, exact verification record, and executable rollback script.
+diff --git a/internal/extractapi/server.go b/internal/extractapi/server.go
+index 94fcab5..7c3b430 100644
+--- a/internal/extractapi/server.go
++++ b/internal/extractapi/server.go
+@@ -381,6 +381,9 @@ func methodFromLinkType(value string) string {
+ }
+ 
+ func mergeLegacyOptions(options *extractmethods.Options, raw map[string]any) {
++	if options.DirectRoute == "" {
++		options.DirectRoute = stringFromMap(raw, "directRoute", "direct_route", "checkoutRoute", "checkout_route")
++	}
+ 	if options.Country == "" {
+ 		options.Country = stringFromMap(raw, "country", "billingCountry", "billing_country", "checkoutCountry")
+ 	}
+diff --git a/internal/extractmethods/checkout_compat.go b/internal/extractmethods/checkout_compat.go
+index d921ef4..7b8523f 100644
+--- a/internal/extractmethods/checkout_compat.go
++++ b/internal/extractmethods/checkout_compat.go
+@@ -5,7 +5,10 @@ import "strings"
+ var privateCheckoutMetadataKeys = []string{
+ 	"checkoutRoute", "requestedCountry", "requestedCurrency", "effectiveCountry",
+ 	"effectiveCurrency", "billingConsistency", "oaicsObserved", "stripeObserved",
+-	"oaicsCheckoutId", "stripeCheckoutId", "observedCheckoutTypes",
++	"oaicsCheckoutId", "stripeCheckoutId", "observedCheckoutTypes", "requiresPrebind",
++	"linkReady", "formReady", "prepared", "preparedAt", "prebindStatus",
++	"savedPaymentMethodCount", "savedPaymentMethodIds", "checkoutFormContext",
++	"preparationError", "routeDecisionSource",
+ }
+ 
+ // checkoutCompatibilityMetadata records observed Checkout families in the
+@@ -40,12 +43,12 @@ func checkoutCompatibilityMetadata(checkout checkoutData, metadata map[string]an
+ 
+ func normalizeCheckoutRoute(value string) string {
+ 	switch strings.ToLower(strings.TrimSpace(value)) {
+-	case "oaics", "oaics_preferred", "oaics-preferred":
+-		return "oaics_preferred"
+-	case "stripe", "cs", "cs_preferred", "cs-preferred":
+-		return "stripe_preferred"
++	case "oaics", "oaics_direct", "oaics-direct", "oaics_preferred", "oaics-preferred":
++		return DirectRouteOAICSDirect
++	case "stripe", "cs", "cs_prepared", "cs-prepared", "cs_preferred", "cs-preferred":
++		return DirectRouteCSPrepared
+ 	default:
+-		return "observed"
++		return DirectRouteAuto
+ 	}
+ }
+ 
+diff --git a/internal/extractmethods/direct_checkout_routes.go b/internal/extractmethods/direct_checkout_routes.go
+new file mode 100644
+index 0000000..e780ca6
+--- /dev/null
++++ b/internal/extractmethods/direct_checkout_routes.go
+@@ -0,0 +1,339 @@
++package extractmethods
++
++import (
++	"errors"
++	"fmt"
++	"net/http"
++	"net/url"
++	"sort"
++	"strings"
++	"time"
++)
++
++const (
++	DirectRouteAuto        = "auto"
++	DirectRouteOAICSDirect = "oaics_direct"
++	DirectRouteCSPrepared  = "cs_prepared"
++)
++
++var (
++	errCardPrebindRequired = errors.New("CARD_PREBIND_REQUIRED: CS checkout requires a saved payment method before extraction")
++	errCardContextMismatch = errors.New("SAVED_PAYMENT_METHOD_CONTEXT_MISMATCH: saved card is not attached to this Checkout customer")
++)
++
++type oaicsCheckoutFormContext struct {
++	PublishableKey              string
++	CustomerSessionClientSecret string
++	Mode                        string
++	Amount                      string
++	Currency                    string
++	PaymentMethodTypes          []string
++	SetupFutureUsage            string
++	ReturnURL                   string
++}
++
++type directPreparation struct {
++	Route                 string
++	Link                  string
++	Amount                string
++	Currency              string
++	Methods               []string
++	SavedPaymentMethodIDs []string
++	FormContext           map[string]any
++	LinkReady             bool
++	FormReady             bool
++	PreparedAt            string
++	Err                   error
++}
++
++func normalizeDirectRoute(value string) string {
++	return normalizeCheckoutRoute(value)
++}
++
++func selectDirectCheckoutRoute(checkout checkoutData, requested string) (string, error) {
++	requested = normalizeDirectRoute(requested)
++	hasOAICS := strings.TrimSpace(checkout.OpenAIID) != ""
++	hasStripe := strings.TrimSpace(checkout.StripeID) != ""
++	switch requested {
++	case DirectRouteOAICSDirect:
++		if !hasOAICS {
++			return requested, errors.New("OAICS_DIRECT_UNAVAILABLE: checkout response did not include oaics_ identity")
++		}
++		return requested, nil
++	case DirectRouteCSPrepared:
++		if !hasStripe {
++			return requested, errors.New("CS_PREPARED_UNAVAILABLE: checkout response did not include cs_live_/cs_test_ identity")
++		}
++		return requested, nil
++	default:
++		if hasOAICS {
++			return DirectRouteOAICSDirect, nil
++		}
++		if hasStripe {
++			return DirectRouteCSPrepared, nil
++		}
++		return DirectRouteAuto, errors.New("CHECKOUT_ROUTE_UNAVAILABLE: no supported Checkout identity was observed")
++	}
++}
++
++func checkoutForDirectRoute(checkout checkoutData, route string) checkoutData {
++	switch normalizeDirectRoute(route) {
++	case DirectRouteOAICSDirect:
++		if strings.TrimSpace(checkout.OpenAIID) != "" {
++			checkout.ID = strings.TrimSpace(checkout.OpenAIID)
++		}
++	case DirectRouteCSPrepared:
++		if strings.TrimSpace(checkout.StripeID) != "" {
++			checkout.ID = strings.TrimSpace(checkout.StripeID)
++		}
++	}
++	return checkout
++}
++
++// prepareDirectCheckout builds the hosted link and the corresponding payment
++// form context behind one barrier. It creates exactly one Checkout: the two
++// goroutines only prepare the two handoff artifacts for that same identity.
++func (f *flow) prepareDirectCheckout(checkout checkoutData, route, observedAmount string, preboundPaymentMethods []string) directPreparation {
++	result := directPreparation{Route: normalizeDirectRoute(route), Amount: observedAmount, Currency: checkout.Currency}
++	linkCh := make(chan directPreparation, 1)
++	formCh := make(chan directPreparation, 1)
++	go func() {
++		linkCh <- directPreparation{
++			Link:      fmt.Sprintf("%s/checkout/%s/%s", f.engine.Endpoints.ChatGPT, checkout.ProcessorEntity, checkout.ID),
++			LinkReady: strings.TrimSpace(checkout.ID) != "" && strings.TrimSpace(checkout.ProcessorEntity) != "",
++		}
++	}()
++	go func() {
++		prepared := directPreparation{Route: normalizeDirectRoute(route)}
++		switch prepared.Route {
++		case DirectRouteOAICSDirect:
++			context, err := f.resolveOAICSCheckoutFormContext(f.checkout, checkout)
++			if err != nil {
++				prepared.Err = err
++				formCh <- prepared
++				return
++			}
++			prepared.FormContext = map[string]any{
++				"publishableKey": context.PublishableKey, "customerSessionClientSecret": context.CustomerSessionClientSecret,
++				"mode": context.Mode, "amount": context.Amount, "currency": context.Currency,
++				"paymentMethodTypes": append([]string(nil), context.PaymentMethodTypes...),
++				"setupFutureUsage":   context.SetupFutureUsage, "returnUrl": context.ReturnURL,
++			}
++			prepared.Methods = append([]string(nil), context.PaymentMethodTypes...)
++			prepared.Amount = context.Amount
++			prepared.Currency = strings.ToUpper(context.Currency)
++			prepared.FormReady = true
++		case DirectRouteCSPrepared:
++			saved := append([]string(nil), preboundPaymentMethods...)
++			var err error
++			if len(saved) == 0 {
++				saved, err = f.savedPaymentMethodIDs(f.checkout)
++			}
++			if err != nil {
++				prepared.Err = err
++				formCh <- prepared
++				return
++			}
++			prepared.SavedPaymentMethodIDs = saved
++			if len(saved) == 0 {
++				prepared.Err = errCardPrebindRequired
++				formCh <- prepared
++				return
++			}
++			_ = f.provider.CopyCookiesFrom(f.checkout, f.engine.Endpoints.ChatGPT)
++			_ = f.provider.CopyCookiesFrom(f.promotion, f.engine.Endpoints.ChatGPT)
++			init, err := f.stripeInit(f.provider, stripeInitCheckout(checkout), true)
++			if err != nil {
++				prepared.Err = err
++				formCh <- prepared
++				return
++			}
++			checkoutSaved := findPaymentMethodIDsDeep(init.Raw)
++			if len(checkoutSaved) == 0 || !hasPaymentMethodIntersection(saved, checkoutSaved) {
++				prepared.Err = errCardContextMismatch
++				formCh <- prepared
++				return
++			}
++			prepared.FormContext = map[string]any{
++				"publishableKey": checkout.PublishableKey, "elementsSessionId": init.ElementsSessionID,
++				"configId": init.ConfigID, "initChecksum": init.InitChecksum,
++				"stripeJsId": init.StripeJSID, "paymentMethodTypes": append([]string(nil), init.Methods...),
++				"savedPaymentMethodIds": append([]string(nil), checkoutSaved...),
++			}
++			prepared.Methods = append([]string(nil), init.Methods...)
++			prepared.Amount = init.Amount
++			prepared.Currency = strings.ToUpper(init.Currency)
++			prepared.FormReady = true
++		default:
++			prepared.Err = errors.New("CHECKOUT_ROUTE_UNRESOLVED")
++		}
++		formCh <- prepared
++	}()
++	linkResult, formResult := <-linkCh, <-formCh
++	result.Link, result.LinkReady = linkResult.Link, linkResult.LinkReady
++	result.Err = formResult.Err
++	result.FormContext, result.Methods = formResult.FormContext, formResult.Methods
++	result.Amount = firstNonEmpty(result.Amount, formResult.Amount)
++	result.Currency = strings.ToUpper(firstNonEmpty(formResult.Currency, result.Currency))
++	result.SavedPaymentMethodIDs = formResult.SavedPaymentMethodIDs
++	result.FormReady = formResult.FormReady
++	if result.Err == nil && (!result.LinkReady || !result.FormReady) {
++		result.Err = errors.New("CHECKOUT_PREPARATION_BARRIER_INCOMPLETE")
++	}
++	if result.Err == nil {
++		result.PreparedAt = time.Now().UTC().Format(time.RFC3339)
++	}
++	return result
++}
++
++func applyDirectPreparationMetadata(metadata map[string]any, preparation directPreparation) {
++	metadata["requiresPrebind"] = preparation.Route == DirectRouteCSPrepared
++	metadata["routeDecisionSource"] = "observed_checkout_identity"
++	metadata["linkReady"] = preparation.LinkReady
++	metadata["formReady"] = preparation.FormReady
++	metadata["prepared"] = preparation.Err == nil && preparation.LinkReady && preparation.FormReady
++	metadata["preparedAt"] = preparation.PreparedAt
++	metadata["savedPaymentMethodCount"] = len(preparation.SavedPaymentMethodIDs)
++	if len(preparation.SavedPaymentMethodIDs) > 0 {
++		metadata["savedPaymentMethodIds"] = append([]string(nil), preparation.SavedPaymentMethodIDs...)
++	}
++	if preparation.Route == DirectRouteCSPrepared {
++		metadata["prebindStatus"] = map[bool]string{true: "ready", false: "required"}[len(preparation.SavedPaymentMethodIDs) > 0]
++	} else {
++		metadata["prebindStatus"] = "not_required"
++	}
++	if preparation.FormContext != nil {
++		metadata["checkoutFormContext"] = preparation.FormContext
++	}
++	if preparation.Err != nil {
++		metadata["preparationError"] = preparation.Err.Error()
++	}
++}
++
++func (f *flow) resolveOAICSCheckoutFormContext(client *BrowserClient, checkout checkoutData) (oaicsCheckoutFormContext, error) {
++	if !strings.HasPrefix(strings.ToLower(strings.TrimSpace(checkout.ID)), "oaics_") {
++		return oaicsCheckoutFormContext{}, errors.New("OAICS_CONTEXT_INVALID_ID")
++	}
++	path := "/backend-api/payments/checkout/" + url.PathEscape(checkout.ProcessorEntity) + "/" + url.PathEscape(checkout.ID)
++	response, err := client.Do(f.ctx, http.MethodGet, f.engine.Endpoints.ChatGPT+path, f.openAIHeaders(path, f.engine.Endpoints.ChatGPT+"/checkout/"+checkout.ProcessorEntity+"/"+checkout.ID), nil, true)
++	if err != nil {
++		return oaicsCheckoutFormContext{}, err
++	}
++	if response.Status >= 400 {
++		return oaicsCheckoutFormContext{}, upstreamError("oaics.context", response)
++	}
++	var raw map[string]any
++	if response.JSON(&raw) != nil {
++		return oaicsCheckoutFormContext{}, errors.New("OAICS_CONTEXT_NON_JSON")
++	}
++	resolvedID := findStringDeep(raw, "checkout_session_id", "checkoutSessionId")
++	pk := findStringDeep(raw, "publishable_key", "publishableKey")
++	customerSecret := findStringDeep(raw, "customer_session_client_secret", "customerSessionClientSecret")
++	methods := paymentMethodTypes(raw)
++	if resolvedID != checkout.ID || !strings.HasPrefix(pk, "pk_") || !strings.HasPrefix(customerSecret, "cuss_secret_") || !containsFold(methods, "card") {
++		return oaicsCheckoutFormContext{}, errors.New("OAICS_CONTEXT_INCOMPLETE")
++	}
++	return oaicsCheckoutFormContext{
++		PublishableKey: pk, CustomerSessionClientSecret: customerSecret, Mode: "subscription",
++		Amount: expectedAmount(raw), Currency: strings.ToUpper(firstNonEmpty(findStringDeep(raw, "currency"), checkout.Currency)),
++		PaymentMethodTypes: methods, SetupFutureUsage: "off_session",
++		ReturnURL: firstNonEmpty(findStringDeep(raw, "confirm_return_url", "return_url", "returnUrl"), f.engine.Endpoints.ChatGPT+"/checkout/"+checkout.ProcessorEntity+"/"+checkout.ID),
++	}, nil
++}
++
++func (f *flow) savedPaymentMethodIDs(client *BrowserClient) ([]string, error) {
++	path := "/backend-api/payments/payment_methods"
++	target := f.engine.Endpoints.ChatGPT + path
++	if accountID := strings.TrimSpace(f.credential.AccountID); accountID != "" {
++		target += "?account_id=" + url.QueryEscape(accountID)
++	}
++	headers := f.openAIHeaders(path, f.engine.Endpoints.ChatGPT+"/")
++	if accountID := strings.TrimSpace(f.credential.AccountID); accountID != "" {
++		headers["ChatGPT-Account-Id"] = accountID
++	}
++	response, err := client.Do(f.ctx, http.MethodGet, target, headers, nil, true)
++	if err != nil {
++		return nil, err
++	}
++	if response.Status >= 400 {
++		return nil, upstreamError("chatgpt.payment_methods", response)
++	}
++	var raw any
++	if response.JSON(&raw) != nil {
++		return nil, errors.New("PAYMENT_METHOD_QUERY_NON_JSON")
++	}
++	return savedPaymentMethodIDsFromResponse(raw), nil
++}
++
++func savedPaymentMethodIDsFromResponse(value any) []string {
++	switch item := value.(type) {
++	case []any:
++		return paymentMethodIDsFromList(item)
++	case map[string]any:
++		for _, key := range []string{"data", "payment_methods", "paymentMethods"} {
++			if list, ok := item[key].([]any); ok {
++				return paymentMethodIDsFromList(list)
++			}
++		}
++	}
++	return nil
++}
++
++func paymentMethodIDsFromList(items []any) []string {
++	result := make([]string, 0, len(items))
++	seen := map[string]bool{}
++	for _, value := range items {
++		item, ok := value.(map[string]any)
++		if !ok {
++			continue
++		}
++		id := strings.TrimSpace(stringValue(item["id"]))
++		if strings.HasPrefix(id, "pm_") && !seen[id] {
++			seen[id] = true
++			result = append(result, id)
++		}
++	}
++	sort.Strings(result)
++	return result
++}
++
++func findPaymentMethodIDsDeep(value any) []string {
++	seen := map[string]bool{}
++	var walk func(any)
++	walk = func(node any) {
++		switch item := node.(type) {
++		case string:
++			if strings.HasPrefix(strings.TrimSpace(item), "pm_") {
++				seen[strings.TrimSpace(item)] = true
++			}
++		case map[string]any:
++			for _, child := range item {
++				walk(child)
++			}
++		case []any:
++			for _, child := range item {
++				walk(child)
++			}
++		}
++	}
++	walk(value)
++	result := make([]string, 0, len(seen))
++	for id := range seen {
++		result = append(result, id)
++	}
++	sort.Strings(result)
++	return result
++}
++
++func hasPaymentMethodIntersection(left, right []string) bool {
++	seen := make(map[string]bool, len(left))
++	for _, value := range left {
++		seen[value] = true
++	}
++	for _, value := range right {
++		if seen[value] {
++			return true
++		}
++	}
++	return false
++}
+diff --git a/internal/extractmethods/engine.go b/internal/extractmethods/engine.go
+index 12a08a6..b8960d0 100644
+--- a/internal/extractmethods/engine.go
++++ b/internal/extractmethods/engine.go
+@@ -316,6 +316,7 @@ func normalizeOptions(method string, options Options) Options {
+ 		// carry a stale/foreign currency supplied by an older caller (for
+ 		// example JP with PHP); the upstream API validates this pair.
+ 		options.Currency = currencyForCountry(options.Country)
++		options.DirectRoute = normalizeDirectRoute(options.DirectRoute)
+ 	case MethodPH:
+ 		options.Country = "PH"
+ 	case MethodMoMo:
+@@ -875,11 +876,32 @@ func (f *flow) runDirect(forcePH bool) (Result, error) {
+ 	if forcePH {
+ 		country, currency = "PH", "PHP"
+ 	}
++	routeHint := normalizeDirectRoute(f.options.DirectRoute)
++	var preboundPaymentMethods []string
++	if routeHint == DirectRouteCSPrepared {
++		var prebindErr error
++		preboundPaymentMethods, prebindErr = f.savedPaymentMethodIDs(f.checkout)
++		if prebindErr != nil {
++			return Result{Country: country, Currency: currency, Decision: "card_prebind_required", ExtractionStatus: "card_prebind_required", PaymentStatus: "not_started", Metadata: map[string]any{
++				"checkoutRoute": DirectRouteCSPrepared, "requiresPrebind": true, "prebindStatus": "query_failed", "preparationError": prebindErr.Error(),
++			}}, prebindErr
++		}
++		if len(preboundPaymentMethods) == 0 {
++			err := errCardPrebindRequired
++			return Result{Country: country, Currency: currency, Decision: "card_prebind_required", ExtractionStatus: "card_prebind_required", PaymentStatus: "not_started", Metadata: map[string]any{
++				"checkoutRoute": DirectRouteCSPrepared, "requiresPrebind": true, "prebindStatus": "required", "preparationError": err.Error(),
++			}}, err
++		}
++		f.addStep("direct.prebind", "success", fmt.Sprintf("已发现 %d 个已保存 PaymentMethod；继续 CS Checkout", len(preboundPaymentMethods)), 0)
++	}
+ 	checkout, err := f.createCheckout(f.checkout, country, currency, "custom", false, 0)
+ 	if err != nil {
+ 		return Result{Country: country, Currency: currency}, err
+ 	}
+-	metadata := checkoutCompatibilityMetadata(checkout, checkoutObservationMetadata(checkout, nil), country, currency, checkoutRouteFor(checkout))
++	metadata := checkoutCompatibilityMetadata(checkout, checkoutObservationMetadata(checkout, nil), country, currency, DirectRouteAuto)
++	if err := f.promotion.CopyCookiesFrom(f.checkout, f.engine.Endpoints.ChatGPT); err != nil {
++		return Result{Country: country, Currency: currency, CheckoutID: checkout.ID, CheckoutType: checkoutIDType(checkout.ID), ProcessorEntity: checkout.ProcessorEntity, Metadata: metadata}, fmt.Errorf("同步 Checkout Cookie 到 Promotion: %w", err)
++	}
+ 	update, err := f.updatePromotion(f.promotion, checkout)
+ 	if err != nil {
+ 		return Result{Country: country, Currency: currency, CheckoutID: checkout.ID, CheckoutType: checkoutIDType(checkout.ID), ProcessorEntity: checkout.ProcessorEntity, Metadata: metadata}, err
+@@ -895,44 +917,47 @@ func (f *flow) runDirect(forcePH bool) (Result, error) {
+ 	if observed := findStripeCheckoutID(update); observed != "" {
+ 		checkout.StripeID = observed
+ 	}
+-	metadata = checkoutCompatibilityMetadata(checkout, checkoutObservationMetadata(checkout, nil), country, currency, checkoutRouteFor(checkout))
+-	amount := expectedAmount(update)
+-	if amount == "" {
+-		// OAICS is the final OpenAI custom-checkout identity, while Stripe's
+-		// payment_pages API only accepts the nested cs_live_/cs_test_ id. Keep
+-		// the two identities separate when both were observed in the same
+-		// checkout/update response.
+-		stripeCheckout := stripeInitCheckout(checkout)
+-		init, initErr := f.stripeInit(f.provider, stripeCheckout, true)
+-		if initErr != nil {
+-			return Result{Country: country, Currency: currency, CheckoutID: checkout.ID, CheckoutType: checkoutIDType(checkout.ID), ProcessorEntity: checkout.ProcessorEntity, Metadata: metadata}, initErr
++	// Promotion may receive refreshed Checkout cookies. Bring them back to the
++	// primary identity before resolving OAICS context or preparing Stripe init.
++	_ = f.checkout.CopyCookiesFrom(f.promotion, f.engine.Endpoints.ChatGPT)
++	route, routeErr := selectDirectCheckoutRoute(checkout, f.options.DirectRoute)
++	metadata = checkoutCompatibilityMetadata(checkout, checkoutObservationMetadata(checkout, nil), country, currency, route)
++	if routeErr != nil {
++		metadata["preparationError"] = routeErr.Error()
++		return Result{Country: country, Currency: currency, CheckoutID: checkout.ID, CheckoutType: checkoutIDType(checkout.ID), ProcessorEntity: checkout.ProcessorEntity, Decision: "checkout_route_unavailable", ExtractionStatus: "failed", PaymentStatus: "not_started", Metadata: metadata}, routeErr
++	}
++	checkout = checkoutForDirectRoute(checkout, route)
++	metadata = checkoutCompatibilityMetadata(checkout, checkoutObservationMetadata(checkout, metadata), country, currency, route)
++	preparation := f.prepareDirectCheckout(checkout, route, expectedAmount(update), preboundPaymentMethods)
++	applyDirectPreparationMetadata(metadata, preparation)
++	if preparation.Err != nil {
++		decision := "checkout_preparation_failed"
++		extractionStatus := "failed"
++		if errors.Is(preparation.Err, errCardPrebindRequired) {
++			decision = "card_prebind_required"
++			extractionStatus = "card_prebind_required"
+ 		}
+-		amount = init.Amount
++		return Result{
++			Country: country, Currency: currency, CheckoutID: checkout.ID, CheckoutType: checkoutIDType(checkout.ID), ProcessorEntity: checkout.ProcessorEntity,
++			LongURL: preparation.Link, Amount: preparation.Amount, AmountDisplay: displayAmount(preparation.Amount, currency), Decision: decision,
++			ExtractionStatus: extractionStatus, PaymentStatus: "not_started", Metadata: metadata,
++		}, preparation.Err
+ 	}
++	amount := preparation.Amount
+ 	gate := f.options.amountGateConfig()
+ 	status := amountGateStatus(amount, currency, gate)
+ 	if err := requireAmountGate("直卡 checkout", amount, currency, gate); err != nil {
+ 		return Result{Country: country, Currency: currency, CheckoutID: checkout.ID, CheckoutType: checkoutIDType(checkout.ID), ProcessorEntity: checkout.ProcessorEntity, Amount: amount, AmountStatus: status, Metadata: metadata}, err
+ 	}
+-	link := fmt.Sprintf("%s/checkout/%s/%s", f.engine.Endpoints.ChatGPT, checkout.ProcessorEntity, checkout.ID)
+-	f.addStep("direct.link", "success", link, 0)
++	link := preparation.Link
++	f.addStep("direct.prepared", "success", fmt.Sprintf("route=%s；link/form barrier ready", route), 0)
+ 	return Result{
+-		Country: country, Currency: currency, CheckoutID: checkout.ID, ProcessorEntity: checkout.ProcessorEntity,
++		Country: country, Currency: currency, CheckoutID: checkout.ID, CheckoutType: checkoutIDType(checkout.ID), ProcessorEntity: checkout.ProcessorEntity,
+ 		LongURL: link, Amount: amount, AmountDisplay: displayAmount(amount, currency), AmountStatus: status,
+ 		ExtractionStatus: "link_ready", PaymentStatus: "awaiting_card_payment", Metadata: metadata,
+ 	}, nil
+ }
+ 
+-func checkoutRouteFor(checkout checkoutData) string {
+-	if strings.TrimSpace(checkout.OpenAIID) != "" {
+-		return "oaics"
+-	}
+-	if strings.TrimSpace(checkout.StripeID) != "" {
+-		return "stripe"
+-	}
+-	return "observed"
+-}
+-
+ // runPhilippinesLink only returns a PH/PHP link after its configured amount
+ // gate is satisfied. It never confirms a payment method or attempts a charge.
+ func (f *flow) runPhilippinesLink() (Result, error) {
+@@ -1330,6 +1355,11 @@ func expectedAmount(value any) string {
+ 				return amount
+ 			}
+ 		}
++		for _, key := range []string{"minorUnitsAmount", "minor_units_amount"} {
++			if amount := stringValue(mapValue[key]); amount != "" {
++				return amount
++			}
++		}
+ 		for _, child := range mapValue {
+ 			if amount := expectedAmount(child); amount != "" {
+ 				return amount
+diff --git a/internal/extractmethods/extractmethods_test.go b/internal/extractmethods/extractmethods_test.go
+index c992534..159df32 100644
+--- a/internal/extractmethods/extractmethods_test.go
++++ b/internal/extractmethods/extractmethods_test.go
+@@ -108,6 +108,70 @@ func TestDirectCountryCurrencyIsCanonicalized(t *testing.T) {
+ 	}
+ }
+ 
++func TestDirectBillingDoesNotInheritProxyRegion(t *testing.T) {
++	options := normalizeOptions(MethodDirect, Options{Country: "PH", Currency: "PHP", ProxyRegion: "JP", CheckoutProxyRegion: "JP"})
++	if options.Country != "PH" || options.Currency != "PHP" {
++		t.Fatalf("proxy region rewrote billing pair to %s/%s", options.Country, options.Currency)
++	}
++}
++
++func TestDirectRouteSelectionUsesObservedCheckoutIdentity(t *testing.T) {
++	withBoth := checkoutData{ID: "oaics_outer", OpenAIID: "oaics_outer", StripeID: "cs_live_inner"}
++	if got, err := selectDirectCheckoutRoute(withBoth, ""); err != nil || got != DirectRouteOAICSDirect {
++		t.Fatalf("auto route = %q, err=%v; want OAICS direct", got, err)
++	}
++	if got, err := selectDirectCheckoutRoute(withBoth, DirectRouteCSPrepared); err != nil || got != DirectRouteCSPrepared {
++		t.Fatalf("explicit CS route = %q, err=%v", got, err)
++	}
++	if got, err := selectDirectCheckoutRoute(checkoutData{StripeID: "cs_live_only"}, ""); err != nil || got != DirectRouteCSPrepared {
++		t.Fatalf("CS-only auto route = %q, err=%v", got, err)
++	}
++	if _, err := selectDirectCheckoutRoute(checkoutData{StripeID: "cs_live_only"}, DirectRouteOAICSDirect); err == nil {
++		t.Fatal("explicit OAICS route must fail when no OAICS identity was observed")
++	}
++}
++
++func TestPaymentMethodParsingAndIntersection(t *testing.T) {
++	raw := map[string]any{"data": []any{map[string]any{"id": "pm_b"}, map[string]any{"id": "pm_a"}, map[string]any{"id": "card_ignored"}}}
++	got := savedPaymentMethodIDsFromResponse(raw)
++	if strings.Join(got, ",") != "pm_a,pm_b" {
++		t.Fatalf("saved methods = %#v", got)
++	}
++	if !hasPaymentMethodIntersection([]string{"pm_a"}, []string{"pm_b", "pm_a"}) {
++		t.Fatal("expected saved PaymentMethod intersection")
++	}
++}
++
++func TestExpectedAmountReadsOAICSMinorUnits(t *testing.T) {
++	raw := map[string]any{"checkout_state": map[string]any{"total": map[string]any{"total": map[string]any{"minorUnitsAmount": json.Number("98214")}}}}
++	if got := expectedAmount(raw); got != "98214" {
++		t.Fatalf("OAICS minor-unit amount = %q", got)
++	}
++}
++
++func TestDirectPreparationMetadataKeepsSecretsPrivate(t *testing.T) {
++	metadata := map[string]any{}
++	applyDirectPreparationMetadata(metadata, directPreparation{
++		Route: DirectRouteOAICSDirect, LinkReady: true, FormReady: true,
++		PreparedAt: "2026-08-06T00:00:00Z", FormContext: map[string]any{"customerSessionClientSecret": "cuss_secret_PRIVATE"},
++	})
++	if metadata["requiresPrebind"] != false || metadata["prepared"] != true {
++		t.Fatalf("OAICS metadata = %#v", metadata)
++	}
++	stripPrivateCheckoutMetadata(metadata)
++	if _, ok := metadata["checkoutFormContext"]; ok {
++		t.Fatal("checkout form context leaked through public metadata")
++	}
++}
++
++func TestDirectPreparationBarrierRequiresBothArtifacts(t *testing.T) {
++	metadata := map[string]any{}
++	applyDirectPreparationMetadata(metadata, directPreparation{Route: DirectRouteOAICSDirect, LinkReady: true, FormReady: false})
++	if metadata["prepared"] != false {
++		t.Fatalf("incomplete preparation crossed barrier: %#v", metadata)
++	}
++}
++
+ func TestFindCheckoutIDPrefersStripeSessionOverOuterOAICSID(t *testing.T) {
+ 	value := map[string]any{
+ 		"id":      "oaics_outer123",
+@@ -1377,7 +1441,7 @@ func TestCheckoutCompatibilityMetadataNormalizesObservedRoute(t *testing.T) {
+ 		ID: "oaics_outer123", OpenAIID: "oaics_outer123", StripeID: "cs_live_inner456",
+ 		Country: "JP", Currency: "JPY",
+ 	}, nil, "jp", "php", "oaics")
+-	if metadata["checkoutRoute"] != "oaics_preferred" {
++	if metadata["checkoutRoute"] != DirectRouteOAICSDirect {
+ 		t.Fatalf("route = %#v", metadata["checkoutRoute"])
+ 	}
+ 	if metadata["requestedCountry"] != "JP" || metadata["requestedCurrency"] != "PHP" {
+@@ -1394,7 +1458,7 @@ func TestCheckoutCompatibilityMetadataNormalizesObservedRoute(t *testing.T) {
+ func TestCloneJobPublicHidesPrivateCheckoutDiagnostics(t *testing.T) {
+ 	job := &Job{Items: []JobItem{{Result: &Result{Metadata: map[string]any{
+ 		"checkoutRoute": "oaics_preferred", "oaicsCheckoutId": "oaics_private",
+-		"observedCheckoutTypes": "oaics+stripe", "publicField": "keep",
++		"observedCheckoutTypes": "oaics+stripe", "checkoutFormContext": map[string]any{"customerSessionClientSecret": "cuss_secret_PRIVATE"}, "publicField": "keep",
+ 	}}}}}
+ 	private := cloneJob(job)
+ 	public := cloneJobPublic(job)
+@@ -1404,6 +1468,9 @@ func TestCloneJobPublicHidesPrivateCheckoutDiagnostics(t *testing.T) {
+ 	if _, ok := public.Items[0].Result.Metadata["oaicsCheckoutId"]; ok {
+ 		t.Fatal("public clone exposed OAICS checkout identity")
+ 	}
++	if _, ok := public.Items[0].Result.Metadata["checkoutFormContext"]; ok {
++		t.Fatal("public clone exposed private checkout form context")
++	}
+ 	if public.Items[0].Result.Metadata["publicField"] != "keep" {
+ 		t.Fatal("public clone removed unrelated metadata")
+ 	}
+diff --git a/internal/extractmethods/types.go b/internal/extractmethods/types.go
+index edf01e9..699c652 100644
+--- a/internal/extractmethods/types.go
++++ b/internal/extractmethods/types.go
+@@ -227,6 +227,7 @@ type Options struct {
+ 	AllowUnknownAmount       bool              `json:"allowUnknownAmount,omitempty"`
+ 	MaxAmountMinor           int               `json:"maxAmountMinor"`
+ 	StripePublishableKey     string            `json:"stripePublishableKey"`
++	DirectRoute              string            `json:"directRoute,omitempty"`
+ 	ClientFingerprint        string            `json:"clientFingerprint"`
+ 	FingerprintPolicy        map[string]string `json:"fingerprintPolicy,omitempty"`
+ 	FingerprintWeightMode    *bool             `json:"fingerprintWeightMode,omitempty"`

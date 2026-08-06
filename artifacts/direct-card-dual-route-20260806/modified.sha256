@@ -1,0 +1,8 @@
+13ff0050b30a32e2bd7bb2696c780f5b6261bbc69a20b0afd2b97cf87c6bce5e  ./.gitattributes
+85d5e4a8e6dca6c7d5e8d234471998b9a366b0610f7d0e7716230f4fa70a78f2  ./docs/version-archives/2026-08-06-direct-card-dual-route.md
+192a812757d0729927a223dc2e6877b945ccaa2cee8c1ddc662ddc6bf4b3ca42  ./internal/extractapi/server.go
+518889dc81b371cc18a1fdac177b496892fe618bb2f17fc6414131f5975add80  ./internal/extractmethods/checkout_compat.go
+12b0a3a199bdc4d02cbfe7732f0582849ba98e92ef05990c60637dd7844a5776  ./internal/extractmethods/direct_checkout_routes.go
+40371540c57a22024b2e67d48f1cd64a9b44346c859c56f39ce92e8bc481c36e  ./internal/extractmethods/engine.go
+a4ffc865add6d691721a4d217418394276f2cfcb26d8e804a8228c8a4c7411a8  ./internal/extractmethods/extractmethods_test.go
+cd536c0dfb9d65c28fb5ab8c75b40d5a3c02c53384621789810d52cbe91b2006  ./internal/extractmethods/types.go

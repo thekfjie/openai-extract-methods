@@ -5,10 +5,7 @@ import "strings"
 var privateCheckoutMetadataKeys = []string{
 	"checkoutRoute", "requestedCountry", "requestedCurrency", "effectiveCountry",
 	"effectiveCurrency", "billingConsistency", "oaicsObserved", "stripeObserved",
-	"oaicsCheckoutId", "stripeCheckoutId", "observedCheckoutTypes", "requiresPrebind",
-	"linkReady", "formReady", "prepared", "preparedAt", "prebindStatus",
-	"savedPaymentMethodCount", "savedPaymentMethodIds", "checkoutFormContext",
-	"preparationError", "routeDecisionSource",
+	"oaicsCheckoutId", "stripeCheckoutId", "observedCheckoutTypes",
 }
 
 // checkoutCompatibilityMetadata records observed Checkout families in the
@@ -43,12 +40,12 @@ func checkoutCompatibilityMetadata(checkout checkoutData, metadata map[string]an
 
 func normalizeCheckoutRoute(value string) string {
 	switch strings.ToLower(strings.TrimSpace(value)) {
-	case "oaics", "oaics_direct", "oaics-direct", "oaics_preferred", "oaics-preferred":
-		return DirectRouteOAICSDirect
-	case "stripe", "cs", "cs_prepared", "cs-prepared", "cs_preferred", "cs-preferred":
-		return DirectRouteCSPrepared
+	case "oaics", "oaics_preferred", "oaics-preferred":
+		return "oaics_preferred"
+	case "stripe", "cs", "cs_preferred", "cs-preferred":
+		return "stripe_preferred"
 	default:
-		return DirectRouteAuto
+		return "observed"
 	}
 }
 

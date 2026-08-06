@@ -227,7 +227,6 @@ type Options struct {
 	AllowUnknownAmount       bool              `json:"allowUnknownAmount,omitempty"`
 	MaxAmountMinor           int               `json:"maxAmountMinor"`
 	StripePublishableKey     string            `json:"stripePublishableKey"`
-	DirectRoute              string            `json:"directRoute,omitempty"`
 	ClientFingerprint        string            `json:"clientFingerprint"`
 	FingerprintPolicy        map[string]string `json:"fingerprintPolicy,omitempty"`
 	FingerprintWeightMode    *bool             `json:"fingerprintWeightMode,omitempty"`

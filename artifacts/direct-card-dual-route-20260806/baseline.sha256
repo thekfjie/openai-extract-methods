@@ -1,0 +1,5 @@
+df311e68fba75679f7bd0a21318d12f82c344e3f1a7dfacec98ae6c3ea12be93  ./internal/extractapi/server.go
+f5ec34a8b75e587b802bc401e6d3865371f9b0418c5e18ae4243f7dc39d0ad7f  ./internal/extractmethods/checkout_compat.go
+5e72cde8e11afab7d6c80dfe6b7cc7315d8422e7204a2aba152215c61ef9ee70  ./internal/extractmethods/engine.go
+d9ce89cbd80a44cd26321849ccdba8ef1946822a1b1facd16a925a9df100d55e  ./internal/extractmethods/extractmethods_test.go
+efeeaf6465a2b266b8b4a6f1b7bb0f4a1eaecf8bb8aa83a66c09beb20bb8ac4a  ./internal/extractmethods/types.go
