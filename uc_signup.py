@@ -352,8 +352,14 @@ def is_oauth_consent_page(url, visible_text):
         return False
     path = (parsed.path or "").lower()
     text = str(visible_text or "").lower()
-    return (
+    consent_route = (
         "oauth" in path
+        or path.endswith("/consent")
+        or "/consent/" in path
+        or "authorize" in path
+    )
+    return (
+        consent_route
         and "codex" in text
         and any(token in text for token in ("authorize", "allow", "continue"))
     )
@@ -1546,6 +1552,14 @@ class SignupBot:
             page_kind = self.classify_auth_page()
         except Exception:
             page_kind = "unknown"
+        try:
+            features = self.auth_page_features()
+            semantic_features = {
+                "roles": sorted(features.get("roles") or []),
+                "actionKinds": self.semantic_action_kinds(features.get("actions") or ()),
+            }
+        except Exception:
+            semantic_features = {"roles": [], "actionKinds": []}
         timestamp = datetime.now(BEIJING_TZ)
         account_key = hashlib.sha256(normalize_email(email).encode("utf-8")).hexdigest()[:16]
         kind_key = re.sub(r"[^a-z0-9_-]+", "-", page_kind.lower())[:32] or "unknown"
@@ -1553,33 +1567,17 @@ class SignupBot:
             f"{timestamp:%H%M%S}-{account_key}-{kind_key}"
         )
         artifact_dir.mkdir(parents=True, exist_ok=True)
-        controls = []
-        try:
-            elements = self.d.find_elements(
-                By.CSS_SELECTOR,
-                "input, button, select, textarea, a, [role=button], [role=checkbox], [role=radio], [contenteditable=true]",
-            )
-        except Exception:
-            elements = []
-        for element in elements[:100]:
+        recent_responses = []
+        for event in self._auth_response_events[-12:]:
             try:
-                if not element.is_displayed():
+                safe_event_url = self._safe_network_url(event.get("url"))
+                if not safe_event_url:
                     continue
-                controls.append({
-                    "tag": str(getattr(element, "tag_name", "") or "")[:30],
-                    "type": str(element.get_attribute("type") or "")[:60],
-                    "name": str(element.get_attribute("name") or "")[:100],
-                    "role": str(element.get_attribute("role") or "")[:60],
-                    "ariaLabel": self._redact_failure_text(
-                        element.get_attribute("aria-label"), email=email, password=self.signup_password
-                    )[:160],
-                    "placeholder": self._redact_failure_text(
-                        element.get_attribute("placeholder"), email=email, password=self.signup_password
-                    )[:160],
-                    "dataType": str(element.get_attribute("data-type") or "")[:60],
-                    "text": self._redact_failure_text(
-                        element_action_label(element), email=email, password=self.signup_password
-                    )[:200],
+                recent_responses.append({
+                    "at": event.get("at"),
+                    "path": urlparse(safe_event_url).path[:180],
+                    "status": int(event.get("status") or 0),
+                    "type": str(event.get("type") or "")[:30],
                 })
             except Exception:
                 continue
@@ -1588,62 +1586,22 @@ class SignupBot:
             "stage": str(stage or self.flow_stage or "unknown")[:120],
             "reason": self._redact_failure_text(reason, email=email, password=self.signup_password),
             "pageKind": page_kind,
+            "semanticFeatures": semantic_features,
             "url": safe_url,
             "title": self._redact_failure_text(
                 getattr(self.d, "title", ""), email=email, password=self.signup_password
             ),
-            "visibleText": self._redact_failure_text(
-                self.visible_text(), email=email, password=self.signup_password
-            ),
-            "registered": email_registration_completed(email),
-            "phoneSubmitted": bool(self.phone_submitted),
-            "phoneCodeSubmitted": bool(self.phone_code_submitted),
-            "controls": controls,
-            "recentAuthResponses": list(self._auth_response_events[-30:]),
+            "state": {
+                "registered": email_registration_completed(email),
+                "phoneSubmitted": bool(self.phone_submitted),
+                "phoneCodeSubmitted": bool(self.phone_code_submitted),
+            },
+            "recentAuthResponses": recent_responses,
         }
         metadata_path = artifact_dir / "page.json"
         metadata_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
-
-        screenshot_saved = False
-        try:
-            self.d.execute_script(
-                r"""
-                window.__automyaiPrivacyStyles = [];
-                const secret = arguments[0] || '';
-                const nodes = Array.from(document.querySelectorAll('input,textarea,[contenteditable=true],body *'));
-                for (const el of nodes) {
-                  const bodyText = (el.innerText || '').trim();
-                  const leaf = el.children.length === 0;
-                  const sensitive = el.matches('input,textarea,[contenteditable=true]') ||
-                    (leaf && ((secret && bodyText.toLowerCase().includes(secret.toLowerCase())) ||
-                    /(?:^|\D)\d{6}(?:\D|$)/.test(bodyText) || /\+?\d[\d ()-]{7,}\d/.test(bodyText)));
-                  if (!sensitive) continue;
-                  window.__automyaiPrivacyStyles.push([el, el.getAttribute('style')]);
-                  el.style.setProperty('filter', 'blur(10px)', 'important');
-                  el.style.setProperty('color', 'transparent', 'important');
-                }
-                """,
-                email,
-            )
-            screenshot_saved = bool(self.d.save_screenshot(str(artifact_dir / "page-redacted.png")))
-        except Exception:
-            screenshot_saved = False
-        finally:
-            try:
-                self.d.execute_script(
-                    """
-                    for (const [el, style] of (window.__automyaiPrivacyStyles || [])) {
-                      if (style === null) el.removeAttribute('style'); else el.setAttribute('style', style);
-                    }
-                    delete window.__automyaiPrivacyStyles;
-                    """
-                )
-            except Exception:
-                pass
-        payload["redactedScreenshotSaved"] = screenshot_saved
-        metadata_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
-        log(f"  已保存脱敏故障包: {artifact_dir}", "warn")
-        return {"directory": str(artifact_dir), "pageKind": page_kind, "screenshot": screenshot_saved}
+        log(f"  已保存精简故障记录: {artifact_dir}", "warn")
+        return {"directory": str(artifact_dir), "pageKind": page_kind, "screenshot": False}
 
     @staticmethod
     def _jwt_email(token):
@@ -1911,6 +1869,7 @@ class SignupBot:
             )).lower()
             input_type = str(element.get_attribute("type") or "").lower()
             inputmode = str(element.get_attribute("inputmode") or "").lower()
+            data_type = str(element.get_attribute("data-type") or "").lower().strip()
             maxlength_raw = str(element.get_attribute("maxlength") or "").strip()
             maxlength = int(maxlength_raw) if maxlength_raw.isdigit() else 0
         except Exception:
@@ -2042,6 +2001,199 @@ class SignupBot:
         text = self.visible_text().lower()
         return "verification code" in text or "enter code" in text or "验证码" in text
 
+    def phone_code_confirmation_pending(self):
+        """True after a phone OTP was submitted and the page now needs its final action.
+
+        The phone-verification route/title can remain unchanged after the OTP input
+        disappears.  At that point re-polling/re-filling the OTP is wrong: the page
+        must be driven by its current controls and allowed to reach the OAuth callback.
+        """
+        if not bool(getattr(self, "phone_code_submitted", False)):
+            return False
+        url = str(getattr(self.d, "current_url", "") or "").lower()
+        if "localhost:1455" in url or ("code=" in url and "auth.openai.com" not in url):
+            return False
+        if self.phone_input_visible() or self.code_input_elements():
+            return False
+        text = " ".join(self.visible_text().split()).lower()
+        title = str(getattr(self.d, "title", "") or "").lower()
+        combined = f"{title} {text}"
+        return (
+            "phone-verification" in url
+            or "check your phone" in combined
+            or "verification code" in combined
+            or "verify your phone" in combined
+        )
+
+    def semantic_input_role(self, element):
+        """Return the intent of a visible form control from its semantics.
+
+        Auth pages are React variants: URLs and headings can lag behind the
+        controls that are actually actionable.  Keep this detector independent
+        from route names so the classifier can follow the page's current form.
+        """
+        try:
+            semantic_raw = " ".join(
+                str(element.get_attribute(name) or "")
+                for name in (
+                    "name", "id", "type", "autocomplete", "aria-label",
+                    "placeholder", "data-testid", "data-type", "data-segment",
+                )
+            )
+            semantic = re.sub(r"([a-z])([A-Z])", r"\1 \2", semantic_raw).lower()
+            input_type = str(element.get_attribute("type") or "").lower()
+            inputmode = str(element.get_attribute("inputmode") or "").lower()
+            data_type = str(element.get_attribute("data-type") or "").lower().strip()
+            maxlength_raw = str(element.get_attribute("maxlength") or "").strip()
+            maxlength = int(maxlength_raw) if maxlength_raw.isdigit() else 0
+        except Exception:
+            return "unknown"
+        semantic_words = set(re.findall(r"[a-z0-9]+", re.sub(r"[_-]+", " ", semantic)))
+        if data_type in {"month", "day", "year"}:
+            return "birthdate"
+        if input_type == "password" or "password" in semantic:
+            return "password"
+        if any(term in semantic for term in (
+            "one-time", "otp", "passcode", "verification code", "security code",
+            "verification", "verify code", "auth code",
+        )):
+            return "code"
+        if "email" in semantic_words or input_type == "email":
+            return "email"
+        if any(term in semantic_words or term in semantic for term in ("phone", "tel", "mobile", "telephone")):
+            if not (maxlength and maxlength <= 8 and inputmode in {"numeric", "decimal"}):
+                return "phone"
+        if any(term in semantic for term in (
+            "birth", "birthday", "bday", "date-of-birth", "date of birth",
+            "dob", "出生", "生日", "生年月日",
+        )) or input_type == "date":
+            return "birthdate"
+        if any(term in semantic_words or term in semantic for term in ("age", "年龄", "年齢")):
+            return "age"
+        if any(term in semantic_words or term in semantic for term in (
+            "fullname", "given", "first", "last", "display", "name", "姓名", "名字",
+        )) and "username" not in semantic_words:
+            return "name"
+        if maxlength == 1 and inputmode in {"numeric", "decimal"}:
+            return "code"
+        if 4 <= maxlength <= 8 and inputmode in {"numeric", "decimal"}:
+            return "code"
+        return "unknown"
+
+    def auth_page_features(self):
+        """Capture one semantic snapshot used by all auth-page classification.
+
+        The snapshot is intentionally value-free: it records control roles and
+        action labels, not entered email/phone/password/OTP values.
+        """
+        url = str(getattr(self.d, "current_url", "") or "").lower()
+        title = " ".join(str(getattr(self.d, "title", "") or "").split())
+        text = " ".join(self.visible_text().split())
+        lowered = text.lower()
+        roles = set()
+        action_labels = []
+        try:
+            controls = self.visible_elements(
+                "input, textarea, select, button, a, [role=button], "
+                "[role=spinbutton], [contenteditable=true]"
+            )
+        except Exception:
+            controls = []
+        for element in controls:
+            role = self.semantic_input_role(element)
+            if role != "unknown":
+                roles.add(role)
+            try:
+                label = " ".join(element_action_label(element).split())
+            except Exception:
+                label = ""
+            if label:
+                action_labels.append(label[:120])
+        # Existing role-specific detectors provide compatibility with custom
+        # controls that do not expose useful attributes to Selenium.
+        for role, detector in (
+            ("phone", self.phone_input_visible),
+            ("code", lambda: bool(self.code_input_elements())),
+            ("password", self.password_input_visible),
+            ("email", self.email_input_visible),
+        ):
+            try:
+                if detector():
+                    roles.add(role)
+            except Exception:
+                pass
+        profile_roles = {"name", "age", "birthdate"}
+        if roles & profile_roles:
+            roles.add("profile")
+        return {
+            "url": url,
+            "title": title,
+            "text": text,
+            "lowered": lowered,
+            "roles": roles,
+            "actions": tuple(action_labels),
+        }
+
+    @staticmethod
+    def semantic_action_kinds(labels):
+        """Reduce visible action labels to a small, value-free diagnostic set."""
+        mapping = (
+            ("cancel", ("cancel", "取消")),
+            ("back", ("back", "返回")),
+            ("resend", ("resend", "重发", "重新发送", "再送信")),
+            ("continue", ("continue", "继续", "繼續", "続行", "계속")),
+            ("next", ("next", "下一步", "次へ")),
+            ("verify", ("verify", "verification", "验证", "確認", "認証")),
+            ("confirm", ("confirm", "确认", "確定")),
+            ("authorize", ("authorize", "allow", "授权", "允许", "承認")),
+            ("finish", ("finish", "完成", "done")),
+            ("submit", ("submit", "提交", "送信")),
+        )
+        kinds = set()
+        for label in labels or ():
+            lowered = " ".join(str(label or "").split()).lower()
+            for kind, terms in mapping:
+                if any(term in lowered for term in terms):
+                    kinds.add(kind)
+        return sorted(kinds)
+
+    def semantic_input_elements(self, role):
+        """Return visible controls whose attributes describe ``role``."""
+        wanted = str(role or "").strip().lower()
+        if not wanted:
+            return []
+        try:
+            controls = self.visible_elements(
+                "input:not([type=hidden]):not([type=submit]), textarea, "
+                "[role=spinbutton], [contenteditable=true]"
+            )
+        except Exception:
+            return []
+        return [element for element in controls if self.semantic_input_role(element) == wanted]
+
+    def fill_semantic_input(self, role, value, *, sensitive=False):
+        """Fill the first visible semantic control for a role, if present."""
+        elements = self.semantic_input_elements(role)
+        if not elements:
+            return False
+        element = elements[0]
+        try:
+            ActionChains(self.d).move_to_element(element).click().perform()
+            element.send_keys(Keys.CONTROL, "a")
+            element.send_keys(Keys.BACKSPACE)
+            try:
+                element.clear()
+            except Exception:
+                pass
+            for char in str(value):
+                element.send_keys(char)
+                time.sleep(0.03)
+            log(f"  填入: {mask_secret(value) if sensitive else value}")
+            return True
+        except Exception as error:
+            log(f"  语义字段填写失败({role}): {type(error).__name__}", "warn")
+            return False
+
     def signup_done(self):
         """True only when registration clearly left the auth/signup funnel."""
         url = (self.d.current_url or "").lower()
@@ -2070,10 +2222,16 @@ class SignupBot:
         return False
 
     def classify_auth_page(self):
-        """Page-driven classifier for signup/oauth. Prefer URL, then visible inputs/text."""
-        url = str(getattr(self.d, "current_url", "") or "").lower()
-        text = " ".join(self.visible_text().split())
-        lowered = text.lower()
+        """Classify the current page from one semantic snapshot.
+
+        URL fragments are fallback hints only.  Visible fields/actions win so
+        localized and React-re-rendered page variants take the correct branch.
+        """
+        snapshot = self.auth_page_features()
+        url = snapshot["url"]
+        text = snapshot["text"]
+        lowered = snapshot["lowered"]
+        roles = snapshot["roles"]
         if "localhost:1455" in url or ("code=" in url and "auth.openai.com" not in url):
             return "oauth_callback"
         if self.cloudflare_challenge_visible():
@@ -2086,13 +2244,33 @@ class SignupBot:
             return "choose_account"
         if is_oauth_consent_page(self.d.current_url, lowered):
             return "oauth_consent"
+        if "codex" in lowered and any(
+            any(token in label.lower() for token in ("continue", "authorize", "allow", "授权", "继续"))
+            for label in snapshot["actions"]
+        ):
+            return "oauth_consent"
         if "add-email" in url:
             return "add_email"
-        if self.phone_input_visible() or "phone-verification" in url or self.phone_verification_prompt_visible():
-            return "phone"
-        if self.code_input_visible() or "email-verification" in url or "検証コード" in text or "verification code" in lowered:
+        if self.phone_code_confirmation_pending():
+            return "phone_confirmation"
+        if "code" in roles:
+            if "phone-verification" in url or self.phone_code_page_visible() or self.phone_submitted:
+                return "phone_code"
             return "email_code"
-        if self.password_input_visible() or "/password" in url:
+        if "phone" in roles:
+            return "phone"
+        if "password" in roles:
+            return "password"
+        if "profile" in roles:
+            return "profile"
+        if "email" in roles:
+            return "email"
+        # Text/route fallback is intentionally below visible-control semantics.
+        if "phone-verification" in url or self.phone_verification_prompt_visible():
+            return "phone"
+        if "email-verification" in url or "検証コード" in text or "verification code" in lowered:
+            return "email_code"
+        if "/password" in url:
             return "password"
         if (
             "about-you" in url
@@ -2100,7 +2278,7 @@ class SignupBot:
             or self.visible_elements("input[name=name], input[name=age], input[name=birthday], input[name=birthdate]")
         ):
             return "profile"
-        if self.email_input_visible() or "log-in" in url or "sign-in" in url:
+        if "log-in" in url or "sign-in" in url:
             return "email"
         if is_plain_chatgpt_home(self.d.current_url):
             return "chatgpt_home"
@@ -2607,6 +2785,8 @@ class SignupBot:
         raise StepError("找不到任何输入框")
 
     def fill_email_input(self, email):
+        if self.fill_semantic_input("email", email):
+            return
         self.fill_any([
             "input[type=email]",
             "input[name=email]",
@@ -2616,6 +2796,8 @@ class SignupBot:
         ], email)
 
     def fill_password_input(self):
+        if self.fill_semantic_input("password", self.signup_password, sensitive=True):
+            return
         self.fill_any([
             "input[name=new-password]",
             "input[autocomplete='new-password']",
@@ -2754,17 +2936,63 @@ class SignupBot:
         log(f"  邮箱验证码批次基准（北京时间）: {stamp}，原因={reason}")
         return not_before
 
-    def click_primary_action(self, *, optional=False):
-        for button in self.visible_elements("button[type=submit], input[type=submit]"):
+    def primary_action_elements(self):
+        """Rank visible form actions by their page semantics.
+
+        Buttons are not assumed to be in a fixed DOM position.  Destructive,
+        resend, and third-party controls are excluded; submit/continue/confirm
+        actions are ranked ahead of generic buttons.  This lets every page
+        variant use its own localized label while preserving the existing
+        fallback vocabulary below.
+        """
+        accept = (
+            "continue", "next", "verify", "submit", "confirm", "finish",
+            "authorize", "allow", "create account", "sign up", "sign in",
+            "log in", "proceed", "done", "继续", "下一步", "确认", "验证",
+            "提交", "授权", "允许", "完成", "登録", "確認", "認証",
+        )
+        reject = (
+            "cancel", "back", "close", "resend", "send again", "try again",
+            "remove", "delete", "logout", "log out", "sign out", "forgot",
+            "google", "apple", "microsoft", "github", "phone", "qr",
+            "取消", "返回", "关闭", "重发", "重新发送", "删除", "退出",
+        )
+        ranked = []
+        try:
+            elements = self.visible_elements(
+                "button, input[type=submit], [role=button]"
+            )
+        except Exception:
+            elements = []
+        for index, element in enumerate(elements):
             try:
-                label = " ".join(
-                    (button.text or button.get_attribute("value") or button.get_attribute("aria-label") or "").split()
-                )
+                if not element.is_enabled():
+                    continue
+                label = " ".join(element_action_label(element).split())
                 lowered = label.lower()
-                if any(provider in lowered for provider in ("google", "apple", "microsoft", "github", "phone", "qr")):
+                if any(term in lowered for term in reject):
                     continue
-                if not button.is_enabled():
-                    continue
+                score = 0
+                input_type = str(element.get_attribute("type") or "").lower()
+                if input_type == "submit":
+                    score += 100
+                if any(lowered == term for term in accept):
+                    score += 80
+                elif any(term in lowered for term in accept):
+                    score += 50
+                # Empty submit buttons are still valid form actions.
+                if not label and input_type == "submit":
+                    score += 20
+                if score > 0:
+                    ranked.append((score, -index, element, label))
+            except Exception:
+                continue
+        ranked.sort(key=lambda item: (item[0], item[1]), reverse=True)
+        return [(element, label) for _score, _index, element, label in ranked]
+
+    def click_primary_action(self, *, optional=False):
+        for button, label in self.primary_action_elements():
+            try:
                 log(f"  点击提交按钮: {label[:50] or '[无文本]'}")
                 ActionChains(self.d).move_to_element(button).click().perform()
                 time.sleep(3)
@@ -3392,11 +3620,7 @@ class SignupBot:
             "input[id*=birth i]",
         ]
 
-        def fill_profile_value(selector, value):
-            elements = self.visible_elements(selector)
-            if not elements:
-                return False
-            element = elements[0]
+        def fill_profile_element(element, value):
             current = str(element.get_attribute("value") or "").strip()
             if current == str(value):
                 return True
@@ -3412,18 +3636,55 @@ class SignupBot:
             log(f"  填入: {value}")
             return True
 
-        for sel in name_selectors:
-            if self.visible_elements(sel):
-                name_filled = fill_profile_value(sel, self.display_name)
-                break
-        for sel in age_selectors:
-            if self.visible_elements(sel):
-                # OpenAI sometimes wants age years, sometimes birthday.
-                value = self.signup_age
-                if "birth" in sel.lower() or "bday" in sel.lower() or "type=date" in sel.lower():
-                    value = self.profile_birthdate()
-                age_filled = fill_profile_value(sel, value)
-                break
+        def fill_profile_value(selector, value):
+            elements = self.visible_elements(selector)
+            return fill_profile_element(elements[0], value) if elements else False
+
+        # Prefer semantic roles from the current DOM over fixed selectors. This
+        # covers localized/variant profile forms whose names/IDs differ.
+        try:
+            semantic_controls = self.visible_elements(
+                "input:not([type=hidden]):not([type=submit]), textarea, [contenteditable=true]"
+            )
+        except Exception:
+            semantic_controls = []
+        for element in semantic_controls:
+            role = self.semantic_input_role(element)
+            if role == "name" and not name_filled:
+                name_filled = fill_profile_element(element, self.display_name)
+            elif role == "age" and not age_filled:
+                age_filled = fill_profile_element(element, self.signup_age)
+            elif role == "birthdate" and not age_filled:
+                # React-Aria segmented birthday controls require arrow-key
+                # updates plus hidden-input verification; leave those to the
+                # dedicated segment routine instead of typing into one segment.
+                segmented = False
+                try:
+                    segmented = bool(
+                        element.get_attribute("data-type")
+                        or element.get_attribute("data-segment")
+                        or str(element.get_attribute("role") or "").lower() == "spinbutton"
+                        or str(element.get_attribute("contenteditable") or "").lower() == "true"
+                    )
+                except Exception:
+                    pass
+                if not segmented:
+                    age_filled = fill_profile_element(element, self.profile_birthdate())
+
+        if not name_filled:
+            for sel in name_selectors:
+                if self.visible_elements(sel):
+                    name_filled = fill_profile_value(sel, self.display_name)
+                    break
+        if not age_filled:
+            for sel in age_selectors:
+                if self.visible_elements(sel):
+                    # OpenAI sometimes wants age years, sometimes birthday.
+                    value = self.signup_age
+                    if "birth" in sel.lower() or "bday" in sel.lower() or "type=date" in sel.lower():
+                        value = self.profile_birthdate()
+                    age_filled = fill_profile_value(sel, value)
+                    break
         if not age_filled:
             age_filled = self.fill_profile_birthdate_segments()
 
@@ -4095,12 +4356,25 @@ class SignupBot:
                     continue
                 self._step("选择账户", lambda: self._click_account_button())
                 continue
+            if page_kind == "oauth_consent":
+                log("  已识别 OAuth 最终确认页，交给回调阶段点击 Continue")
+                return phone, full_phone
             if is_plain_chatgpt_home(self.d.current_url):
                 if phone or self.phone_submitted:
                     raise BrowserBlocked("OAuth 授权返回 ChatGPT 首页，但手机号已参与，停止避免重复消耗")
                 raise AuthSessionEnded("OAuth 授权返回 ChatGPT 首页，重新获取授权链接")
             if "add-email" in url:
                 return phone, full_phone
+            if self.phone_code_submitted and page_kind == "phone":
+                # State wins over stale route/title: once the SMS code has been
+                # submitted, never fetch/fill the same code again.  The current
+                # phone page is still finishing its submit/navigation.  Wait for
+                # the controls/route to change; a real button-only confirmation
+                # is classified separately as phone_confirmation below.
+                snippet = " ".join(self.visible_text().split())[:180]
+                log(f"  短信验证码已提交，重新识别当前页面并等待推进: {snippet}")
+                time.sleep(2)
+                continue
             rate_limit_reason = self.phone_verification_rate_limited_reason()
             if rate_limit_reason:
                 if phone or self.phone_submitted:
@@ -4113,11 +4387,22 @@ class SignupBot:
             if self.phone_input_visible():
                 phone, full_phone = self.verify_phone_if_requested(email)
                 continue
+            if page_kind == "phone_confirmation" or self.phone_code_confirmation_pending():
+                snippet = " ".join(self.visible_text().split())[:180]
+                log(f"  短信验证码已提交，按当前页面执行最终确认: {snippet}")
+                if self.click_primary_action(optional=True):
+                    log("  已点击最终确认，继续等待 OAuth 回调")
+                    continue
+                # Some variants navigate automatically after OTP verification.
+                # Stay on this state instead of polling the same SMS or discarding
+                # the bound phone merely because the OTP input is gone.
+                time.sleep(2)
+                continue
             if self.whatsapp_code_prompt_visible():
                 if phone or self.phone_submitted:
                     raise PhoneRetry("手机号只进入 WhatsApp 验证", hold_phone=True, return_to_phone=True)
                 raise FatalError("当前账号要求 WhatsApp 验证，无法使用短信接码")
-            if self.phone_verification_prompt_visible() and not self.phone_input_visible():
+            if (page_kind == "phone_code" or self.phone_verification_prompt_visible()) and not self.phone_input_visible():
                 if self.open_phone_input_if_prompted():
                     continue
                 rate_limit_reason = self.phone_verification_rate_limited_reason()
@@ -4179,7 +4464,8 @@ class SignupBot:
                     self.click_primary_action()
                 ))
                 continue
-            if is_oauth_consent_page(self.d.current_url, text):
+            if page_kind == "oauth_consent" or is_oauth_consent_page(self.d.current_url, text):
+                log("  已识别 OAuth 最终确认页，交给回调阶段点击 Continue")
                 return phone, full_phone
             signature = self.page_signature()
             if signature in attempted_primary_signatures:

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+import tempfile
 import unittest
 from unittest.mock import Mock, patch
 
@@ -87,6 +89,209 @@ class SignupInputClassificationTests(unittest.TestCase):
         self.bot.phone_verification_rate_limited_reason = lambda: ""
         self.bot.whatsapp_code_prompt_visible = lambda: False
         self.assertTrue(self.bot.whatsapp_verification_reason().startswith("whatsapp_only:"))
+
+    def test_submitted_phone_code_with_no_otp_input_is_confirmation_page(self):
+        class Driver:
+            current_url = "https://auth.openai.com/phone-verification"
+            title = "Check your phone - OpenAI"
+
+        self.bot.d = Driver()
+        self.bot.phone_code_submitted = True
+        self.bot.visible_text = lambda: "Check your phone Continue"
+        self.bot.phone_input_visible = lambda: False
+        self.bot.code_input_elements = lambda: []
+        self.bot.cloudflare_challenge_visible = lambda: False
+        self.bot.is_error_page = lambda: False
+        self.bot.transient_auth_error_visible = lambda: False
+        self.bot.auth_session_ended_visible = lambda: False
+        self.bot.phone_verification_prompt_visible = lambda: True
+
+        self.assertTrue(self.bot.phone_code_confirmation_pending())
+        self.assertEqual(self.bot.classify_auth_page(), "phone_confirmation")
+
+    def test_codex_consent_route_is_classified_by_page_semantics(self):
+        class Driver:
+            current_url = "https://auth.openai.com/sign-in-with-chatgpt/codex/consent"
+            title = "Sign in to Codex with ChatGPT - OpenAI"
+
+        self.bot.d = Driver()
+        self.bot.phone_code_submitted = True
+        self.bot.visible_text = lambda: (
+            "person@example.com Cancel Continue ChatGPT Terms of Use and Privacy Policy apply. "
+            "See what data Codex receives from ChatGPT."
+        )
+        self.bot.cloudflare_challenge_visible = lambda: False
+        self.bot.is_error_page = lambda: False
+        self.bot.transient_auth_error_visible = lambda: False
+        self.bot.auth_session_ended_visible = lambda: False
+        self.bot.phone_input_visible = lambda: False
+        self.bot.code_input_elements = lambda: []
+
+        self.assertFalse(self.bot.phone_code_confirmation_pending())
+        self.assertEqual(self.bot.classify_auth_page(), "oauth_consent")
+
+    def test_phone_confirmation_returns_to_otp_state_if_input_is_present(self):
+        class Driver:
+            current_url = "https://auth.openai.com/phone-verification"
+            title = "Check your phone - OpenAI"
+
+        self.bot.d = Driver()
+        self.bot.phone_code_submitted = True
+        self.bot.visible_text = lambda: "Check your phone Enter the verification code"
+        self.bot.phone_input_visible = lambda: False
+        self.bot.code_input_elements = lambda: [FakeElement(name="code", maxlength="6")]
+
+        self.assertFalse(self.bot.phone_code_confirmation_pending())
+
+    def test_semantic_input_roles_cover_localized_profile_variants(self):
+        self.assertEqual(self.bot.semantic_input_role(FakeElement(
+            id="full-name-field", autocomplete="name", type="text"
+        )), "name")
+        self.assertEqual(self.bot.semantic_input_role(FakeElement(
+            **{"aria-label": "Date of birth"}, type="text"
+        )), "birthdate")
+        self.assertEqual(self.bot.semantic_input_role(FakeElement(
+            **{"data-type": "year"}, role="spinbutton", inputmode="numeric"
+        )), "birthdate")
+        self.assertEqual(self.bot.semantic_input_role(FakeElement(
+            **{"aria-label": "Your age"}, type="number"
+        )), "age")
+
+    def test_semantic_classifier_prefers_visible_control_over_route(self):
+        class Driver:
+            current_url = "https://auth.openai.com/about-you"
+            title = "Account"
+
+        self.bot.d = Driver()
+        self.bot.visible_text = lambda: "Account Continue"
+        self.bot.visible_elements = lambda selector: (
+            [FakeElement(id="email", type="email", autocomplete="email")]
+            if "input" in selector else []
+        )
+        self.bot.phone_input_visible = lambda: False
+        self.bot.code_input_elements = lambda: []
+        self.bot.password_input_visible = lambda: False
+        self.bot.email_input_visible = lambda: True
+        self.bot.cloudflare_challenge_visible = lambda: False
+        self.bot.is_error_page = lambda: False
+        self.bot.transient_auth_error_visible = lambda: False
+        self.bot.auth_session_ended_visible = lambda: False
+        self.bot.phone_code_confirmation_pending = lambda: False
+        self.bot.phone_verification_prompt_visible = lambda: False
+
+        self.assertEqual(self.bot.classify_auth_page(), "email")
+
+    def test_semantic_classifier_handles_password_code_and_profile_variants(self):
+        class Driver:
+            title = "OpenAI"
+
+        def classify(url, controls, text="Continue"):
+            self.bot.d = Driver()
+            self.bot.d.current_url = url
+            self.bot.phone_submitted = False
+            self.bot.phone_code_submitted = False
+            self.bot.visible_text = lambda: text
+            self.bot.visible_elements = lambda selector: list(controls)
+            self.bot.phone_input_visible = lambda: False
+            self.bot.code_input_elements = lambda: (
+                [control for control in controls if self.bot.semantic_input_role(control) == "code"]
+            )
+            self.bot.password_input_visible = lambda: any(
+                self.bot.semantic_input_role(control) == "password" for control in controls
+            )
+            self.bot.email_input_visible = lambda: any(
+                self.bot.semantic_input_role(control) == "email" for control in controls
+            )
+            self.bot.cloudflare_challenge_visible = lambda: False
+            self.bot.is_error_page = lambda: False
+            self.bot.transient_auth_error_visible = lambda: False
+            self.bot.auth_session_ended_visible = lambda: False
+            self.bot.phone_code_confirmation_pending = lambda: False
+            self.bot.phone_verification_prompt_visible = lambda: False
+            return self.bot.classify_auth_page()
+
+        self.assertEqual(classify(
+            "https://auth.openai.com/unlocalized-step",
+            [FakeElement(type="password", autocomplete="new-password")],
+        ), "password")
+        self.assertEqual(classify(
+            "https://auth.openai.com/unlocalized-step",
+            [FakeElement(name="otp", inputmode="numeric", maxlength="6")],
+            "Enter the code Continue",
+        ), "email_code")
+        self.assertEqual(classify(
+            "https://auth.openai.com/unlocalized-step",
+            [
+                FakeElement(autocomplete="name"),
+                FakeElement(**{"aria-label": "Date of birth", "type": "text"}),
+            ],
+            "Tell us about yourself Continue",
+        ), "profile")
+
+    def test_primary_action_ranking_excludes_cancel_resend_and_provider_buttons(self):
+        class Button(FakeElement):
+            def __init__(self, text, **attributes):
+                super().__init__(**attributes)
+                self.text = text
+
+            def is_enabled(self):
+                return True
+
+        buttons = [
+            Button("Cancel", type="button"),
+            Button("Resend code", type="button"),
+            Button("Continue with Google", type="button"),
+            Button("Proceed", role="button"),
+        ]
+        self.bot.visible_elements = lambda selector: buttons
+
+        ranked = self.bot.primary_action_elements()
+
+        self.assertEqual([label for _element, label in ranked], ["Proceed"])
+
+    def test_failure_artifact_keeps_only_key_page_state(self):
+        import uc_signup
+
+        class Driver:
+            current_url = "https://auth.openai.com/about-you?secret=discard"
+            title = "About you - OpenAI"
+
+        bot = SignupBot.__new__(SignupBot)
+        bot.d = Driver()
+        bot.current_email = "person@example.com"
+        bot.requested_email = bot.current_email
+        bot.signup_password = "password"
+        bot.flow_stage = "资料页"
+        bot.phone_submitted = False
+        bot.phone_code_submitted = False
+        bot._auth_response_events = [{
+            "at": 1234,
+            "url": "https://auth.openai.com/api/accounts/create_account?token=discard",
+            "status": 500,
+            "type": "XHR",
+        }]
+        bot.classify_auth_page = lambda: "profile"
+        bot.auth_page_features = lambda: {
+            "roles": {"name", "birthdate", "profile"},
+            "actions": ("Continue", "person@example.com"),
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            old_base = uc_signup.FAILURE_ARTIFACT_BASE_DIR
+            uc_signup.FAILURE_ARTIFACT_BASE_DIR = __import__("pathlib").Path(tmp)
+            try:
+                with patch("uc_signup.email_registration_completed", return_value=False):
+                    result = bot.capture_failure_artifact("资料页", "field failed")
+                payload = json.loads(__import__("pathlib").Path(result["directory"], "page.json").read_text())
+            finally:
+                uc_signup.FAILURE_ARTIFACT_BASE_DIR = old_base
+
+        self.assertEqual(payload["pageKind"], "profile")
+        self.assertEqual(payload["semanticFeatures"]["roles"], ["birthdate", "name", "profile"])
+        self.assertEqual(payload["semanticFeatures"]["actionKinds"], ["continue"])
+        self.assertNotIn("visibleText", payload)
+        self.assertNotIn("controls", payload)
+        self.assertEqual(payload["recentAuthResponses"][0]["path"], "/api/accounts/create_account")
+        self.assertFalse(result["screenshot"])
 
     def test_korean_password_error_can_switch_to_one_time_code(self):
         clicked_terms = []
