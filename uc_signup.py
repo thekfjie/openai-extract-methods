@@ -4477,8 +4477,15 @@ class SignupBot:
 
             if time.time() - last_log >= 15:
                 log(f"  等待授权页面推进: {self.d.title} | {self.d.current_url[:100]}")
-                if text:
-                    log(f"  页面文本: {' '.join(text.split())[:180]}")
+                try:
+                    features = self.auth_page_features()
+                    log(
+                        "  页面特征: "
+                        f"roles={','.join(sorted(features.get('roles') or [])) or '-'} "
+                        f"actions={','.join(self.semantic_action_kinds(features.get('actions') or ())) or '-'}"
+                    )
+                except Exception:
+                    pass
                 last_log = time.time()
             time.sleep(2)
         raise BrowserBlocked("授权登录流程超时")
